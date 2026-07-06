@@ -1,8 +1,11 @@
 package hirs.attestationca.persist.provision.service;
 
+import java.util.Arrays;
+
 import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
+import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.utils.HexUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -42,19 +45,15 @@ import static org.mockito.Mockito.when;
  * Tests the {@link AttestationCertificateAuthorityServiceImpl} service class.
  */
 public class AttestationCertificateAuthorityServiceTest {
-    private static final String EK_PUBLIC_KEY_PATH = "/tpm2/ek.pub";
+    private static final String EK_PUBLIC_KEY_PATH_RSA = "/tpm2/ek_rsa.pub";
+    private static final String AK_PUBLIC_KEY_PATH_RSA = "/tpm2/ak_rsa.pub";
+    private static final String EK_MODULUS_PATH_RSA = "/tpm2/ek_rsa.mod";
+    private static final String AK_MODULUS_PATH_RSA = "/tpm2/ak_rsa.mod";
 
-    private static final String AK_PUBLIC_KEY_PATH = "/tpm2/ak.pub";
-
-    private static final String AK_NAME_PATH = "/tpm2/ak.name";
-
-    private static final String EK_MODULUS_PATH = "/tpm2/ek.mod";
-
-    private static final String AK_MODULUS_PATH = "/tpm2/ak.mod";
-
-    private static final String AK_NAME_HEX = "00 0b 6e 8f 79 1c 7e 16  96 1b 11 71 65 9c e0 cd"
-            + "ae 0d 4d aa c5 41 be 58  89 74 67 55 96 c2 5e 38"
-            + "e2 94";
+    private static final String EK_PUBLIC_KEY_PATH_ECC = "/tpm2/ek_ecc.pub";
+    private static final String AK_PUBLIC_KEY_PATH_ECC = "/tpm2/ak_ecc.pub";
+    private static final String EK_POINT_PATH_ECC = "/tpm2/ek_ecc.point";
+    private static final String AK_POINT_PATH_ECC = "/tpm2/ak_ecc.point";
 
     private AutoCloseable mocks;
 
@@ -296,15 +295,15 @@ public class AttestationCertificateAuthorityServiceTest {
     }
 
     /**
-     * Tests parsing the EK from the TPM2 output file.
+     * Tests parsing the RSA EK from the TPM2 output file.
      *
      * @throws URISyntaxException incorrect resource path
      * @throws IOException        unable to read from file
      */
     @Test
-    public void testParseEk() throws URISyntaxException, IOException {
-        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH)).toURI());
-        Path ekModPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_MODULUS_PATH)).toURI());
+    public void testParseEkRsa() throws URISyntaxException, IOException {
+        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH_RSA)).toURI());
+        Path ekModPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_MODULUS_PATH_RSA)).toURI());
 
         byte[] ekFile = Files.readAllBytes(ekPath);
         String realMod = Files.readString(ekModPath).replaceAll("\\s+", "");
@@ -316,25 +315,21 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] mod = ek.getModulus().toByteArray();
         // big integer conversion is signed so it can add a 0 byte
-        if (mod[0] == 0) {
-            byte[] tmp = new byte[mod.length - 1];
-            System.arraycopy(mod, 1, tmp, 0, mod.length - 1);
-            mod = tmp;
-        }
-        String hex = HexUtils.byteArrayToHexString(mod);
+        byte[] unsignedMod = mod[0] == 0 ? Arrays.copyOfRange(mod, 1, mod.length) : mod;
+        String hex = HexUtils.byteArrayToHexString(unsignedMod);
         assertEquals(realMod, hex);
     }
 
     /**
-     * Tests parsing the AK public key from the TPM2 output file.
+     * Tests parsing the RSA AK public key from the TPM2 output file.
      *
      * @throws URISyntaxException incorrect resource path
      * @throws IOException        unable to read from file
      */
     @Test
-    public void testParseAk() throws URISyntaxException, IOException {
-        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH)).toURI());
-        Path akModPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_MODULUS_PATH)).toURI());
+    public void testParseAkRsa() throws URISyntaxException, IOException {
+        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH_RSA)).toURI());
+        Path akModPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_MODULUS_PATH_RSA)).toURI());
 
         byte[] akFile = Files.readAllBytes(akPath);
         String realMod = Files.readString(akModPath).replaceAll("\\s+", "");
@@ -346,12 +341,56 @@ public class AttestationCertificateAuthorityServiceTest {
 
         byte[] mod = ak.getModulus().toByteArray();
         // big integer conversion is signed so it can add a 0 byte
-        if (mod[0] == 0) {
-            byte[] tmp = new byte[mod.length - 1];
-            System.arraycopy(mod, 1, tmp, 0, mod.length - 1);
-            mod = tmp;
-        }
-        String hex = HexUtils.byteArrayToHexString(mod);
+        byte[] unsignedMod = mod[0] == 0 ? Arrays.copyOfRange(mod, 1, mod.length) : mod;
+        String hex = HexUtils.byteArrayToHexString(unsignedMod);
         assertEquals(realMod, hex);
+    }
+
+    /**
+     * Tests parsing the ECC EK from the TPM2 output file.
+     *
+     * @throws URISyntaxException incorrect resource path
+     * @throws IOException        unable to read from file
+     */
+    @Test
+    public void testParseEkEcc() throws URISyntaxException, IOException {
+        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH_ECC)).toURI());
+        Path ekPointPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_POINT_PATH_ECC)).toURI());
+
+        byte[] ekFile = Files.readAllBytes(ekPath);
+        String realPoint = Files.readString(ekPointPath).replaceAll("\\s+", "");
+
+        ParsedTpmPublic ekPub = TpmPublicHelper.parseTpmPublicArea(ekFile);
+
+        byte[] pointBytes = ProvisionUtils.convertECPublicKeyToBytes((ECPublicKey) ekPub.publicKey());
+        // big integer conversion is signed so it can add a 0 byte
+        byte[] unsignedPointBytes = pointBytes[0] == 0 ? Arrays.copyOfRange(pointBytes, 1,
+                pointBytes.length) : pointBytes;
+        String hex = HexUtils.byteArrayToHexString(unsignedPointBytes);
+        assertEquals(realPoint, hex);
+    }
+
+    /**
+     * Tests parsing the ECC AK from the TPM2 output file.
+     *
+     * @throws URISyntaxException incorrect resource path
+     * @throws IOException        unable to read from file
+     */
+    @Test
+    public void testParseAkEcc() throws URISyntaxException, IOException {
+        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH_ECC)).toURI());
+        Path akPointPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_POINT_PATH_ECC)).toURI());
+
+        byte[] akFile = Files.readAllBytes(akPath);
+        String realPoint = Files.readString(akPointPath).replaceAll("\\s+", "");
+
+        ParsedTpmPublic akPub = TpmPublicHelper.parseTpmPublicArea(akFile);
+
+        byte[] pointBytes = ProvisionUtils.convertECPublicKeyToBytes((ECPublicKey) akPub.publicKey());
+        // big integer conversion is signed so it can add a 0 byte
+        byte[] unsignedPointBytes = pointBytes[0] == 0 ? Arrays.copyOfRange(pointBytes, 1,
+                pointBytes.length) : pointBytes;
+        String hex = HexUtils.byteArrayToHexString(unsignedPointBytes);
+        assertEquals(realPoint, hex);
     }
 }
