@@ -3,24 +3,31 @@ title: Future - Component RIMs
 ---
 
 <style>
-/* 1. Force the table structure to accept inner cell lines */
-.md-typeset div.md-typeset__table table.fancy-table {
-  border-collapse: separate !important;
-  border-spacing: 0 !important;
-  background: var(--md-default-bg-color);
-  border-radius: 12px;
-  overflow: hidden;
+/* ==========================================================================
+   REUSABLE GRADIENT CLASS
+   ========================================================================== */
+.high-tech-border {
+  border-collapse: separate !important; /* Required for tables */
+  border-spacing: 0 !important;          /* Required for tables */
+  border-radius: 12px !important;       /* Clean rounded corners */
+  overflow: hidden !important;          /* Keeps inner content from bleeding out */
+  background-color: var(--md-default-bg-color) !important; /* Adaptive light/dark fill */
   
-  /* Artistic Gradient Trick */
+  /* The High-Tech Blue Gradient Edge */
   border: 2px solid transparent !important;
   background-image: linear-gradient(var(--md-default-bg-color), var(--md-default-bg-color)), 
-                    linear-gradient(to right, #4a00e0, #8e2de2) !important; /* Adjust colors here */
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
+                    linear-gradient(to right, #0052cc, #4ba3e3) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
   
-  /* Soft spread shadow */
-  box-shadow: 0 10px 25px -5px rgba(142, 45, 226, 0.1), 0 8px 10px -6px rgba(142, 45, 226, 0.1);
+  /* Modern soft shadow depth */
+  box-shadow: 0 10px 25px -5px rgba(0, 82, 204, 0.08), 
+              0 8px 10px -6px rgba(0, 82, 204, 0.08) !important;
 }
+
+/* ==========================================================================
+   CORE TABLE FUNCTIONAL STYLES (Keep these intact)
+   ========================================================================== */
 
 /* 2. Target the exact table cells directly to blindside the theme override */
 .md-typeset div.md-typeset__table table.fancy-table th,
@@ -31,20 +38,24 @@ title: Future - Component RIMs
   padding: 12px 16px !important;
 }
 
-.md-typeset div.md-typeset__table table.fancy-table .gray-right-line-thick {
-  border-right: 2px solid #808080 !important; /* Thick red line */
-}
-
-.md-typeset div.md-typeset__table table.fancy-table .gray-right-line-thin {
-  border-right: 1px solid #808080 !important; /* Thick red line */
-}
-
-.md-typeset div.md-typeset__table table.fancy-table .gray-bottom-line-thick {
+.md-typeset div.md-typeset__table table.fancy-table th.gray-bottom-line-thick,
+.md-typeset div.md-typeset__table table.fancy-table td.gray-bottom-line-thick {
   border-bottom: 2px solid #808080 !important; 
 }
 
-.md-typeset div.md-typeset__table table.fancy-table .gray-bottom-line-thin {
+.md-typeset div.md-typeset__table table.fancy-table th.gray-bottom-line-thin,
+.md-typeset div.md-typeset__table table.fancy-table td.gray-bottom-line-thin {
   border-bottom: 1px solid #808080 !important; 
+}
+
+.md-typeset div.md-typeset__table table.fancy-table th.gray-right-line-thick,
+.md-typeset div.md-typeset__table table.fancy-table td.gray-right-line-thick {
+  border-right: 2px solid #808080 !important;
+}
+
+.md-typeset div.md-typeset__table table.fancy-table th.gray-right-line-thin,
+.md-typeset div.md-typeset__table table.fancy-table td.gray-right-line-thin {
+  border-right: 1px solid #808080 !important;
 }
 
 /* 3. GLOBAL TABLE LIST OVERRIDES - This fixes ALL lists in this table */
@@ -88,7 +99,7 @@ The following table shows the relationship between some of the common formats:
 
 <div class="md-typeset__scrollwrap">
   <div class="md-typeset__table">
-    <table class="fancy-table">
+    <table class="fancy-table high-tech-border">
       <thead>
         <tr>
           <th class="gray-right-line-thick gray-bottom-line-thick">Encoding</th>
@@ -158,7 +169,7 @@ specialized hardware attributes (like specific SPDM platform registers or hardwa
 
 Since the CoRIM structure is complex, below is a diagram to help visualize it:
 
-<div style="white-space: pre-wrap !important; border: 1px solid #e0e0e0; padding: 12px; border-radius: 10px;">
+<div class="high-tech-border" style="white-space: pre-wrap !important; padding: 12px;">
     📦 Signed IETF CoRIM (COSE Envelope)
     └── 📑 PAYLOAD: unsigned-corim-map
          ├── 🆔 corim.id (Manifest UUID)
