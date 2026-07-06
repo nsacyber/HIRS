@@ -349,19 +349,23 @@ public class ReferenceManifestPageService {
      * Stores the base and support reference manifests to the reference manifest repository.
      *
      * @param successMessages contains any success messages that will be displayed on the page
+     * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
+                          final List<String> errorMessages,
                           final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims) {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
-            if (referenceManifestRepository.findByHexDecHashAndRimType(
+            if (baseRIM == null) {
+                log.warn("Cannot store a null object as a base RIM.");
+            } else if (this.referenceManifestRepository.findByHexDecHashAndRimType(
                     baseRIM.getHexDecHash(), baseRIM.getRimType()) == null) {
                 final String successMessage = "Stored swidtag " + baseRIM.getFileName() + " successfully";
-                referenceManifestRepository.save(baseRIM);
+                this.referenceManifestRepository.save(baseRIM);
                 log.info(successMessage);
                 successMessages.add(successMessage);
             }

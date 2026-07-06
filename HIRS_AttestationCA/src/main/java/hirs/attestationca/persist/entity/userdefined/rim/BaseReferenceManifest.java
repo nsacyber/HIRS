@@ -329,7 +329,7 @@ public class BaseReferenceManifest extends ReferenceManifest {
         } catch (SAXException e) {
             log.error("Error setting schema for validation!");
         } catch (UnmarshalException e) {
-            throw new UnmarshalException("Error validating swidtag file");
+            throw new UnmarshalException("Error unmarshalling swidtag file: " + e.getCause());
         } catch (IllegalArgumentException e) {
             log.error("Input file empty.");
         } catch (JAXBException e) {
