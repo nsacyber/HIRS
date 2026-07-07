@@ -5,7 +5,7 @@ title: Reference Integrity Manifests
 # ACA Portal: Reference Integrity Manifests Page
 
 The **Reference Integrity Manifests** (RIM) page is used to upload, view, manage, and delete 
-RIM files.  
+[RIM files](../background/inputs/rim.md).  
 
 <img src= "../../images/portal-rim.png" alt="Portal RIM page" style="border: 2px solid grey;">
 

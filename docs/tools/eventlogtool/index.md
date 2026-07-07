@@ -22,9 +22,12 @@ Event Log's contents.
 
 ## Event Log Tool Services
 
-This tool supports the 
+The Event Log Tool supports the 
 [PC Client RIM Specification :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/){:target="_blank"}, 
-which specifies the use of the TPM Event Log as a Support RIM type. This tool can: 
+which specifies the use of the TPM Event Log as a Support RIM type. 
+The TPM Event Log is described in the
+<span style="white-space: nowrap;">[TCG PC Client Specific Platform Firmware Profile Specification :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/){:target="_blank"}.</span>
+The Event Log Tool can: 
 
 - Parse binary TPM Event Logs and displays event data in a human-readable form
 - Extract hexidecimal events from TPM Event Logs for test pattern generation
@@ -39,7 +42,7 @@ which specifies the use of the TPM Event Log as a Support RIM type. This tool ca
 ## Background and Additional Info
 
 The TPM Event Log is defined in the 
-[TCG PC Client Platform Firmware Profile](). 
+[TCG PC Client Specific Platform Firmware Profile Specification :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/){:target="_blank"}.
 The Event Log file contains all the hashes that get extended into the TPM PCRs during the boot cycle, as 
 well as details about each hash and each hash's corresponding event. A Verifier can recreate the resultant PCR 
 values by extending the values within this file.

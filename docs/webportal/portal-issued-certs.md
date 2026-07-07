@@ -13,7 +13,9 @@ width: 30%;
 
 # ACA Portal: Issued Certificates Page
 
-The **Issued Certificates** page provides access to the Attestation Certificates (AC)
+The **Issued Certificates** page provides access to the 
+[Attestation Certificates (AC)](../background/outputs/ac.md) and 
+[LDevID Certificates](../background/outputs/ldevid.md) 
 issued by the ACA. Note that there can be multiple ACs if the TPM 
 provisioning process is run multiple times. 
 

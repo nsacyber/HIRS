@@ -10,7 +10,7 @@ section steps through a few sample configurations.
 !!! note
 
     Configuration of the ACA can be done before or after installing the 
-    Provisioner, but it must be done prior to running the Provisioner.
+    Provisioner, but it must be done prior to running the Validation.
 
 ## Get familiar with the Validation Reports page
 
@@ -53,7 +53,7 @@ Ensure the following outputs are configured as follows:
 
 In this case you can skip the [artifacts](../started/gs4-artifacts.md) stage.
 After the [Provisioner install](../started/gs5-prov-install.md) stage and 
-[Provisioner run](gs6-validation-run.md) stage, the 
+[validation run](gs6-validation-run.md) stage, the 
 [validation result](gs7-results.md) should be 
 successful if the software was installed properly.
 
