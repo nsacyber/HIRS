@@ -516,12 +516,12 @@ public class SwidTagGateway {
         Map<QName, String> attributes = file.getOtherAttributes();
         String fileHash;
         if (rimEventLog.isEmpty()) {
-            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart());
+            fileHash = jsonObject.getString(SwidTagConstants.SHA_384_HASH.getLocalPart());
         } else {
-            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart(),
+            fileHash = jsonObject.getString(SwidTagConstants.SHA_384_HASH.getLocalPart(),
                     HashSwid.get256Hash(rimEventLog));
         }
-        addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH, fileHash, true);
+        addNonNullAttribute(attributes, SwidTagConstants.SHA_384_HASH, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {
@@ -584,7 +584,7 @@ public class SwidTagGateway {
 
     /**
      * This method signs a SoftwareIdentity with an xmldsig in compatibility mode.
-     * Current assumptions: digest method SHA256, signature method SHA256, enveloped signature
+     * Current assumptions: digest method SHA384, signature method SHA384, enveloped signature
      *
      * @param doc the XML {@link Document} representing the SoftwareIdentity to sign
      * @return the signed XML {@link Document}
@@ -598,7 +598,7 @@ public class SwidTagGateway {
         try {
             documentRef = sigFactory.newReference(
                     "",
-                    sigFactory.newDigestMethod(DigestMethod.SHA256, null),
+                    sigFactory.newDigestMethod(DigestMethod.SHA384, null),
                     Collections.singletonList(sigFactory.newTransform(Transform.ENVELOPED,
                             (TransformParameterSpec) null)),
                     null,
@@ -631,7 +631,7 @@ public class SwidTagGateway {
             signedInfo = sigFactory.newSignedInfo(
                     sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
                             (C14NMethodParameterSpec) null),
-                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA256,
+                    sigFactory.newSignatureMethod(SwidTagConstants.SIGNATURE_ALGORITHM_RSA_SHA384,
                             null),
                     refList
             );
