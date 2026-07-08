@@ -44,6 +44,7 @@ final class Main {
         if (!commander.getValidityFlag()) {
             System.out.print("\nProgram exiting without processs due to issues with"
                     + " parameters provided.\n");
+            System.out.print("TESTING CHANGE");
             commander.printHelp("");
             System.exit(0);
         }
