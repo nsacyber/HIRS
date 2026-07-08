@@ -89,6 +89,17 @@ public interface CACredentialRepository extends JpaRepository<CertificateAuthori
      * Query that retrieves a {@link CertificateAuthorityCredential} object using the provided subject key identifier
      * and the provided archive flag.
      *
+     * @param subjectKeyIdentifier byte array representation of the subject key identifier
+     * @param archiveFlag        archive flag
+     * @return a {@link CertificateAuthorityCredential} object
+     */
+    CertificateAuthorityCredential findBySubjectKeyIdentifierAndArchiveFlag(byte[] subjectKeyIdentifier,
+                                                                            boolean archiveFlag);
+
+    /**
+     * Query that retrieves a {@link CertificateAuthorityCredential} object using the provided subject key identifier
+     * and the provided archive flag.
+     *
      * @param subjectKeyIdString string representation of the subject key id
      * @param archiveFlag        archive flag
      * @return a {@link CertificateAuthorityCredential} object

@@ -1,0 +1,7 @@
+tcg_eventlog_tool is opening file:/home/jnriggi/0_Projects/AttestationArtifacts/0_hirs-dlat-ro-03/3_RIM/RIM_20250409/binary_bios_measurements.bin
+Expected Platform Configuration Register (PCR) values derived from the Event Log: 
+
+ pcr 0 = 8c37807d8d18b3dc9809ea8f91c6a83ad9b2fd5c679b1bcdd282d303258ae665
+
+----------------- End PCR Values ----------------- 
+

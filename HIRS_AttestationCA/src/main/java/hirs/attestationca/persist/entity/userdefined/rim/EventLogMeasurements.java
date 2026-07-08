@@ -14,8 +14,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,9 +41,8 @@ public class EventLogMeasurements extends SupportReferenceManifest {
      * Support constructor for the RIM object.
      *
      * @param rimBytes byte array representation of the RIM
-     * @throws java.io.IOException if unable to unmarshal the string
      */
-    public EventLogMeasurements(final byte[] rimBytes) throws IOException {
+    public EventLogMeasurements(final byte[] rimBytes) {
         this("blank.measurement", rimBytes);
     }
 
@@ -54,10 +51,9 @@ public class EventLogMeasurements extends SupportReferenceManifest {
      *
      * @param fileName - string representation of the uploaded file.
      * @param rimBytes byte array representation of the RIM
-     * @throws java.io.IOException if unable to unmarshal the string
      */
     public EventLogMeasurements(final String fileName,
-                                final byte[] rimBytes) throws IOException {
+                                final byte[] rimBytes) {
         super(rimBytes);
         this.setFileName(fileName);
         this.setArchivedDescription("Event Log Measurement");
@@ -84,7 +80,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
             TCGEventLog logProcessor = new TCGEventLog(this.getRimBytes());
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
-        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+        } catch (IOException exception) {
             log.error(exception);
         }
 
@@ -101,7 +97,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
         try {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
-        } catch (CertificateException | NoSuchAlgorithmException | IOException exception) {
+        } catch (IOException exception) {
             log.error(exception);
         }
 

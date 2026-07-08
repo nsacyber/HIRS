@@ -23,7 +23,7 @@ public class Commander {
     private static final String PCR_STRING = "pcr";
     private static final String VERIFY_STRING = "Verify";
     private static final String VERSION_STRING = "version";
-    private static final String VERSION_NUMBER = "2.1";
+    private static final String VERSION_NUMBER = "3.2.0";
     private static final String REGEX = "[0-9]+";
 
     private boolean hasArguments = false;

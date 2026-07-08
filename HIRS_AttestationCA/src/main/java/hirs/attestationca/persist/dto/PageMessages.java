@@ -1,4 +1,4 @@
-package hirs.attestationca.portal.page;
+package hirs.attestationca.persist.dto;
 
 import lombok.Getter;
 

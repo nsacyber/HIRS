@@ -1,42 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<SoftwareIdentity xmlns="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns2="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="Dell5580" patch="false" supplemental="false" tagId="hirs.swid.SwidTags.dell5580.oem" tagVersion="1" version="0.1" versionScheme="multipartnumeric" xml:lang="en">
-  <Entity name="OEM1" regid="www.example.com" role="softwareCreator tagCreator"/>
-  <Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/>
-  <Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="0.1" n8060:edition="0.1" n8060:product="Dell 5580" n8060:revision="0.1" rim:BindingSpec="PC Client RIM" rim:BindingSpecVersion="1.2" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Dell Inc." rim:platformModel="Latitude 5580"/>
-  <Payload>
-    <Directory name="/boot/tcg/rim/support">
-      <File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="a1704e9cd5727c5429d16bc2829e2890aa358c59b4f3d2e191c3eaa751520ce8" name="dell5580_varOSInstall_oem.1.rimel" size="17569"/>
-    </Directory>
-  </Payload>
-  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
-    <SignedInfo>
-      <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
-      <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
-      <Reference URI="">
-        <Transforms>
-          <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
-        </Transforms>
-        <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-        <DigestValue>YwIGXKSKuII5sXcCa9fcwU6kr7u6HwTYHp58jfPJ5ic=</DigestValue>
-      </Reference>
-    </SignedInfo>
-    <SignatureValue>KiCrZx3Pe//AJv97y9a7/APfNB24AWhOMvd4mcxPzMdkz7XEKvi93CWHqvGXmzoLthHwy6O6pPEO
-2vl8fgt8URZdx7FGRWNZMmOep91KsVvTnm64//BU+/4yvwvDSGwnDrZOWugeDYg8G+hAnVY/KFMb
-WM+pyND8K6Qw0HkIDh3iitk/luE2TElGNZEx30VUa/5W4DxL2NYPMlquJYD4nZorqU/uEpSo2HED
-T7qF9UV5tJWnrOclJH7DkCy/b1u+mcxmjfRmRemwBUHS3bbG11prgLwTMvV5jYJnDct+O/mc7CF3
-X0DP//wO4qziqK04kXLPZewB1wD2zknM35hORw==</SignatureValue>
-    <KeyInfo>
-      <KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName>
-      <KeyValue>
-        <RSAKeyValue>
-          <Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx
-xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9
-dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q
-otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW
-jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus>
-          <Exponent>AQAB</Exponent>
-        </RSAKeyValue>
-      </KeyValue>
-    </KeyInfo>
-  </Signature>
-</SoftwareIdentity>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><ns2:SoftwareIdentity xmlns:ns2="http://standards.iso.org/iso/19770/-2/2015/schema.xsd" xmlns:ns3="http://www.w3.org/2000/09/xmldsig#" corpus="false" name="Dell5580" patch="false" supplemental="false" tagId="94f6b457-9ac9-4d35-9b3f-78804173b65a" tagVersion="1" version="0.1" versionScheme="multipartnumeric" xml:lang="en"><ns2:Entity name="OEM1" regid="http://Example.com" role="softwareCreator tagCreator"/><ns2:Link href="https://Example.com/support/ProductA/firmware/installfiles" rel="installationmedia"/><ns2:Meta xmlns:n8060="http://csrc.nist.gov/ns/swid/2015-extensions/1.0" xmlns:rim="https://trustedcomputinggroup.org/wp-content/uploads/TCG_RIM_Model" n8060:colloquialVersion="0.1" n8060:edition="0.1" n8060:product="Dell 5580" n8060:revision="0.1" rim:bindingSpec="PC Client RIM" rim:bindingSpecVersion="1.2" rim:firmwareManufacturerId="00213022" rim:firmwareManufacturerStr="BIOSVendorA" rim:firmwareModel="A0" rim:firmwareVersion="12" rim:pcURIGlobal="https://Example.com/support/ProductA/" rim:pcURIlocal="/boot/tcg/manifest/switag/" rim:platformManufacturerId="00201234" rim:platformManufacturerStr="Dell Inc." rim:platformModel="Latitude 5580" rim:platformVersion="01"/><ns2:Payload><ns2:Directory xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" location="" name="/boot/tcg/rim/support" xsi:type="ns2:Directory"><ns2:File xmlns:SHA256="http://www.w3.org/2001/04/xmlenc#sha256" SHA256:hash="a1704e9cd5727c5429d16bc2829e2890aa358c59b4f3d2e191c3eaa751520ce8" name="laptop_badVarInstall_oem.1.rimel" size="17569" xsi:type="ns2:File"/></ns2:Directory></ns2:Payload><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><DigestValue>fzhqDP4IxhVruTltwEKCHXZnZ/FaKUJrsTQVEjkgNQE=</DigestValue></Reference></SignedInfo><SignatureValue>En29+Wp/oyw3gk+M0k/JetssIfCl5nUeT9Gd9eLenOrCMq/0EBijfqptv69nTREX3vEz0hra0SvV&#13;
+Rcz+azwSY/U5jU0LdV87fJdSCw4L9Ad74glyZjbalpDH1SbhG0yVfzHGFOBjL7BkmCbLY+d4zab2&#13;
+krcbtCtWBSbT5ZTO+p/pLV+DWk9S4zUJUjvoSvB4F4K84j8fMPplbLmAW3MeF5Qpd9uZrm1FywGE&#13;
+t2Yal/NsMFxNMWLg5Xq1BjVO3+za64G9tT2o0VlLGBe+1fgaHXleSySWkb9mc6wCArDCTLTswM5e&#13;
+u+SVqhHin9MUOL6eWAziBwntgsNwzslPjino7A==</SignatureValue><KeyInfo><KeyValue><RSAKeyValue><Modulus>p3WVYaRJG7EABjbAdqDYZXFSTV1nHY9Ol9A5+W8t5xwBXBryZCGWxERGr5AryKWPxd+qzjj+cFpx&#13;
+xkM6N18jEhQIx/CEZePEJqpluBO5w2wTEOe7hqtMatqgDDMeDRxUuIpP8LGP00vh1wyDFFew90d9&#13;
+dvT3bcLvFh3a3ap9bTm6aBqPup5CXpzrwIU2wZfgkDytYVBm+8bHkMaUrgpNyM+5BAg2zl/Fqw0q&#13;
+otjaGr7PzbH+urCvaGbKLMPoWkVLIgAE8Qw98HTfoYSFHC7VYQySrzIinaOBFSgViR72kHemH2lW&#13;
+jDQeHiY0VIoPik/jVVIpjWe6zzeZ2S66Q/LmjQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue></KeyValue><KeyName>2fdeb8e7d030a2209daa01861a964fedecf2bcc1</KeyName></KeyInfo></Signature></ns2:SoftwareIdentity>

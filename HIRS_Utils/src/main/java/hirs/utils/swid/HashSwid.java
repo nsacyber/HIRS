@@ -28,7 +28,8 @@ public class HashSwid {
      * @return the SHA-256 hash of the file's contents, as a hexadecimal string.
      * @throws Exception if any issues arise while retrieving the SHA256 hash
      */
-    public static String get256Hash(final String filepath) throws Exception {
+    public static String get256Hash(final String filepath)
+            throws NoSuchAlgorithmException, IOException {
         return getHashValue(filepath, SHA256);
     }
 
@@ -44,7 +45,8 @@ public class HashSwid {
      * @return the hash of the file's contents, as a hexadecimal string
      * @throws Exception if any issues arise while retrieving the hash value
      */
-    private static String getHashValue(final String filepath, final String sha) throws Exception {
+    private static String getHashValue(final String filepath, final String sha)
+            throws NoSuchAlgorithmException, IOException {
         String resultString = null;
         try {
             MessageDigest md = MessageDigest.getInstance(sha);
@@ -55,15 +57,11 @@ public class HashSwid {
                 sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
             }
             resultString = sb.toString();
-        } catch (NoSuchAlgorithmException | IOException e) {
-            String errorMessage = "Error hashing file " + filepath + ": ";
-            if (e instanceof UnsupportedEncodingException
-                    || e instanceof NoSuchAlgorithmException) {
-                errorMessage += e.getMessage();
-            } else if (e instanceof IOException) {
-                errorMessage += "error reading file.";
-            }
-            throw new Exception(errorMessage);
+        } catch (NoSuchAlgorithmException e) {
+            throw new NoSuchAlgorithmException(
+                    String.format("Hashing algorithm {} not recognized.", sha));
+        } catch (IOException e) {
+            throw new IOException(String.format("Error hashing {}.", filepath));
         }
 
         return resultString;

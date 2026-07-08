@@ -41,12 +41,14 @@ public interface EndorsementCertificateRepository extends JpaRepository<Endorsem
     Page<EndorsementCredential> findByArchiveFlag(boolean archiveFlag, Pageable pageable);
 
     /**
-     * Query that retrieves an {@link EndorsementCredential} object using the provided serial number.
+     * Query that retrieves an {@link EndorsementCredential} object using the provided serial number
+     * and issuer.
      *
      * @param serialNumber big integer representation of the serial number
+     * @param issuer string representation of the issuer
      * @return an {@link EndorsementCredential} object
      */
-    EndorsementCredential findBySerialNumber(BigInteger serialNumber);
+    EndorsementCredential findBySerialNumberAndIssuer(BigInteger serialNumber, String issuer);
 
     /**
      * Query that retrieves a list of {@link EndorsementCredential} objects using the provided device id.

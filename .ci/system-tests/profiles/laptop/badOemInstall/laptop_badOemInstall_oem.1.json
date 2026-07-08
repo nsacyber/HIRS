@@ -1,0 +1,54 @@
+{
+        "SoftwareIdentity": {
+                "name": "Dell5580",
+                "version": "0.1",
+                "tagId": "94f6b457-9ac9-4d35-9b3f-78804173b65a",
+                "tagVersion": "1",
+                "patch": false,
+                "supplemental": false,
+		"versionScheme": "multipartnumeric"
+        },
+	"Entity": {
+                "name": "OEM1",
+                "regid": "http://Example.com",
+                "role": "softwareCreator,tagCreator"
+        },
+	"Link": {
+                "href": "https://Example.com/support/ProductA/firmware/installfiles",
+                "rel": "installationmedia"
+        },
+	"Meta": {
+                "colloquialVersion": "0.1",
+                "edition": "0.1",
+                "product": "Dell 5580",
+                "revision": "0.1",
+                "payloadType": "direct",
+                "platformManufacturerStr": "Dell Inc.",
+                "platformManufacturerId": "00201234",
+                "platformModel": "Latitude 5580",
+                "platformVersion": "01",
+                "firmwareManufacturerStr": "BIOSVendorA",
+                "firmwareManufacturerId": "00213022",
+                "firmwareModel": "A0",
+                "firmwareVersion": "12",
+                "bindingSpec": "PC Client RIM",
+                "bindingSpecVersion": "1.2",
+                "pcURIlocal": "/boot/tcg/manifest/swidtag/",
+                "pcURIGlobal": "https://Example.com/support/ProductA/"
+        },
+	"Payload": {
+                "supportRIMURIGlobal": "https://Example.com/support/ProductA/firmware/rims/",
+                "supportRIMFormat":"TCG_EventLog_Assertion",
+                "Directory": {
+                        "name": "rim",
+                        "root": "/boot/tcg/manifest/rim/",
+                        "File": [{
+                                "version":"01",
+                                "name": "laptop_badOemInstall_oem.1.rimel",
+                                "size": "17569",
+                                "hash": "103309beb735da6cc95b9ad7d7e4b25c7d2e510eab945424af533ee46096d678"
+                                }]
+                }
+        }
+}
+

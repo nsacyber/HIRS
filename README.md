@@ -1,61 +1,58 @@
-<h1><center>Host Integrity at Runtime and Start-up (HIRS) <BR\></center></h1>
+<h1>Host Integrity at Runtime and Start-up (HIRS) <br></h1>
 
-![HIRS Build Status](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml/badge.svg)
+| HIRS System Tests | HIRS ACA Tests | HIRS Provisioner Tests| Information                                                                                                              | 
+| ------ | ------ | ------ |--------------------------------------------------------------------------------------------------------------------------|
+| [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/system_test.yml)  | [![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/hirs_unit_tests.yml)|[![System Test Status](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml/badge.svg)](https://github.com/nsacyber/HIRS/actions/workflows/dotnet_provisioner_unit_tests.yml)| [<center><img src=images/Helpdocs_Book.png alt="Help docs pic" width="70%" ></center>](https://nsacyber.github.io/HIRS/) |
+
 
 <h2>Attestation Certificate Authority (ACA) and TPM Provisioning with Trusted Computing-based Supply Chain Validation </h2>
 
-The Host Integrity at Runtime and Start-up Attestation Certificate Authority is a Proof of Concept - Prototype intended to spur
-interest and adoption of
-the [Trusted Platform Module (TPM)](https://trustedcomputinggroup.org/work-groups/trusted-platform-module/). It's intended for
-testing and development purposes only and is not intended for production. The ACA's functionality supports the provisioning
-of [TPM 2.0](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf) with
-an [Attestation Certificate](https://www.trustedcomputinggroup.org/wp-content/uploads/IWG-Credential_Profiles_V1_R1_14.pdf). The
-ACA can be configured to enforce the Validation of Endorsement Certificates, Platform Certificates, and Refernce Intregrity
-Manifests (RIMs) to illustrate a supply chain validation capability known as an "Acceptance Test".
+Host Integrity at Runtime and Start-up (HIRS) is a Proof of Concept Prototype intended to spur interest and adoption of [Trusted Computing](https://trustedcomputinggroup.org) based concepts. It's intended for testing and development purposes only and is not intended for production.
 
-<p align="center">
-  <img src="images/TCG_AcceptanceTest.png" />
-</p>
+HIRS is composed of an Attestation Certificate Authority (ACA) web based application and a corresponding, 
+client-side, Provisioner application. The ACA can be configured to validate the platform's configuration 
+and firmware against a set of OEM provided artifacts. The following image illustrates a supply chain validation capability 
+known as an Acceptance Test discussed in the
+<a href="https://media.defense.gov/2023/Sep/28/2003310132/-1/-1/0/CSI_PROCUREMENT_ACCEPTANCE_TESTING_GUIDE.PDF">Procurement and Acceptance Testing Guide</a>
+for organizations procuring enterprise servers, desktops, and laptops.
 
-**Notice:** Github Discussions have been enabled for this repo. Please refer to the Discussion
-entitled "[HIRS development changes](https://github.com/nsacyber/HIRS/discussions/498)" for development and support notifications.
+<div style="text-align: center;">
+  <img src=images/TCG_AcceptanceTest.png alt="TCG_AcceptanceTest pic" width="95%" >
+</div>
+
+**Notice:** Github Discussions have been enabled for this repo. Please refer to the [HIRS Discussions](https://github.com/nsacyber/HIRS/discussions) for development and support notifications.
 
 ## Features
 
 The HIRS ACA is a web based server which processes Attestation Identity Requests.
-The ACA provides a “provisioner” application to be installed on all devices which will be requesting Attestation Certificates.
+The ACA provides a Provisioner application to be installed on all devices which will be requesting Attestation Certificates.
 
 ### Attestation Certificate Authority (ACA)
+<div style="text-align: center;">
+  <img src=images/ACA_ValidationReport_PC_Policy.jpg alt="ACA_ValidationReport_PC_Policy pic" width="95%" >
+  <br>
+</div>
 
-<p align="center">
-  <img src="images/ACA_ValidationReport_PC_Policy.jpg" />
-</p>
-
-* Issues Attestation Certificates or TPM
-  based [Local Device ID (LDevID) certificates](https://github.com/nsacyber/HIRS/wiki/DevID-Certificates) to validated devices
-  holding a TPM
-* Configures policies for enabling/disabling validation procedures
-* Performs TCG-based Supply Chain Validation of connecting clients
+* Issues [Attestation Certificates or TPM-based Local Device ID (LDevID) Certificates](https://nsacyber.github.io/HIRS/webportal/portal-issued-certs/)
+  to validated devices holding a TPM
+* Configures [Policies](https://nsacyber.github.io/HIRS/webportal/portal-policy/) for enabling/disabling validation procedures
+* Performs [TCG-based Supply Chain Validation](https://nsacyber.github.io/HIRS/webportal/portal-validation-reports/) of connecting clients
     * Optionally validates Endorsement, Platform Certificates, and Reference Integrity Manifests
 * Endorsement Certificate Certificate Chain Validation
-    * Process EK Certificates
+    * [Process EK Certificates](https://nsacyber.github.io/HIRS/webportal/portal-endorsement-certs/)
       per [TCG EK Credential Profile For TPM Family 2.0](https://trustedcomputinggroup.org/resource/tcg-ek-credential-profile-for-tpm-family-2-0/)
     * Verifies the endorsement key used by the TPM was placed there by the original equipment manufacturer (OEM)
     * Platform Certificate - Certificate Chain Validation
-    * Process Platform Certificates
-      per [TCG Platform Attribute Credential Profile Specification Version 1.1 Revision 15](https://trustedcomputinggroup.org/wp-content/uploads/IWG_Platform_Certificate_Profile_v1p1_r15_pubrev.pdf)
-        * Updates for
-          the [Platform Certificate Version 2.0](https://trustedcomputinggroup.org/wp-content/uploads/TCG-Platform-Certificate-Profile-Version-2.0-Revision-39.pdf)
-          are in the current development cycle
+    * Process [Platform Certificates](https://nsacyber.github.io/HIRS/webportal/portal-platform-certs/)
+      per [TCG Platform Attribute Credential Profile](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/)
+        * Updates for the Platform Certificate Version 2.0 are in the current development cycle
     * Verifies the provenance of the system's hardware components, such as the motherboard and chassis, by comparing measured
       component information against the manufacturers, models, and serial numbers listed in the Platform Certificate
 * Firmware Integrity Validation
-    * Uploads and
-      processes [TCG PC Client Reference Integrity Manifests](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/) (
-      RIM)s
+    * Uploads and processes [TCG PC Client Reference Integrity Manifests (RIMs)](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/)
     * Creates and verifies a nonce for the TPM Quote
     * Process TMP Event Logs and checks digests against the TPM Quote
-    * Verifies individual event digests against the OEM provided Reference Integrity Measurements
+    * Verifies individual event digests against the [OEM provided Reference Integrity Measurements](https://nsacyber.github.io/HIRS/webportal/portal-rims/)
     * Checks that firmware and boot related file hashes match those provided by OEMs.
     * Validates the import of All RIM files imported to the ACA (insure all RIM files were signed by trusted sources)
     * Verifies that the firmware hashes captured by the TPMs Platform Configuration Registers (PCRs) match the firmware hashes
@@ -64,41 +61,48 @@ The ACA provides a “provisioner” application to be installed on all devices 
 * Attestation CA Dashboard
     * Displays all Validation Reports, Certificates, and Trust Chains
     * Enables ACA policy configuration for validation of Endorsement and Platform Certificates
-    * Enables Import/Export of Certificate (Trust) Chains, Endorsement Certificates, and Platform Certificates
+    * Enables Import/Export of [Certificate (Trust) Chains](https://nsacyber.github.io/HIRS/webportal/portal-trust-chain/), Endorsement Certificates, and Platform Certificates
     * Optionally allows uploaded Certificates of trusted parties
 
 ### [TPM Provisioner](https://github.com/nsacyber/HIRS/tree/main/HIRS_Provisioner.NET)
 
-* Requests an Attestation Certificate for the TPM from the ACA.
-* Transfer's TCG Artifacts to the ACA (TPM Endorsement Certificates, Platform Certificates, Reference Integrity Manifests, Event
+* Requests an Attestation Certificate for the TPM from the ACA
+* Transfers TCG Artifacts to the ACA (TPM Endorsement Certificates, Platform Certificates, Reference Integrity Manifests, Event
   Logs, etc.)
 * Reads the device's hardware, network, firmware, and OS info for platform and component validation
 * Provides a TPM Quote for Firmware Integrity Checking
+* For more information see the [TPM Provisioner help page](https://nsacyber.github.io/HIRS/hirs-provisioner/)
 
-### [TCG RIM Tool](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_rim_tool)
+### [RIM Tool](https://github.com/nsacyber/RIM-Tool)
 
 * Creates , Formats, and Digitally
-  Signs [TCG PC Client Base RIMs](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/)
-* Validates the signature of TCG PC CLient Base RIMs
+  Signs [TCG PC Client Base RIMs](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/), TCG Component RIMs (both SWID and CoSWID variants), as well as IETF CoRIMs
+* Validates the signature of TCG PC Client Base RIMs, IETF CoSwids, IETF CoRims, and TCG Component RIMs
+* For more information see the [RIM Tool Github repository](https://github.com/nsacyber/RIM-Tool) and
+  [RIM Tool help pages](https://nsacyber.github.io/RIM-Tool/)
 
 ### [TCG Event Log Tool](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_eventlog_tool)
 
-* Parses binary TPM Event Logs and displays event data in a human readable form
+* Parses binary TPM Event Logs and displays event data in a human-readable form
 * Extracts Events from TPM Event Logs for test pattern generation
 * Provides Expected PCR values from a complete TPM Event Log
+* For more information see the [Event Log Tool Github repository](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_eventlog_tool) and
+  [TCG Event Log Tool help pages](https://nsacyber.github.io/HIRS/tools/eventlogtool/)
 
 ### [Platform Certificate Creator - PACCOR](https://github.com/nsacyber/paccor/)
 
 * Creates platform certificates according to
-  the [TCG Platform Certificate Profile](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/).
+  the [TCG Platform Certificate Profile](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/)
     * Assists in gathering all of the data that can go into a PC and produce a signed attribute certificate
 * Validates signatures on TCG Platform Certificates
+* For more information see the [PACCOR github repository](https://github.com/nsacyber/paccor/) and
+  [PACCOR help pages](https://nsacyber.github.io/paccor/index.html)
 
 ## Installation Instructions
 
-NOTEL The HIRS ACA, tcg_rim_tool, and tcg_eventLog_tool require Java 25 jre be installed before attempting to install these
+NOTE: The HIRS ACA, tcg_rim_tool, and tcg_eventLog_tool require Java 25 jre be installed before attempting to install these
 packages.
-For detailed instructions, see [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes).
+For detailed instructions, see [Installation notes](https://nsacyber.github.io/HIRS/install/).
 
 Packages used for installation can be found on the [release page](https://github.com/nsacyber/HIRS/releases).
 
@@ -126,6 +130,7 @@ then run the command
 ```
 sudo apt-get install ./HIRS_AttestationCA*.deb.
 ```
+For more information see the [HIRS install help page](https://nsacyber.github.io/HIRS/install/)
 
 ### Installing the HIRS_Provisioner.NET
 
@@ -152,7 +157,7 @@ msiexec /package HIRS_Provisioner.NET.*.msi /quiet
 ```
 
 Then follow the instructions for setting up the HIRS_provisioner.NET in
-the [HIRS_Provisioner.NET User Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf).
+the [HIRS_Provisioner.NET User Guide](https://nsacyber.github.io/HIRS/install/prov/prov-install/).
 
 ## Usage
 
@@ -174,62 +179,32 @@ To see the results and interact with the ACA, using a browser go to the ACA Port
 https://localhost:8443/
 ```
 
-For more information see the [Getting Started Guide](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
+For more information see the [Getting Started Guide](https://nsacyber.github.io/HIRS/started/)
 
-## Development History
-
-Version 1.1 added support for
-the [Platform Certificate v1.1 Specification](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/). This
-allows entities that are part of the supply chain (System integrators and Value Added Resellers) the ability to create Delta
-Platform Certificate to compliment the Base Platform Certificate created by the Platform Manufacturer. See
-the [Article on Base and Delta Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Base-and-Delta-Platform-Certificates)
-for details.
-
-Version 2.0 added support for
-the [PC Client Reference Integrity Manifest (RIM) Specification](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/)
-to provide firmware validation capability to the HIRS ACA. This requires that the manufacturer of a device provide a digitally
-signed RIM "Bundle" for each device. The HIRS ACA has a new page for uploading and viewing RIM Bundles and a policy setting for
-requiring Firmware validation.
-
-Version 3.0 was completely refactored to build and run on multiple platforms. The Base OS used for development of the ACA was
-migrated to Rocky Linux with updates to current dependencies (e.g. Java, Tomcat, Mariadb, etc.) and development tools (e.g.
-Gradle). New features introduced in Version 3.0 include support for the PC Client RIM 1.1 specification including composite RIMs,
-time-stamps, and counter signatures and detailed linkages between TCG Event Logs, OEM issuer certificates, and Reference Integrity
-Manifests (RIMs) have been added to provide greater granularity of information. Support for TPM 1.2 (HIRS_Provisioner) and the
-Cplus version of the TPM provsioner (HIRS_ProvisionerTPM2) was dropped from Version 3.0 and replaced with
-the [HIRS_Provisioner.NET](https://github.com/nsacyber/HIRS/tree/main/HIRS_Provisioner.NET).
-
-To support the TCG RIM concept a new [tools folder](https://github.com/nsacyber/HIRS/tree/main/tools) has been added to the HIRS
-project which contains a [tcg_rim_tool command line application](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_rim_tool).
-The tcg_rim_tool can be used to create NISTIR 8060 compatible SWID tags that adhere to the TCG PC Client RIM specification. It
-also supports the ability to digitally sign the Base RIM file as the HIRS ACA will require a valid signature in order to upload
-any RIM file. See the [tgc_rim_tool READ.md](https://github.com/nsacyber/HIRS/blob/main/tools/tcg_rim_tool/README.md) for more
-details.
 
 ## Quick Links:
 
 Background
 
 * [TPM 2.0: A brief introduction](https://trustedcomputinggroup.org/wp-content/uploads/2019_TCG_TPM2_BriefOverview_DR02web.pdf)
-* [Getting started with the ACA and Platform Certificates](https://github.com/nsacyber/HIRS/wiki/Gettingstarted)
+* [Background for HIRS](https://nsacyber.github.io/HIRS/background/)
 
 HIRS Documentation
 
-* [HIRS ACA and TPM provisioner Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_ACA_User_Guide_3.0.pdf)
-* [HIRS_Provisioner.NET Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS.NET_Provisioner_User_Guide_3.0.pdf)
-* [TCG RIM Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/HIRS_TCG_RIM_Tool_Users_Guide_3.0.pdf)
-* [TCG Event Log Tool Users Guide](https://github.com/nsacyber/HIRS/blob/main/docs/TCG_Event_Log_Tool_User_Guide_3.0.pdf)
+* [HIRS Help](https://nsacyber.github.io/HIRS/)
 
 HIRS Notes
 
-* [Installation notes](https://github.com/nsacyber/HIRS/wiki/installation_notes)
-* [Project build instructions](https://github.com/nsacyber/HIRS/wiki/Hirs-build-guide)
+* [Getting started with the ACA and Platform Certificates](https://nsacyber.github.io/HIRS/started/)
+* [Installation and build instructions](https://nsacyber.github.io/HIRS/install/)
 * [HIRS Attestation Certificate Authority FAQ](https://github.com/nsacyber/HIRS/wiki/FAQ)
-* [TPM Provisioner Debug](https://github.com/nsacyber/HIRS/wiki/provisioner_debug)
 * [ACA Debug](https://github.com/nsacyber/HIRS/wiki/aca_debug)
 
 Tools
 
-* [Platform Certificate Creator](https://github.com/nsacyber/paccor)
-* [Reference Integrity Manifest tool (tcg_rim_tool)](https://github.com/nsacyber/HIRS/releases)
-* [Event Log tool (tcg_eventlog_tool)](https://github.com/nsacyber/HIRS/releases)
+* [Platform Certificate Creator](https://github.com/nsacyber/paccor) and 
+  [PACCOR Users Guide](https://nsacyber.github.io/paccor/index.html)
+* [Reference Integrity Manifest tool (RIM-Tool)](https://github.com/nsacyber/RIM-Tool) and 
+  [RIM-Tool Users Guide](https://nsacyber.github.io/RIM-Tool/)
+* [Event Log tool (tcg_eventlog_tool)](https://github.com/nsacyber/HIRS/tree/main/tools/tcg_eventlog_tool) and 
+  [Event Log Tool Users Guide](https://nsacyber.github.io/HIRS/tools/eventlogtool/)

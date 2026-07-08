@@ -13,7 +13,7 @@ import hirs.attestationca.portal.datatables.DataTableInput;
 import hirs.attestationca.portal.datatables.DataTableResponse;
 import hirs.attestationca.portal.datatables.Order;
 import hirs.attestationca.portal.page.Page;
-import hirs.attestationca.portal.page.PageMessages;
+import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.CertificateStringMapBuilder;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
@@ -44,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,6 +142,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                 certificateRepository,
                 caCredentialRepository,
                 acaTrustChainCertificates[0],
+                Collections.emptyList(),
                 "Leaf ACA Certificate Not Found")));
 
         // add object that contains the intermediate ACA certificate information
@@ -149,6 +151,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                         certificateRepository,
                         caCredentialRepository,
                         acaTrustChainCertificates[1],
+                        Collections.emptyList(),
                         "Intermediate ACA Certificate Not Found")));
 
         // add object that contains the root ACA certificate information
@@ -156,6 +159,7 @@ public class TrustChainCertificatePageController extends PageController<NoPagePa
                 certificateRepository,
                 caCredentialRepository,
                 acaTrustChainCertificates[2],
+                Collections.emptyList(),
                 "Root ACA Certificate Not Found")));
 
         return mav;

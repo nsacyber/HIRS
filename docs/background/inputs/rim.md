@@ -1,0 +1,56 @@
+---
+title: Reference Integrity Manifest 
+---
+
+<style>
+.center {
+display: block;
+margin-left: auto;
+margin-right: auto;
+width: 30%;
+}
+</style>
+
+# Reference Integrity Manifest
+
+A PC Client **Reference Integrity Manifest** (RIM) is defined in the 
+[TCG PC Client Reference Integrity Manifest Specification :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/tcg-pc-client-reference-integrity-manifest-specification/){:target="_blank"}, 
+and is an OEM-produced artifact that represents the expected values used by the ACA to validate device firmware. 
+PC Client includes the categories of desktops, servers, and laptops.
+Firmware validation complements platform validation for supply chain acceptance testing by providing an automated way 
+to verify the firmware and boot software before an Attestation Certificate is issued.
+
+<img src= "../../../images/bg-rim-scroll.jpg" alt="RIM Scroll Pic" class="center" style="float: right; width: 40%; margin-left: 180px;">
+
+The [TCG Reference Integrity Manifest (RIM) Information Model :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/tcg-reference-integrity-manifest-rim-information-model/){:target="_blank"} 
+defines structures that a Verifier uses to validate expected values (Assertions) against actual 
+values (Evidence). 
+
+<br style="clear: both;" />
+For PC Clients , there are two types of RIM files, collectively 
+called the **RIM Bundle**:
+
+- **Base RIM**:
+    - Complies with the ISO 19770-2 Software Identity (SWID) standard.
+    - Provides a verifiable identity of the RIM creator and integrity information for associated Support RIMs.
+    - Can be stored on the device in the boot partition or made available via a Uniform Resource Identifier (URI).
+    - Tag Types (see [Guidelines for the Creation of Interoperable Software Identification Tags :fontawesome-solid-external-link:](https://nvlpubs.nist.gov/nistpubs/ir/2016/NIST.IR.8060.pdf){:target="_blank"})
+        - **Primary Tag**: Establishes the initial baseline and contains the complete set of reference measurements.
+          This is an independent baseline RIM.
+        - **Patch Tag**: Updates an existing manifest and contains only the modified reference values.
+          This replaces values in the Primary Tag.
+        - **Supplemental Tag**: Augments an existing manifest and contains added components or config metadata.
+          This adds values to the Primary Tag.
+- **Support RIM**:
+    - Provides additional information required for verification.
+    - For PC Clients, the TCG Event Log generated during the boot process is a required Support RIM.
+    - The Event Log (defined by [TCG PC Client Specific Platform Firmware Profile Specification :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/){:target="_blank"}) records all events that extend the TPM's Platform Configuration Registers (PCRs).
+    - The OEM captures this Event Log at the end of production and inserts a hash of it in the Base RIM before signing.
+
+For PC Component RIMs, see [Component RIMs](component.md).
+
+!!! info
+
+    Additional information about the RIM can be found on the 
+    [RIM-Tool :fontawesome-solid-external-link:](https://nsacyber.github.io/RIM-Tool/){:target="_blank"}
+    documentation webpage.

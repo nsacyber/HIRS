@@ -15,6 +15,10 @@ public class BouncyCastleUtilsTest {
 
     private static final String VALID_RDN_STRING_SWITCHED = "C=US,OU=PCTest,O=example.com";
     private static final String VALID_RDN_STRING_UPPERCASE = "OU=PCTEST,O=EXAMPLE.COM,C=US";
+    private static final String VALID_RDN_STRING_ESCAPED_COMMA =
+            "CN=PCTEST\\, FANCY.,L=Here,ST=There,C=US";
+    private static final String VALID_RDN_STRING_ESCAPED_COMMA_SWITCHED =
+            "C=US,ST=There,L=Here,CN=PCTEST\\, FANCY.";
     private static final String UNEQUAL_RDN_STRING = "OU=PCTest,O=example1.com,C=US";
     private static final String MALFORMED_RDN_STRING = "OU=PCTest,OZ=example1.com,C=US";
 
@@ -27,6 +31,8 @@ public class BouncyCastleUtilsTest {
                 VALID_RDN_STRING, VALID_RDN_STRING_SWITCHED));
         assertTrue(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING, VALID_RDN_STRING_UPPERCASE));
+        assertTrue(BouncyCastleUtils.x500NameCompare(
+                VALID_RDN_STRING_ESCAPED_COMMA, VALID_RDN_STRING_ESCAPED_COMMA_SWITCHED));
         assertTrue(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, Strings.EMPTY));
     }
 

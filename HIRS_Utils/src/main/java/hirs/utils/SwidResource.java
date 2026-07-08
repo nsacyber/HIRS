@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This object is used to represent the content of a Swid Tags Directory
@@ -20,6 +21,10 @@ public class SwidResource {
 
     @Getter
     private static final boolean VALID_FILE_SIZE = false;
+
+    @Getter
+    @Setter
+    private UUID id;
 
     @Getter
     @Setter
@@ -34,12 +39,15 @@ public class SwidResource {
     private String hashValue;
 
     @Getter
+    @Setter
     private String rimFormat;
 
     @Getter
+    @Setter
     private String rimType;
 
     @Getter
+    @Setter
     private String rimUriGlobal;
     //    private TpmWhiteListBaseline tpmWhiteList;
     private DigestAlgorithm digest = DigestAlgorithm.SHA1;
@@ -78,13 +86,13 @@ public class SwidResource {
         for (Map.Entry<QName, String> entry
                 : file.getOtherAttributes().entrySet()) {
             switch (entry.getKey().getLocalPart()) {
-                case "supportRIMFormat":
+                case "supportRimFormat":
                     this.rimFormat = entry.getValue();
                     break;
-                case "supportRIMType":
+                case "supportRimType":
                     this.rimType = entry.getValue();
                     break;
-                case "supportRIMURIGlobal":
+                case "supportRimUriGlobal":
                     this.rimUriGlobal = entry.getValue();
                     break;
                 case "hash":

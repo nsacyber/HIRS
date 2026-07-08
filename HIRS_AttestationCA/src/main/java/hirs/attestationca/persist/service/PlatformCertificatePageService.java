@@ -55,10 +55,12 @@ public class PlatformCertificatePageService {
      * Retrieves an {@link EndorsementCredential} object using the provided holder serial number.
      *
      * @param holderSerialNumber big integer representation of the holder serial number
+     * @param issuer string representation of the holder issuer
      * @return an {@link EndorsementCredential} object
      */
-    public EndorsementCredential findEndorsementCertificateBySerialNumber(final BigInteger holderSerialNumber) {
-        return endorsementCertificateRepository.findBySerialNumber(holderSerialNumber);
+    public EndorsementCredential findEndorsementCertificateBySerialNumberAndIssuer(
+            final BigInteger holderSerialNumber, final String issuer) {
+        return endorsementCertificateRepository.findBySerialNumberAndIssuer(holderSerialNumber, issuer);
     }
 
     /**
