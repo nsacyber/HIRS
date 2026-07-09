@@ -16,7 +16,7 @@ echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 docker compose -f ./.ci/docker/docker-compose-system-test.yml up --pull "always" -d
 
 # Setting up and Starting ACA + Switching to current/desired branch in ACA Container
-docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
+docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 build > /dev/null 2>&1 \
                                   && echo 'ACA Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
                                   && echo 'ACA Container Current Commit: ' && git rev-parse --short HEAD \
                                   && /hirs/package/linux/aca/aca_setup.sh --unattended 1> /dev/null \
@@ -24,7 +24,7 @@ docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                   && /hirs/package/linux/aca/aca_bootRun.sh 1> /dev/null" &
 
 # Switching to current/desired branch in Provisioner Container
-docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
+docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 build > /dev/null 2>&1 \
                                    && echo 'Provisioner Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
                                    && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD"
 
