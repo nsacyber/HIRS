@@ -97,9 +97,6 @@ public class ReferenceManifestValidator {
     private boolean supportRimValid;
 
     @Getter
-    private String validationErrorMessage;
-
-    @Getter
     private X509Certificate signingCertificate;
 
     /**
@@ -161,84 +158,6 @@ public class ReferenceManifestValidator {
     }
 
     /**
-     * This method attempts to validate the signature element of the instance's RIM
-     * using a given cert.  The cert is compared to either the RIM's embedded certificate
-     * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
-     * otherwise validation ends.
-     *
-     * @param publicKey          public key from the CA credential
-     * @param subjectKeyIdString string version of the subjet key id of the CA credential
-     * @return true if the signature element is validated, false otherwise
-     */
-
-    public boolean validateXmlSignature(final PublicKey publicKey, final String subjectKeyIdString) {
-        DOMValidateContext context = null;
-        validationErrorMessage = "Unable to verify RIM signature: ";
-        try {
-            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
-
-            if (nodes.getLength() == 0) {
-                validationErrorMessage += "invalid XML, signature element not found.";
-                log.error(validationErrorMessage);
-                return false;
-            }
-
-            if (trustStoreFile != null && !trustStoreFile.isEmpty()) {
-                trustStore = parseCertificatesFromPem(trustStoreFile);
-            }
-
-            NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
-            if (certElement.getLength() > 0) {
-                List<X509Certificate> embeddedCerts =
-                        SwidTagParser.getEmbeddedX509Certificates(rim);
-                if (embeddedCerts != null && !embeddedCerts.isEmpty()) {
-                    for (X509Certificate embeddedCert : embeddedCerts) {
-                        if (isCertChainValid(embeddedCert)) {
-                            context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
-                            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
-                            validationErrorMessage = "";
-                            this.publicKey = publicKey;
-                            signatureValid = validateSignedXMLDocument(context);
-                            if (signatureValid) {
-                                signingCertificate = embeddedCert;
-                                return true;
-                            }
-                        }
-                    }
-                    validationErrorMessage += "embedded certs present but signature validation failed";
-                } else {
-                    validationErrorMessage += "embedded cert is null.";
-                }
-            } else {
-                if (publicKey != null && !subjectKeyIdString.isEmpty()) {
-                    subjectKeyIdentifier = getKeyName();
-                    if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
-                        context = new DOMValidateContext(publicKey,
-                                nodes.item(0));
-                    } else {
-                        validationErrorMessage += "issuer cert not found";
-                    }
-                } else {
-                    System.out.println("A public signing certificate (-p) is required "
-                            + "to verify this base RIM.");
-                }
-            }
-            if (context != null) {
-                validationErrorMessage = "";
-                this.publicKey = publicKey;
-                signatureValid = validateSignedXMLDocument(context);
-                return signatureValid;
-            }
-        } catch (IOException e) {
-            log.warn("Error while parsing certificate data: {}", e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    /**
      * This method validates a base RIM in two parts:
      * 1. validate the support RIM(s) in the Payload
      * 2. validate the XML signature over the entire document
@@ -270,6 +189,89 @@ public class ReferenceManifestValidator {
             System.out.println(System.lineSeparator() + "Overall base RIM validation failed.");
             return false;
         }
+    }
+
+    /**
+     * This method attempts to validate the signature element of the instance's RIM
+     * using a given cert.  The cert is compared to either the RIM's embedded certificate
+     * or the RIM's subject key identifier.  If the cert is matched then validation proceeds,
+     * otherwise validation ends.
+     *
+     * @param publicKey          public key from the CA credential
+     * @param subjectKeyIdString string version of the subjet key id of the CA credential
+     * @return true if the signature element is validated, false otherwise
+     */
+
+    public boolean validateXmlSignature(final PublicKey publicKey, final String subjectKeyIdString) {
+        DOMValidateContext context = null;
+        try {
+            NodeList nodes = getXmlElement(XMLSignature.XMLNS, "Signature");
+
+            if (nodes.getLength() == 0) {
+                log.error("RIM signature element not found.");
+                return false;
+            }
+
+            if (trustStoreFile == null || trustStoreFile.isEmpty()) {
+                log.warn("No truststore file given, unable to validate cert chain.");
+            } else {
+                trustStore = parseCertificatesFromPem(trustStoreFile);
+            }
+
+            NodeList certElement = getXmlElement(XMLSignature.XMLNS, "X509Certificate");
+            if (certElement.getLength() > 0) {
+                List<X509Certificate> embeddedCerts =
+                        SwidTagParser.getEmbeddedX509Certificates(rim);
+                if (embeddedCerts != null && !embeddedCerts.isEmpty()) {
+                    for (X509Certificate embeddedCert : embeddedCerts) {
+                        if (isCertChainValid(embeddedCert)) {
+                            context = new DOMValidateContext(new X509KeySelector(), nodes.item(0));
+                            subjectKeyIdentifier = getCertificateSubjectKeyIdentifier(embeddedCert);
+                            this.publicKey = publicKey;
+                            signatureValid = validateSignedXMLDocument(context);
+                            if (signatureValid) {
+                                signingCertificate = embeddedCert;
+                                return true;
+                            }
+                        }
+                    }
+                    log.warn("Embedded certs present but signature validation failed.");
+                } else {
+                    log.warn("Empty or null embedded cert(s) encountered, please verify.");
+                }
+            } else {
+                if (publicKey != null) {
+                    context = new DOMValidateContext(publicKey, nodes.item(0));
+                    if (subjectKeyIdString.isEmpty()) {
+                        log.warn("No subject key identifier given for public key {}",
+                            Arrays.toString(publicKey.getEncoded()));
+                    } else {
+                        subjectKeyIdentifier = getKeyName();
+                        if (subjectKeyIdentifier == null) {
+                            log.warn("Could not parse subject key identifier from RIM.");
+                        } else if (subjectKeyIdentifier.equals(subjectKeyIdString)) {
+                            log.info("Subject key identifier confirmed: {}", subjectKeyIdString);
+                        } else {
+                            log.warn("Subject key identifier not matched: given {} but found {}",
+                                    subjectKeyIdString, subjectKeyIdentifier);
+                        }
+                    }
+                } else {
+                    log.error("Public key is null, please verify.");
+                }
+            }
+            if (context != null) {
+                this.publicKey = publicKey;
+                signatureValid = validateSignedXMLDocument(context);
+                return signatureValid;
+            }
+        } catch (IOException e) {
+            log.error("Error while parsing certificate data: {}", e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     /**
@@ -793,7 +795,7 @@ public class ReferenceManifestValidator {
     /**
      * This method parses the subject key identifier from the KeyName element of a signature.
      *
-     * @return SKID if found, or an empty string.
+     * @return SKID if found, or null.
      */
     private String getKeyName() {
         NodeList keyName = getXmlElement(XMLSignature.XMLNS, "KeyName");

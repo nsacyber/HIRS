@@ -28,10 +28,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -134,6 +142,41 @@ public final class SwidTagParser {
             return (X509Certificate) factory.generateCertificate(inputStream);
         } catch (CertificateException e) {
             log.warn("Error creating CertificateFactory instance: {}", e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * This method converts a public key string into a PublicKey object.
+     *
+     * @param publicKeyFile to convert to a PublicKey
+     * @param algorithm of the returned PublicKey
+     * @return PublicKey
+     */
+    public static PublicKey parsePublicKeyFromPem(final String publicKeyFile, final String algorithm) {
+        String header = "-----BEGIN PUBLIC KEY-----";
+        String footer = "-----END PUBLIC KEY-----";
+        String pemString;
+        try {
+            pemString = Files.readString(Path.of(publicKeyFile));
+        } catch (IOException e) {
+            log.error("Error reading public key file {}: {}", publicKeyFile, e.getMessage());
+            return null;
+        }
+        String publicKeyContent = pemString.replace(header, "")
+                .replace(footer, "")
+                .replaceAll("\\s+", "");
+
+        byte[] decodedBytes = Base64.getDecoder().decode(publicKeyContent);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedBytes);
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Error creating key factory for public key generation: {}", e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            log.error("Error creating a public key: {}", e.getMessage());
         }
 
         return null;
