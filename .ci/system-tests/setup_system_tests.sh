@@ -22,9 +22,13 @@ docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                   && /hirs/package/linux/aca/aca_bootRun.sh -d 1> /dev/null" &
 
 # Switching to current/desired branch in Provisioner Container
-docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 build > /dev/null 2>&1 \
+docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                    && echo 'Provisioner Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
-			                             && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD"
+			                             && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD \
+                                   && cd HIRS_Provisioner.NET/hirs \
+                                   && rm -rf bin/Release \
+                                   && dotnet deb -r linux-x64 -c Release \
+                                   && dotnet rpm -r linux-x64 -c Release"
 # Install HIRS Provisioner.Net and setup tpm2 simulator.
 # In doing so, tests a single provision between Provisioner.Net and ACA.
 echo "Launching provisioner setup"

@@ -90,7 +90,7 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
     echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
     echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
     echo "cd HIRS_Provisioner.NET/hirs" >> /tmp/auto_clone_branch && \
-    echo 'if [ -n "${2}" ]; then rm -rf bin/Release && dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
     chmod 755 /tmp/auto_clone_branch
 
 # Reset working directory
