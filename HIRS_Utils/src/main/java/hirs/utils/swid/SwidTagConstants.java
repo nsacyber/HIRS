@@ -67,6 +67,9 @@ public final class SwidTagConstants {
     public static final String RIM_LINK_HASH = "rimLinkHash";
     public static final String SIZE = "size";
     public static final String HASH = "hash";
+    public static final String SHA256 = "SHA256";
+    public static final String SHA384 = "SHA384";
+    public static final String SHA512 = "SHA512";
     public static final String SUPPORT_RIM_TYPE = "supportRimType";
     public static final String SUPPORT_RIM_FORMAT = "supportRimFormat";
     public static final String ROOT = "root";
@@ -122,9 +125,9 @@ public final class SwidTagConstants {
     public static final String PC_URI_GLOBAL_STR = RIM_PFX + FX_SEPARATOR
             + PC_URI_GLOBAL;
     public static final QName SHA_256_HASH = new QName(
-            "http://www.w3.org/2001/04/xmlenc#sha256", HASH, "SHA256");
+            "http://www.w3.org/2001/04/xmlenc#sha256", HASH, SHA256);
     public static final QName SHA_384_HASH = new QName(
-            "http://www.w3.org/2001/04/xmlenc#sha384", HASH, "SHA384");
+            "http://www.w3.org/2001/04/xmlenc#sha384", HASH, SHA384);
     public static final QName QNAME_COLLOQUIAL_VERSION = new QName(
             NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName QNAME_EDITION = new QName(

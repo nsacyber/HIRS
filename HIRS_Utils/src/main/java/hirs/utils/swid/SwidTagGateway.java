@@ -2,6 +2,7 @@ package hirs.utils.swid;
 
 import hirs.utils.xjc.Directory;
 import hirs.utils.xjc.Entity;
+import hirs.utils.xjc.File;
 import hirs.utils.xjc.FilesystemItem;
 import hirs.utils.xjc.Link;
 import hirs.utils.xjc.ObjectFactory;
@@ -131,6 +132,12 @@ public class SwidTagGateway {
     private String rimEventLog;
 
     /**
+     * hashing algorithm for paylod file(s)
+     */
+    @Setter
+    private String hashAlgorithm;
+
+    /**
      * timestamp format in XML signature.
      */
     @Setter
@@ -246,7 +253,7 @@ public class SwidTagGateway {
         }
         Iterator itr = files.iterator();
         while (itr.hasNext()) {
-            hirs.utils.xjc.File file;
+            File file;
             try {
                 file = createFile((JsonObject) itr.next());
             } catch (NoSuchAlgorithmException | IOException e) {
@@ -511,18 +518,27 @@ public class SwidTagGateway {
      * @param jsonObject the Properties object containing parameters from file
      * @return File object created from the properties
      */
-    private hirs.utils.xjc.File createFile(final JsonObject jsonObject)
+    private File createFile(final JsonObject jsonObject)
         throws NoSuchAlgorithmException, IOException {
-        hirs.utils.xjc.File file = objectFactory.createFile();
+        File file = objectFactory.createFile();
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
         String fileHash;
         if (rimEventLog.isEmpty()) {
-            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart());
+            fileHash = jsonObject.getString(SwidTagConstants.HASH);
         } else {
-            fileHash = jsonObject.getString(SwidTagConstants.SHA_256_HASH.getLocalPart(),
-                    HashSwid.get256Hash(rimEventLog));
+            String defaultHashValue = "";
+            if (!hashAlgorithm.isEmpty()) {
+                defaultHashValue = switch (hashAlgorithm) {
+                    case SwidTagConstants.SHA256 -> HashSwid.get256Hash(rimEventLog);
+                    case SwidTagConstants.SHA384 -> HashSwid.get384Hash(rimEventLog);
+                    case SwidTagConstants.SHA512 -> HashSwid.get512Hash(rimEventLog);
+                    default -> throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
+                };
+            }
+            fileHash = jsonObject.getString(SwidTagConstants.HASH,
+                    defaultHashValue);
         }
         addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
