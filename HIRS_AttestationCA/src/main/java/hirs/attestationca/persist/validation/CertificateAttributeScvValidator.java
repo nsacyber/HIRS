@@ -819,64 +819,55 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
         // if it exists, don't save the component
         List<ComponentResult> remainingComponentResults = new ArrayList<>();
         for (ComponentResult componentResult : compiledComponentList) {
+            ComponentResult effectiveComponent;
+            try {
+                effectiveComponent = componentResult.clone();
+            } catch (CloneNotSupportedException e) {
+                log.error("Failed to clone component result", e);
+                effectiveComponent = componentResult;
+            }
+
             if (CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(
-                    componentResult.getSerialNumber().trim())) {
-                componentResult.setSerialNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
+                    effectiveComponent.getSerialNumber().trim())) {
+                effectiveComponent.setSerialNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }
             if (CertificateAttributeScvValidator.isNullBlankNotSpecifiedOrUnknown(
-                    componentResult.getRevisionNumber().trim())) {
-                componentResult.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
+                    effectiveComponent.getRevisionNumber().trim())) {
+                effectiveComponent.setRevisionNumber(ComponentIdentifier.NOT_SPECIFIED_COMPONENT);
             }
 
             // if the ignore pcie vpd policy has been enabled and the component result's registry type is
             // PCIE
             if (ignorePcieVpdAttribute
-                    && componentResult.getComponentClassRegistryType().equalsIgnoreCase("PCIE")) {
-                try {
-                    // create a deep copy so that we do not mess with the original component
-                    // result object for this scenario
-                    ComponentResult copyComponentResult = componentResult.clone();
+                    && effectiveComponent.getComponentClassRegistryType().equalsIgnoreCase("PCIE")) {
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
+                        effectiveComponent.getManufacturer())) {
+                    final String newComponentManufacturer =
+                            retrieveNonVpdPortionFromComponentAttribute(
+                                    effectiveComponent.getManufacturer());
+                    effectiveComponent.setManufacturer(newComponentManufacturer);
+                }
 
-                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MANUFACTURER,
-                            copyComponentResult.getManufacturer())) {
-                        final String newComponentManufacturer =
-                                retrieveNonVpdPortionFromComponentAttribute(
-                                        copyComponentResult.getManufacturer());
-                        copyComponentResult.setManufacturer(newComponentManufacturer);
-                    }
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
+                        effectiveComponent.getModel())) {
+                    final String newComponentModel =
+                            retrieveNonVpdPortionFromComponentAttribute(
+                                    effectiveComponent.getModel());
+                    effectiveComponent.setModel(newComponentModel);
+                }
 
-                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_MODEL,
-                            copyComponentResult.getModel())) {
-                        final String newComponentModel =
-                                retrieveNonVpdPortionFromComponentAttribute(
-                                        copyComponentResult.getModel());
-                        copyComponentResult.setModel(newComponentModel);
-                    }
-
-                    if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
-                            copyComponentResult.getSerialNumber())) {
-                        final String newComponentSN =
-                                retrieveNonVpdPortionFromComponentAttribute(
-                                        copyComponentResult.getSerialNumber());
-                        copyComponentResult.setSerialNumber(newComponentSN);
-                    }
-
-                    // hash the elements inside the copied, modified component result
-                    if (!deviceHashMap.containsKey(copyComponentResult.hashCommonElements())) {
-                        // if there are no matches, add back the original component result since
-                        // that object contains the original, unmodified information
-                        remainingComponentResults.add(componentResult);
-                    }
-
-                    continue;
-                } catch (CloneNotSupportedException ignored) {
-                    // do nothing and move on to the end of the block
+                if (verifyPCIEComponentAttributeContainsVPD(ComponentResult.ATTRIBUTE_SERIAL,
+                        effectiveComponent.getSerialNumber())) {
+                    final String newComponentSN =
+                            retrieveNonVpdPortionFromComponentAttribute(
+                                    effectiveComponent.getSerialNumber());
+                    effectiveComponent.setSerialNumber(newComponentSN);
                 }
             }
 
-            if (!deviceHashMap.containsKey(componentResult.hashCommonElements())) {
+            if (!deviceHashMap.containsKey(effectiveComponent.hashCommonElements())) {
                 // didn't find the component result in the hashed mapping
-                remainingComponentResults.add(componentResult);
+                remainingComponentResults.add(effectiveComponent);
             }
         }
 
@@ -1095,13 +1086,19 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                 break;
                             case MODIFIED:
                                 dbBaseComponents.remove(componentEntry);
-                                // serial number is not set because that couldn't have been modified
-                                // and found this way
-                                componentEntry.setManufacturer(deltaComponentResult.getManufacturer());
-                                componentEntry.setModel(deltaComponentResult.getModel());
-                                componentEntry.setRevisionNumber(deltaComponentResult.getRevisionNumber());
-                                componentSerialMap.put(componentSerialNumber, componentEntry);
-                                dbBaseComponents.add(componentEntry);
+                                try {
+                                    ComponentResult clonedEntry = componentEntry.clone();
+                                    // serial number is not set because that couldn't have been modified
+                                    // and found this way
+                                    clonedEntry.setManufacturer(deltaComponentResult.getManufacturer());
+                                    clonedEntry.setModel(deltaComponentResult.getModel());
+                                    clonedEntry.setRevisionNumber(
+                                            deltaComponentResult.getRevisionNumber());
+                                    componentSerialMap.put(componentSerialNumber, clonedEntry);
+                                    dbBaseComponents.add(clonedEntry);
+                                } catch (CloneNotSupportedException e) {
+                                    log.error("Failed to clone component result", e);
+                                }
                                 break;
                             default:
                                 log.info("Default case that is already handled above");
@@ -1155,13 +1152,22 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                                             result.getComponentClassValue());
                                     if (deltaHash == dbComponentHash) {
                                         dbBaseComponents.remove(result);
-                                        // serial number is not set because that couldn't have been modified
-                                        // and found this way
-                                        result.setManufacturer(deltaComponentResult.getManufacturer());
-                                        result.setModel(deltaComponentResult.getModel());
-                                        result.setRevisionNumber(deltaComponentResult.getRevisionNumber());
-                                        componentSerialMap.put(componentSerialNumber, result);
-                                        dbBaseComponents.add(result);
+                                        try {
+                                            ComponentResult clonedResult = result.clone();
+                                            // serial number is not set because that couldn't
+                                            // have been modified and found this way
+                                            clonedResult.setManufacturer(
+                                                    deltaComponentResult.getManufacturer());
+                                            clonedResult.setModel(
+                                                    deltaComponentResult.getModel());
+                                            clonedResult.setRevisionNumber(
+                                                    deltaComponentResult.getRevisionNumber());
+                                            componentSerialMap.put(componentSerialNumber,
+                                                    clonedResult);
+                                            dbBaseComponents.add(clonedResult);
+                                        } catch (CloneNotSupportedException e) {
+                                            log.error("Failed to clone component result", e);
+                                        }
                                     }
                                 }
                             }
