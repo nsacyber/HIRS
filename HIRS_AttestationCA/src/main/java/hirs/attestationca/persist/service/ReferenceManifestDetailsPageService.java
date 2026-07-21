@@ -2,9 +2,11 @@ package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceDigestValueRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
+import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
@@ -13,6 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.exceptions.DBServiceException;
 import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
+import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
@@ -58,6 +61,7 @@ public class ReferenceManifestDetailsPageService {
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCertificateRepository;
+    private final PolicyRepository policyRepository;
 
     /**
      * Constructor for the Reference Manifest Details Page Service.
@@ -71,11 +75,13 @@ public class ReferenceManifestDetailsPageService {
     public ReferenceManifestDetailsPageService(final ReferenceManifestRepository referenceManifestRepository,
                                                final ReferenceDigestValueRepository referenceDigestValueRepository,
                                                final CertificateRepository certificateRepository,
-                                               final CACredentialRepository caCertificateRepository) {
+                                               final CACredentialRepository caCertificateRepository,
+                                               final PolicyRepository policyRepository) {
         this.referenceManifestRepository = referenceManifestRepository;
         this.referenceDigestValueRepository = referenceDigestValueRepository;
         this.certificateRepository = certificateRepository;
         this.caCertificateRepository = caCertificateRepository;
+        this.policyRepository = policyRepository;
     }
 
     /**
@@ -516,7 +522,6 @@ public class ReferenceManifestDetailsPageService {
     private HashMap<String, Object> getMeasurementsRimInfo(final EventLogMeasurements measurements)
             throws IOException {
         HashMap<String, Object> data = new HashMap<>();
-        LinkedList<TpmPcrEvent> unmatchedAttestationEvents = new LinkedList<>();
         BaseReferenceManifest base;
         List<SupportReferenceManifest> supports = new ArrayList<>();
         SupportReferenceManifest baseSupport = null;
@@ -560,11 +565,18 @@ public class ReferenceManifestDetailsPageService {
         for (ReferenceDigestValue record : assertions) {
             referenceValueMap.put(record.getDigestValue(), record);
         }
-        for (TpmPcrEvent attestationEvent : measurementLog.getEventList()) {
-            if (!referenceValueMap.containsKey(attestationEvent.getEventDigestStr())) {
-                unmatchedAttestationEvents.add(attestationEvent);
-            }
+
+        PolicySettings policySettings = this.policyRepository.findByName("Default");
+        if (policySettings == null) {
+            policySettings = new PolicySettings("Default",
+                    "Settings are configured for no validation flags set.");
         }
+
+        PcrValidator pcrValidator = new PcrValidator();
+        LinkedList<TpmPcrEvent> unmatchedAttestationEvents =
+                new LinkedList<>(pcrValidator.validateTpmEvents(measurementLog,
+                                                                referenceValueMap,
+                                                                policySettings));
 
         if (!supports.isEmpty()) {
             Map<String, List<TpmPcrEvent>> baselineLogEvents = new HashMap<>();

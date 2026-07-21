@@ -406,18 +406,19 @@ public class SupplyChainValidationService {
     }
 
     /**
-     * Helper function that retrieves the default policy settings from the database.
+     * Helper function that retrieves the current policy settings from the database.
+     * If no policy settings have been set then all values are set to default.
      *
-     * @return The default Supply Chain Policy Settings
+     * @return The Supply Chain Policy Settings
      */
     private PolicySettings getPolicySettings() {
-        PolicySettings defaultSettings = this.policyRepository.findByName("Default");
+        PolicySettings policySettings = this.policyRepository.findByName("Default");
 
-        if (defaultSettings == null) {
-            defaultSettings = new PolicySettings("Default",
+        if (policySettings == null) {
+            policySettings = new PolicySettings("Default",
                     "Settings are configured for no validation flags set.");
         }
-        return defaultSettings;
+        return policySettings;
     }
 
     /**

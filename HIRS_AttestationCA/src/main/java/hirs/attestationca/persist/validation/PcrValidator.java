@@ -8,6 +8,7 @@ import hirs.attestationca.persist.tpm.PcrInfoShort;
 import hirs.attestationca.persist.tpm.PcrSelection;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
+import hirs.utils.tpm.eventlog.events.EvConstants;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -30,9 +31,7 @@ public class PcrValidator {
 
     private static final int NUM_TO_SKIP = 1;
     private static final int NUM_OF_TBOOT_PCR = 3;
-    // PCR 5-16
-    private static final int PXE_PCR_START = 5;
-    private static final int PXE_PCR_END = 16;
+    private static final int FIRMWARE_PCR_END = 7;
     // PCR 10
     private static final int IMA_PCR = 10;
     // PCR 17-19
@@ -49,6 +48,8 @@ public class PcrValidator {
     private static final String EVT_EFI_CFG = "EV_EFI_VARIABLE_DRIVER_CONFIG";
 
     private String[] baselinePcrs;
+    // False until PCR 0-7 EV_SEPARATOR is read
+    private boolean[] firmwareBootFinished = new boolean[8];
 
     /**
      * Default constructor.
@@ -191,12 +192,12 @@ public class PcrValidator {
             } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
                     && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
                 log.debug(String.format("TBOOT Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() >= PXE_PCR_START
-                    && tpe.getPcrIndex() <= PXE_PCR_END)) {
+            } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() > FIRMWARE_PCR_END)) {
                 log.debug(String.format("OS Evt Ignored -> %s", tpe));
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                     log.debug(String.format("GPT Ignored -> %s", tpe));
+/*
                 } else if (policySettings.isIgnoreOsEvtEnabled() && (
                         tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
                                 || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
@@ -205,9 +206,16 @@ public class PcrValidator {
                         tpe.getEventTypeStr().contains(EVT_EFI_CFG)
                                 && tpe.getEventContentStr().contains("SecureBoot"))) {
                     log.debug(String.format("OS Evt Config Ignored -> %s", tpe));
+*/
+                } else if (policySettings.isIgnoreOsEvtEnabled()
+                        && firmwareBootFinished[tpe.getPcrIndex()]) {
+                    log.debug(String.format("Firmware boot finished -> %s", tpe));
                 } else {
                     if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
                         tpmPcrEventsNotExpected.add(tpe);
+                    }
+                    if (tpe.getEventType() == EvConstants.EV_SEPARATOR) {
+                        firmwareBootFinished[tpe.getPcrIndex()] = true;
                     }
                 }
             }
