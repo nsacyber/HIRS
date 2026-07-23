@@ -310,7 +310,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                     if (measurement.getDeviceName().equals(hostName)) {
                         tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
                         eventValue = referenceDigestValueRepository
-                                .findBySupportRimId(baseReferenceManifest.getAssociatedRim());
+                                .findValuesByBaseRimId(baseReferenceManifest.getId());
                         for (ReferenceDigestValue rdv : eventValue) {
                             eventValueMap.put(rdv.getDigestValue(), rdv);
                         }
