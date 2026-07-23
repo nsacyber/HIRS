@@ -1,9 +1,9 @@
-syntax = "proto2";
+syntax = "proto2"; // TODO: update to proto3
 
 package hirs.pb;
-option java_package="hirs.attestationca.configuration.provisionerTpm2";
+option java_package="hirs.attestationca.configuration.provisionerTpm2"; // TODO: Is this necessary?
 
-message FirmwareInfo {
+message FirmwareInfo {  // TODO: Determine how much of these DeviceInfo fields are needed anymore
   required string biosVendor = 1;
   required string biosVersion = 2;
   required string biosReleaseDate = 3;
@@ -60,22 +60,66 @@ message DeviceInfo {
   optional bytes pcrslist = 5;
   repeated bytes logfile = 6;
   repeated bytes swidfile = 7;
-  optional bytes livelog = 8;
+  optional bytes livelog = 8;   // TODO: opportunity to give these more informative names
 }
 
 message IdentityClaim {
   required DeviceInfo dv = 1;
-  required bytes ak_public_area = 2;
-  required bytes ek_public_area = 3;
-  optional bytes endorsement_credential = 4;
+  repeated TpmKeyCandidate attestation_key_candidates = 9;
+  repeated TpmKeyCandidate endorsement_key_candidates = 10;
+  repeated TpmKeyCandidate ldevid_key_candidates = 11;
   repeated bytes platform_credential = 5;
   optional string client_version = 6;
-  optional string paccorOutput = 7; 
-  optional bytes ldevid_public_area = 8;
+  optional string paccorOutput = 7;
 }
 
-message TpmQuote {
-  required string success = 1;
+message TpmKeyCandidate {
+  enum Template {
+    // as of TCG EK Credential Profile v2.7
+    //   Only included Storage Keys.
+    TEMPLATE_UNSPECIFIED = 0; // define default behavior or fail immediately
+    TEMPLATE_EK_L1 = 1;
+    TEMPLATE_EK_L2 = 2;
+    // RSA
+    TEMPLATE_EK_H1 = 3;
+    TEMPLATE_EK_H6 = 4;
+    TEMPLATE_EK_H7 = 5;
+    // ECC
+    TEMPLATE_EK_H2 = 6;
+    TEMPLATE_EK_H3 = 7;
+    TEMPLATE_EK_H4 = 8;
+    TEMPLATE_EK_H18 = 10; // firmware-restricted
+    TEMPLATE_EK_H19 = 11; // firmware-restricted
+    TEMPLATE_EK_H20 = 12; // firmware-restricted
+    // ML-KEM
+    TEMPLATE_EK_H26 = 14;
+    TEMPLATE_EK_H27 = 15;
+    TEMPLATE_EK_H28 = 16;
+    TEMPLATE_EK_H29 = 17; // firmware-restricted
+    TEMPLATE_EK_H30 = 18; // firmware-restricted
+    TEMPLATE_EK_H31 = 19; // firmware-restricted
+
+    // as of TPM 2.0 Keys for Device Identity and Attestation v1.1
+    TEMPLATE_DEVID_H1 = 20;
+    TEMPLATE_DEVID_H2 = 21;
+    TEMPLATE_DEVID_H3 = 22;
+    TEMPLATE_DEVID_H4 = 23;
+    TEMPLATE_DEVID_H6 = 24;
+    TEMPLATE_DEVID_H7 = 25;
+  }
+
+  enum KeyRole {
+    KEY_ROLE_UNSPECIFIED = 0;
+    KEY_ROLE_ATTESTATION = 1;
+    KEY_ROLE_ENDORSEMENT = 2;
+    KEY_ROLE_LDEVID = 3;
+  }
+
+  optional bytes certificate = 1;
+  optional bytes public_area = 2;
+  optional Template template = 3 [default = TEMPLATE_UNSPECIFIED];
+  optional uint32 handle = 4;
+  optional KeyRole role = 5 [default = KEY_ROLE_UNSPECIFIED];
 }
 
 enum ResponseStatus {
@@ -83,20 +127,37 @@ enum ResponseStatus {
   FAIL = 1;
 }
 
-message IdentityClaimResponse {
+message MakeCredentialResponse {
   optional bytes credential_blob = 1;
-  optional string pcr_mask = 2;
-  optional ResponseStatus status = 3 [default = FAIL];
+  optional bytes encrypted_secret = 2;
+  optional uint32 endorsement_key_handle = 3;
+  optional uint32 attestation_key_handle = 4;
 }
 
-message CertificateRequest {
-  required bytes nonce = 1;
+message IdentityClaimResponse {
+  optional string pcr_mask = 2;
+  optional ResponseStatus status = 3 [default = FAIL];
+  repeated MakeCredentialResponse make_credential = 4;
+}
+
+message ActivateCredentialResponse {
+  optional bytes cert_info = 1; // nonce
   optional bytes quote = 2;
 }
 
+message IssuedKeyCertificate {
+  optional uint32 handle = 1;
+  optional TpmKeyCandidate.KeyRole role = 2 [default = KEY_ROLE_UNSPECIFIED];
+  optional TpmKeyCandidate.Template template = 3 [default = TEMPLATE_UNSPECIFIED];
+  optional string certificate = 4;
+}
+
+message CertificateRequest {
+  repeated ActivateCredentialResponse activate_credential = 3;
+}
+
 message CertificateResponse {
-  optional string certificate = 1;
   optional ResponseStatus status = 2 [default = FAIL];
-  optional string ldevidCertificate = 3;
+  repeated IssuedKeyCertificate issued_certificates = 4;
 }
 
