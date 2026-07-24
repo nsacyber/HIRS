@@ -16,6 +16,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -296,7 +297,13 @@ public class BaseReferenceManifest extends ReferenceManifest {
         Element file = null;
         SwidResource swidResource = null;
         for (int i = 0; i < fileNodeList.getLength(); i++) {
-            file = (Element) fileNodeList.item(i);
+            Node childNode = fileNodeList.item(i);
+
+            if (childNode.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+
+            file = (Element) childNode;
             swidResource = new SwidResource();
             swidResource.setName(file.getAttribute(SwidTagConstants.NAME));
             swidResource.setSize(file.getAttribute(SwidTagConstants.SIZE));
