@@ -123,25 +123,22 @@ public class DeviceInfoProcessorService {
      * @return list of device components
      */
     public List<ComponentInfo> processDeviceComponents(final String hostName, final String paccorString) {
-        Map<Integer, ComponentInfo> componentInfoMap = new HashMap<>();
+        if (StringUtils.isBlank(paccorString)) {
+            return List.of();
+        }
 
         try {
             List<ComponentInfo> componentInfos =
                     SupplyChainCredentialValidator.getComponentInfoFromPaccorOutput(hostName, paccorString);
 
-            // check the DB for like component infos
             List<ComponentInfo> dbComponentInfos = componentInfoRepository.findByDeviceName(hostName);
-            dbComponentInfos.forEach((infos) -> componentInfoMap.put(infos.hashCode(), infos));
-
-            for (ComponentInfo componentInfo : dbComponentInfos) {
-                if (componentInfoMap.containsKey(componentInfo.hashCode())) {
-                    componentInfos.remove(componentInfo);
+            for (ComponentInfo componentInfo : componentInfos) {
+                if (!dbComponentInfos.contains(componentInfo)) {
+                    componentInfoRepository.save(componentInfo);
                 }
             }
 
-            for (ComponentInfo componentInfo : componentInfos) {
-                componentInfoRepository.save(componentInfo);
-            }
+            return componentInfos;
         } catch (IOException ioEx) {
             log.warn("Error parsing PACCOR string");
         }
