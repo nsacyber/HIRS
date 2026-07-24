@@ -36,7 +36,7 @@ public class TestSwidTagGateway {
 
     private static ReferenceManifestValidator validator;
 
-    private final String defaultOutput = "generated_swidTag.swidtag";
+    private static final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 
     private final String jksKeystoreFile = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
             .getResource("swid/keystore.jks")).getPath();
@@ -70,7 +70,7 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testCreateBaseUserCertNotEmbedded() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         gateway.setDefaultCredentials(false);
         gateway.setPemCertificateFile(signingCertFile);
@@ -90,7 +90,7 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testCreateBaseUserCertEmbedded() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         gateway.setDefaultCredentials(false);
         gateway.setPemCertificateFile(signingCertFile);
@@ -108,7 +108,7 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testCreateBaseDefaultCert() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
@@ -124,7 +124,7 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testCreateTimestampRfc3339() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
@@ -142,7 +142,7 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testCreateTimestampRfc3852() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
@@ -159,17 +159,24 @@ public class TestSwidTagGateway {
      */
     @Test
     public void testValidateSwidtagFile() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
 
         validator.setRim(outputPath.toString());
         assertTrue(validator.validateBaseRim(signingCertFile));
     }
 
+    /**
+     * Tests validating a support RIM, in addition to a base RIM.
+     */
     @Test
     @Order(Integer.MAX_VALUE)
     public void testValidateSupportRim() throws IOException {
-        Path outputPath = tempDir.resolve(defaultOutput);
+        Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
         Path supportRimPath = Path.of(SUPPORT_RIM_FILE).getParent();
+
+        if (supportRimPath == null) {
+            throw new IllegalStateException("Support RIM path is null");
+        }
 
         validator.setRim(outputPath.toString());
         validator.setHasSupportRim(true);
