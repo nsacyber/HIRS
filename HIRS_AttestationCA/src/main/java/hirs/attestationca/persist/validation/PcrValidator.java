@@ -197,16 +197,6 @@ public class PcrValidator {
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                     log.debug(String.format("GPT Ignored -> %s", tpe));
-/*
-                } else if (policySettings.isIgnoreOsEvtEnabled() && (
-                        tpe.getEventTypeStr().contains(EVT_EFI_BOOT)
-                                || tpe.getEventTypeStr().contains(EVT_EFI_VAR))) {
-                    log.debug(String.format("OS Evt Ignored -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtEnabled() && (
-                        tpe.getEventTypeStr().contains(EVT_EFI_CFG)
-                                && tpe.getEventContentStr().contains("SecureBoot"))) {
-                    log.debug(String.format("OS Evt Config Ignored -> %s", tpe));
-*/
                 } else if (policySettings.isIgnoreOsEvtEnabled()
                         && firmwareBootFinished[tpe.getPcrIndex()]) {
                     log.debug(String.format("Firmware boot finished -> %s", tpe));
