@@ -509,7 +509,7 @@
                                                                 <th:block th:unless="${#strings.isEmpty(resource.id)}">
                                                                 <a
                                                                     th:href="@{/HIRS_AttestationCAPortal/portal/rim-details?(id=${resource.id})}">
-                                                                    <span th:text="${resource.name}">Resource File</span>
+                                                                    <span th:text="${#strings.isEmpty(resource.name)} ? 'Unnamed Support RIM' : ${resource.name}"></span>
                                                                 </a>
                                                                 </th:block>
                                                                 <th:block
