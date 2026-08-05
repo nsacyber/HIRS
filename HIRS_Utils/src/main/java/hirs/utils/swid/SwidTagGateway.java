@@ -524,23 +524,33 @@ public class SwidTagGateway {
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
-        String fileHash;
-        if (rimEventLog.isEmpty()) {
-            fileHash = jsonObject.getString(SwidTagConstants.HASH);
-        } else {
-            String defaultHashValue = "";
-            if (!hashAlgorithm.isEmpty()) {
-                defaultHashValue = switch (hashAlgorithm) {
-                    case SwidTagConstants.SHA256 -> HashSwid.get256Hash(rimEventLog);
-                    case SwidTagConstants.SHA384 -> HashSwid.get384Hash(rimEventLog);
-                    case SwidTagConstants.SHA512 -> HashSwid.get512Hash(rimEventLog);
-                    default -> throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
+        QName hashKey = new QName("");
+        String fileHash = jsonObject.getString(SwidTagConstants.HASH, "");
+
+        if (fileHash.isEmpty()) {
+            if (rimEventLog.isEmpty() || hashAlgorithm.isEmpty()) {
+                throw new RuntimeException("The config file must declare a file hash, "
+                       + "or a support RIM and hash algorithm must be given.");
+            } else {
+                switch (hashAlgorithm) {
+                    case SwidTagConstants.SHA256:
+                        fileHash = HashSwid.get256Hash(rimEventLog);
+                        hashKey = SwidTagConstants.SHA_256_HASH;
+                        break;
+                    case SwidTagConstants.SHA384:
+                        fileHash = HashSwid.get384Hash(rimEventLog);
+                        hashKey = SwidTagConstants.SHA_384_HASH;
+                        break;
+                    case SwidTagConstants.SHA512:
+                        fileHash = HashSwid.get512Hash(rimEventLog);
+                        hashKey = SwidTagConstants.SHA_512_HASH;
+                        break;
+                    default:
+                        throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
                 };
             }
-            fileHash = jsonObject.getString(SwidTagConstants.HASH,
-                    defaultHashValue);
         }
-        addNonNullAttribute(attributes, SwidTagConstants.SHA_256_HASH, fileHash, true);
+        addNonNullAttribute(attributes, hashKey, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
                 SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING);
         if (!supportRimFormat.equals(SwidTagConstants.SUPPORT_RIM_FORMAT_MISSING)) {

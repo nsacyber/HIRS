@@ -128,6 +128,8 @@ public final class SwidTagConstants {
             "http://www.w3.org/2001/04/xmlenc#sha256", HASH, SHA256);
     public static final QName SHA_384_HASH = new QName(
             "http://www.w3.org/2001/04/xmlenc#sha384", HASH, SHA384);
+    public static final QName SHA_512_HASH = new QName(
+            "http://www.w3.org/2001/04/xmlenc#sha512", HASH, SHA512);
     public static final QName QNAME_COLLOQUIAL_VERSION = new QName(
             NIST_NS, COLLOQUIAL_VERSION, N8060_PFX);
     public static final QName QNAME_EDITION = new QName(
