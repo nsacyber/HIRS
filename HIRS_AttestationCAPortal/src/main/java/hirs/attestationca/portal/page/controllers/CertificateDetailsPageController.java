@@ -3,6 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.persist.dto.PageMessages;
@@ -34,6 +35,7 @@ public class CertificateDetailsPageController extends PageController<Certificate
     private final CertificateRepository certificateRepository;
     private final CACredentialRepository caCredentialRepository;
     private final ComponentResultRepository componentResultRepository;
+    private final ComponentAttributeRepository componentAttributeRepository;
     private final ReferenceManifestRepository referenceManifestRepository;
 
     /**
@@ -47,11 +49,13 @@ public class CertificateDetailsPageController extends PageController<Certificate
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,
                                             final ComponentResultRepository componentResultRepository,
+                                            final ComponentAttributeRepository componentAttributeRepository,
                                             final CACredentialRepository caCredentialRepository,
                                             final ReferenceManifestRepository referenceManifestRepository) {
         super(Page.CERTIFICATE_DETAILS);
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
+        this.componentAttributeRepository = componentAttributeRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.referenceManifestRepository = referenceManifestRepository;
     }
@@ -99,7 +103,8 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         break;
                     case "platform":
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
-                                certificateRepository, componentResultRepository, caCredentialRepository));
+                                certificateRepository, componentResultRepository, componentAttributeRepository,
+                                caCredentialRepository, params.getProvisionSessionId()));
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,

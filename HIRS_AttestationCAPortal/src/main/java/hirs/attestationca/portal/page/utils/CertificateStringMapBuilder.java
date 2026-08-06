@@ -3,11 +3,13 @@ package hirs.attestationca.portal.page.utils;
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
+import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Certificate;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentAttributeResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
@@ -517,6 +519,29 @@ public final class CertificateStringMapBuilder {
                                                                  final CACredentialRepository
                                                                          caCertificateRepository)
             throws IllegalArgumentException, IOException {
+        return getPlatformInformation(uuid, certificateRepository, componentResultRepository, null,
+                caCertificateRepository, null);
+    }
+
+    /**
+     * Returns platform credential information with component status for a specific validation run.
+     *
+     * @param uuid                      ID for the certificate
+     * @param certificateRepository     certificate repository
+     * @param componentResultRepository component result repository
+     * @param componentAttributeRepository component attribute repository
+     * @param caCertificateRepository   CA credential repository
+     * @param provisionSessionId        validation run identifier
+     * @return certificate information
+     * @throws IOException when parsing the certificate
+     */
+    public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
+                                                                 final CertificateRepository certificateRepository,
+                                                                 final ComponentResultRepository componentResultRepository,
+                                                                 final ComponentAttributeRepository componentAttributeRepository,
+                                                                 final CACredentialRepository caCertificateRepository,
+                                                                 final String provisionSessionId)
+            throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
 
@@ -589,6 +614,17 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
+            if (componentAttributeRepository != null && provisionSessionId != null
+                    && !provisionSessionId.isBlank()) {
+                UUID sessionId = UUID.fromString(provisionSessionId);
+                List<ComponentAttributeResult> attributeResults = componentAttributeRepository
+                        .findByProvisionSessionId(sessionId);
+                List<UUID> failedComponentIds = attributeResults.stream()
+                        .map(ComponentAttributeResult::getComponentId)
+                        .toList();
+                compResults.forEach(component -> component.setFailedValidation(
+                        failedComponentIds.contains(component.getId())));
+            }
             if (PciIds.DB.isReady()) {
                 compResults = AcaPciIds.translateResults(compResults);
             }

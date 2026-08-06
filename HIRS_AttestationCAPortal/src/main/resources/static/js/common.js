@@ -580,7 +580,7 @@ function getValidationDisplayHtml(full, validationType) {
           }
 
           if (certType) {
-            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}">`;
+            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}&provisionSessionId=${full.provisionSessionId}">`;
           }
         }
 
