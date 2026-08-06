@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems;
 import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidParser;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
+import lombok.Getter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class TcgCompRimCoswidParser extends CoswidParser {
     /**
      * Holds the TCG Component RIM Coswid.
      */
+    @Getter
     private TcgCompRimCoswid tcRim = new TcgCompRimCoswid();
 
     /**
@@ -39,6 +41,12 @@ public class TcgCompRimCoswidParser extends CoswidParser {
         ObjectMapper mapper = new ObjectMapper(new CBORFactory());
         parsedData = mapper.readValue(new ByteArrayInputStream(untaggedCbor), Map.class);
         rootNode = mapper.readTree(untaggedCbor);
+
+        // point the base parser's target at tcRim so standard CoSWID fields
+        // land on the same object as the TCG extensions, then run both init passes
+        this.coswid = tcRim;
+        initParser(untaggedCbor);
+        initTcgRimCoswidParser(untaggedCbor);
     }
 
     /**

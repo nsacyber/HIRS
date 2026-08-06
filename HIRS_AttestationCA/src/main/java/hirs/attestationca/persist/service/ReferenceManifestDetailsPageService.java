@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
@@ -105,6 +106,28 @@ public class ReferenceManifestDetailsPageService {
 
         if (bios != null) {
             data.putAll(getMeasurementsRimInfo(bios));
+        }
+
+        return data;
+    }
+
+    /**
+     * Gathers information for a Component RIM.
+     *
+     * @param uuid database reference for the requested RIM.
+     * @return mapping of the RIM information from the database.
+     * @throws java.io.IOException error for reading file bytes.
+     */
+    public HashMap<String, Object> getComponentRimInfo (final UUID uuid) throws IOException {
+        HashMap<String, Object> data = new HashMap<>();
+        ReferenceManifest rim = this.referenceManifestRepository.findById(uuid).orElse(null);
+
+        if(rim != null && rim.isComponent()) {
+            String coswid = new String(rim.getRimBytes(), StandardCharsets.UTF_8);
+            data.put("coswid", coswid);
+            data.put("rimType", rim.getRimType());
+            data.put("fileName", rim.getFileName());
+            data.put("tagId", rim.getTagId());
         }
 
         return data;
