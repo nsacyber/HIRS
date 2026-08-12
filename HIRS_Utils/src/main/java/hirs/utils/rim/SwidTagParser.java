@@ -14,12 +14,6 @@ import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -28,10 +22,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -60,14 +62,13 @@ public final class SwidTagParser {
                 log.error("Schema resource not found");
                 return null;
             }
-            Document validatedDoc = removeXMLWhitespace(doc);
             SchemaFactory schemaFactory = SchemaFactory.newInstance(SwidTagConstants.SCHEMA_LANGUAGE);
             Schema schema = schemaFactory.newSchema(new StreamSource(is));
             JAXBContext jaxbContext = JAXBContext.newInstance(SwidTagConstants.SCHEMA_PACKAGE);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             unmarshaller.setSchema(schema);
-            unmarshaller.unmarshal(validatedDoc);
-            return validatedDoc;
+            unmarshaller.unmarshal(doc);
+            return doc;
         } catch (UnmarshalException e) {
             throw new UnmarshalException("Error parsing Base RIM: " + e.getCause());
         } catch (IllegalArgumentException e) {
@@ -76,8 +77,6 @@ public final class SwidTagParser {
             e.printStackTrace();
         } catch (IOException e) {
             log.error(e.getMessage());
-        } catch (TransformerException e) {
-            log.error("Error transforming input: " + e.getCause());
         }
         return null;
     }
@@ -140,6 +139,41 @@ public final class SwidTagParser {
     }
 
     /**
+     * This method converts a public key string into a PublicKey object.
+     *
+     * @param publicKeyFile to convert to a PublicKey
+     * @param algorithm of the returned PublicKey
+     * @return PublicKey
+     */
+    public static PublicKey parsePublicKeyFromPem(final String publicKeyFile, final String algorithm) {
+        String header = "-----BEGIN PUBLIC KEY-----";
+        String footer = "-----END PUBLIC KEY-----";
+        String pemString;
+        try {
+            pemString = Files.readString(Path.of(publicKeyFile));
+        } catch (IOException e) {
+            log.error("Error reading public key file {}: {}", publicKeyFile, e.getMessage());
+            return null;
+        }
+        String publicKeyContent = pemString.replace(header, "")
+                .replace(footer, "")
+                .replaceAll("\\s+", "");
+
+        byte[] decodedBytes = Base64.getDecoder().decode(publicKeyContent);
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedBytes);
+        try {
+            KeyFactory kf = KeyFactory.getInstance(algorithm);
+            return kf.generatePublic(keySpec);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Error creating key factory for public key generation: {}", e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            log.error("Error creating a public key: {}", e.getMessage());
+        }
+
+        return null;
+    }
+
+    /**
      * This method converts a byte array to a Document object.
      *
      * @param bytes data in
@@ -173,24 +207,5 @@ public final class SwidTagParser {
         DocumentBuilder builder = dbf.newDocumentBuilder();
         File fileIn = new File(filename);
         return builder.parse(fileIn);
-    }
-
-    /**
-     * This method strips all whitespace from an xml file, including indents and spaces
-     * added for human-readability.
-     *
-     * @param document of the xml file
-     * @return Document object without whitespace
-     */
-    private static Document removeXMLWhitespace(final Document document) throws TransformerException {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Source source = new StreamSource(
-                SwidTagParser.class.getClassLoader().getResourceAsStream(
-                        SwidTagConstants.IDENTITY_TRANSFORM)
-        );
-        Transformer transformer = tf.newTransformer(source);
-        DOMResult result = new DOMResult();
-        transformer.transform(new DOMSource(document), result);
-        return (Document) result.getNode();
     }
 }

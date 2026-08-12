@@ -1,6 +1,7 @@
 package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 
 import hirs.utils.rim.ReferenceManifestValidator;
+import hirs.utils.rim.SwidTagParser;
 import hirs.utils.rim.unsignedRim.GenericRim;
 import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.swid.SwidTagConstants;
@@ -17,6 +18,7 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
@@ -40,7 +42,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
     private boolean isValid;
 
     /**
-     * Validate a PC Client RIM.
+     * Validate a PC Client RIM with a certificate.
      *
      * @param verifyFile      RIM to verify
      * @param certificateFile certificate
@@ -55,13 +57,65 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
         ReferenceManifestValidator validator = new ReferenceManifestValidator();
         validator.setRim(verifyFile);
         validator.setTrustStoreFile(trustStore);
-        HexFormat hexTool = HexFormat.of();
         if (rimel != null) {
             validator.setHasSupportRim(true);
             validator.setSupportRimDirectory(rimel);
         }
 
-        rim = copyDoc(validator.getRim());
+        addMeasurementForBaseRim(verifyFile, validator.getRim());
+
+        if (validator.validateBaseRim(certificateFile)) {
+            valid = true;
+        } else {
+            throw new RuntimeException("Failed to verify " + verifyFile);
+        }
+
+        isValid = valid;
+        return valid;
+    }
+
+    /**
+     * Validate a PC Client RIM with a public key.
+     *
+     * @param verifyFile RIM to verify
+     * @param publicKeyFile public key
+     * @param rimel RIM event log
+     * @return true if validated
+     * @throws IOException if there is an I/O error during the operation.
+     */
+    public boolean validate(final String verifyFile, final String publicKeyFile, final String rimel)
+            throws IOException {
+        boolean valid;
+        PublicKey pk = SwidTagParser.parsePublicKeyFromPem(publicKeyFile, "RSA");
+        ReferenceManifestValidator validator = new ReferenceManifestValidator();
+        validator.setRim(verifyFile);
+        if (rimel != null) {
+            validator.setHasSupportRim(true);
+            validator.setSupportRimDirectory(rimel);
+        }
+
+        addMeasurementForBaseRim(verifyFile, validator.getRim());
+
+        if (validator.validateXmlSignature(pk, "")) {
+            valid = true;
+        } else {
+            throw new RuntimeException("Failed to verify " + verifyFile);
+        }
+
+        isValid = valid;
+        return valid;
+    }
+
+    /**
+     * This method creates a measurement object based on the base RIM being verified.
+     *
+     * @param verifyFile RIM to verify
+     * @param baseRim Document object of the RIM to verify
+     * @throws RemoteException if a tagId cannot be parsed
+     */
+    private void addMeasurementForBaseRim(final String verifyFile, final Document baseRim)
+            throws RemoteException {
+        rim = copyDoc(baseRim);
 
         NodeList si = rim.getElementsByTagNameNS(SwidTagConstants.SWIDTAG_NAMESPACE,
                 SwidTagConstants.SOFTWARE_IDENTITY);
@@ -90,6 +144,7 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
                 SwidTagConstants.FILE);
         // Make a measurement for each Hash item and add it to the list of
         // measurements
+        HexFormat hexTool = HexFormat.of();
         for (int count = 0; count < files.getLength(); count++) {
             Element file = (Element) files.item(count);
             digest = file.getAttributeNS(SwidTagConstants.SHA_256_HASH.getNamespaceURI(),
@@ -105,15 +160,6 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
             measurement.setMeasurementBytes(digestBytes);
             measurements.add(measurement);
         }
-
-        if (validator.validateBaseRim(certificateFile)) {
-            valid = true;
-        } else {
-            throw new RuntimeException("Failed to verify " + verifyFile);
-        }
-
-        isValid = valid;
-        return valid;
     }
 
     /**

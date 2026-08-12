@@ -241,12 +241,7 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
         if (passed && !referenceManifestValidator.isSignatureValid()) {
             passed = false;
-            String validationErrorMessage = referenceManifestValidator.getValidationErrorMessage();
-            if (!validationErrorMessage.isEmpty()) {
-                rimSignatureStatus = new AppraisalStatus(FAIL, validationErrorMessage);
-            } else {
-                rimSignatureStatus = new AppraisalStatus(FAIL, "Base RIM signature invalid.");
-            }
+            rimSignatureStatus = new AppraisalStatus(FAIL, "Base RIM signature invalid.");
         }
 
         if (passed && !referenceManifestValidator.isSupportRimValid()) {
@@ -309,8 +304,9 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                 try {
                     if (measurement.getDeviceName().equals(hostName)) {
                         tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                        eventValue = referenceDigestValueRepository
-                                .findValuesByBaseRimId(baseReferenceManifest.getId());
+                        eventValue = referenceDigestValueRepository.findByManufacturerAndModel(
+                                device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                                device.getDeviceInfo().getHardwareInfo().getProductName());
                         for (ReferenceDigestValue rdv : eventValue) {
                             eventValueMap.put(rdv.getDigestValue(), rdv);
                         }

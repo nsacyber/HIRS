@@ -55,6 +55,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -210,7 +212,8 @@ public class SwidTagGateway {
 
             //Signature
             if (errorRequiredFields.isEmpty()) {
-                Document signedSoftwareIdentity = signXMLDocument(swidtag);
+                Document indentedSoftwareIdentity = indentXMLDocument(swidtag);
+                Document signedSoftwareIdentity = signXMLDocument(indentedSoftwareIdentity);
                 writeSwidTagFile(signedSoftwareIdentity, filename, false);
             } else {
                 throw new RuntimeException("The following fields cannot be empty or null: "
@@ -238,7 +241,7 @@ public class SwidTagGateway {
                     .getJsonObject(SwidTagConstants.DIRECTORY).getJsonArray(SwidTagConstants.FILE);
         } catch (ClassCastException e) {
             throw new ClassCastException(
-                    String.format("Please verify in {} that File's value is an [array].",
+                    String.format("Please verify in %s that File's value is an [array].",
                             attributesFile));
         }
         Iterator itr = files.iterator();
@@ -580,6 +583,28 @@ public class SwidTagGateway {
         }
 
         return doc;
+    }
+
+    /**
+     * Indents a given XML document representing a SWID tag for readability.
+     * Intended to be called <i>before</i> the document is signed.
+     *
+     * @param document the XML {@link Document} representing the SWID tag to indent
+     * @return the output XML {@link Document} containing the indented SWID tag
+     */
+    private Document indentXMLDocument(final Document document) {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            transformer.transform(new DOMSource(document), new StreamResult(output));
+
+            return builder.parse(new ByteArrayInputStream(output.toByteArray()));
+        } catch (TransformerException | IOException | org.xml.sax.SAXException e) {
+            throw new RuntimeException("Error while indenting SWID tag before signing: " + e.getMessage(), e);
+        }
     }
 
     /**
