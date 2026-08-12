@@ -72,12 +72,6 @@ public enum Page {
             "", null, true, false, null, ""),
 
     /**
-     * Non-menu page to display rims.
-     */
-    COMPONENT_RIM_DETAILS("Component RIM Details",
-            "", null, true, false, null, ""),
-
-    /**
      * Page to display RIM event digest table.
      */
     RIM_DATABASE("RIM Database", "/svg/database-white-24dp.svg", "first"),

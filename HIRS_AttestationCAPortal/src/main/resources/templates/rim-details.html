@@ -641,6 +641,110 @@
                 </div><!--signature-->
             </div><!--signature row-->
         </th:block><!--Base RIM-->
+
+        <th:block th:if="${initialData.get('rimType') == 'Component'}">
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Concise SWID Tag</span>
+                </div>
+                <div id="conciseSwidTag" class="col col-md-8">
+                    <span th:text="${'Tag ID: ' + initialData.get('tagId')}" />
+                    <span th:text="${'Tag Version: ' + initialData.get('tagVersion')}" />
+                    <span th:text="${'Software Name: ' + initialData.get('softwareName')}" />
+                    <span th:text="${'Software Version: ' + initialData.get('softwareVersion')}" />
+                    <span th:text="${'Language: ' + initialData.get('lang')}"
+                          th:if="${not #strings.isEmpty(initialData.get('lang'))}" />
+                    <span th:if="${initialData.get('corpus')}">
+                        Corpus:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark"
+                             title="Corpus Flag">
+                    </span>
+                    <span th:if="${initialData.get('patch')}">
+                        Patch:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark"
+                             title="Patch Flag">
+                    </span>
+                    <span th:if="${initialData.get('supplemental')}">
+                        Supplemental:
+                        <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" alt="Check mark"
+                             title="Supplemental Flag">
+                    </span>
+                </div>
+            </div><!--conciseSwidTag row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Entity</span>
+                </div>
+                <div id="componentEntity" class="col col-md-8">
+                    <span th:text="${'Entity Name: ' + initialData.get('entityName')}"
+                          th:if="${not #strings.isEmpty(initialData.get('entityName'))}" />
+                    <span th:text="${'Reg ID: ' + initialData.get('redId')}"
+                          th:if="${not #strings.isEmpty(initialData.get('redId'))}" />
+                    <span th:text="${'Role(s): ' + #strings.listJoin(initialData.get('roles'), ', ')}"
+                          th:if="${initialData.get('roles') !=null and !#lists.isEmpty(initialData.get('roles'))}" />
+                    <span th:text="${'Thumbprint: ' + initialData.get('thumbprint')}"
+                          th:if="${not #strings.isEmpty(initialData.get('thumbprint'))}" />
+                </div>
+            </div><!--componentEntity row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Link</span>
+                </div>
+                <div id="componentLink" class="col col-md-8">
+                    <span th:if="${not #strings.isEmpty(initialData.get('href'))}">
+                          Href: <a th:href="${initialData.get('href')}" th:text="${initialData.get('href')}"></a>
+                    </span>
+                    <span th:text="${'Rel: ' + initialData.get('rel')}"
+                          th:if="${not #strings.isEmpty(initialData.get('rel'))}" />
+                </div>
+            </div><!--componentLink row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Software Meta</span>
+                </div>
+                <div id="componentMeta" class="col col-md-8">
+                    <span th:text="${'Colloquial Version: ' + initialData.get('colloquialVersion')}"
+                          th:if="${not #strings.isEmpty(initialData.get('colloquialVersion'))}" />
+                    <span th:text="${'Edition: ' + initialData.get('edition')}"
+                          th:if="${not #strings.isEmpty(initialData.get('edition'))}" />
+                    <span th:text="${'Product: ' + initialData.get('product')}"
+                          th:if="${not #strings.isEmpty(initialData.get('product'))}" />
+                    <span th:text="${'Product Family: ' + initialData.get('productFamily')}"
+                          th:if="${not #strings.isEmpty(initialData.get('productFamily'))}" />
+                    <span th:text="${'Revision: ' + initialData.get('revision')}"
+                          th:if="${not #strings.isEmpty(initialData.get('revision'))}" />
+                    <span th:text="${'Description: ' + initialData.get('description')}"
+                          th:if="${not #strings.isEmpty(initialData.get('description'))}" />
+                    <span th:text="${'Summary: ' + initialData.get('summary')}"
+                          th:if="${not #strings.isEmpty(initialData.get('summary'))}" />
+                    <span th:text="${'Peristent ID: ' + initialData.get('persistentId')}"
+                          th:if="${not #strings.isEmpty(initialData.get('persistentId'))}" />
+                </div>
+            </div><!--componentMeta row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">Payload</span>
+                </div>
+                <div id="componentPayload" class="col col-md-8">
+                    <pre th:text="${initialData.get('payloadPretty')}"
+                         th:if="${not #strings.isEmpty(initialData.get('payloadPretty'))}"></pre>
+                    <span th:if="${#strings.isEmpty(initialData.get('payloadPretty'))}">No payload present.</span>
+                </div>
+            </div><!--componentPayload row-->
+            <div class="rimrow">
+                <div class="col-md-1 col-md-offset-1">
+                    <span class="colHeader">COSE Signature</span>
+                </div>
+                <div id="componentCose" class="col col-md-8">
+                    <span th:text="${'Algorithm: ' + initialData.get('coseAlgorithm')}" />
+                    <span th:text="${'Key Identifier: ' + initialData.get('coseKeyId')}"
+                          th:if="${not #strings.isEmpty(initialData.get('coseKeyId'))}" />
+                    <span th:text="${'Content Type: ' + initialData.get('coseContentType')}"
+                          th:if="${not #strings.isEmpty(initialData.get('coseContentType'))}" />
+                    <span th:text="${'Verification: ' + initialData.get('signatureValid')}" />
+                </div>
+            </div><!--componentCose row-->
+        </th:block><!--Component RIM-->
     </div><!--content fragment-->
 </body>
 

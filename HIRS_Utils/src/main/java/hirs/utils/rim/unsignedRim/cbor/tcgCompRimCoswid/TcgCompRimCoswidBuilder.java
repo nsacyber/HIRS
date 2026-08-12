@@ -64,18 +64,18 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
                 TcgCompRimCoswid.CRIM_BINDING_SPEC_INT, out);
         addStringAttribute(tcRim.getCrimBindingSpecVersion(),
                 TcgCompRimCoswid.CRIM_BINDING_SPEC_VERSION_INT, out);
+        addStringAttribute(tcRim.getCrimPayloadType(),
+                TcgCompRimCoswid.CRIM_PAYLOAD_TYPE_INT, out);
         addStringAttribute(tcRim.getCrimComponentManufacturer(),
                 TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_INT, out);
         addStringAttribute(tcRim.getCrimComponentManufacturerID(),
                 TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_ID_INT, out);
-        addStringAttribute(tcRim.getCrimPayloadType(),
-                TcgCompRimCoswid.CRIM_PAYLOAD_TYPE_INT, out);
     }
 
     /**
      * Creates a TCG Component RIM Coswid object.
      *
-     * @param out ByteArrayOutputStream to wite the object to
+     * @param out ByteArrayOutputStream to write the object to
      */
     public void initTcgRim(final ByteArrayOutputStream out) {
         initCoswid(out); // Add Coswid defined fields; TCG software-meta extensions via writeSoftwareMetaExtensions()
