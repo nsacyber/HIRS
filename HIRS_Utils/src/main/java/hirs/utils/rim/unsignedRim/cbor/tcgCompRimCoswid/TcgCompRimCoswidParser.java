@@ -63,7 +63,7 @@ public class TcgCompRimCoswidParser extends CoswidParser {
                 .path(Integer.toString(tcRim.CRIM_PAYLOAD_TYPE_INT)).asText());
         tcRim.setCrimComponentManufacturer(rootNode.path(Integer.toString(CoswidItems.SOFTWARE_META_INT))
                 .path(Integer.toString(tcRim.CRIM_COMPONENT_MANUFACTURER_INT)).asText());
-        tcRim.setCrimComponentManufacturerID(rootNode.path(Integer.toString(CoswidItems.SOFTWARE_META_INT))
+        tcRim.setCrimComponentManufacturerId(rootNode.path(Integer.toString(CoswidItems.SOFTWARE_META_INT))
                 .path(Integer.toString(tcRim.CRIM_COMPONENT_MANUFACTURER_ID_INT)).asText());
     }
 

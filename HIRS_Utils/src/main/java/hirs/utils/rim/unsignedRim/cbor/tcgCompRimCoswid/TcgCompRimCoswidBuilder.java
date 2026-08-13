@@ -30,7 +30,7 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
         tcRim.setCrimBindingSpec(config.getBindingSpec());
         tcRim.setCrimBindingSpecVersion(config.getBindingSpecVersion());
         tcRim.setCrimComponentManufacturer(config.getComponentManufacturerStr());
-        tcRim.setCrimComponentManufacturerID(config.getComponentManufacturerID());
+        tcRim.setCrimComponentManufacturerId(config.getComponentManufacturerID());
         tcRim.setCrimPayloadType(config.getPayloadType());
         tcRim.setCrimSpdmMeasurementBlock(config.getSpdmMeasurementBlock());
         tcRim.setCrimSpdmMeasurementBlockIndex(config.getSpdmMeasurementBlockIndex());
@@ -68,7 +68,7 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
                 TcgCompRimCoswid.CRIM_PAYLOAD_TYPE_INT, out);
         addStringAttribute(tcRim.getCrimComponentManufacturer(),
                 TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_INT, out);
-        addStringAttribute(tcRim.getCrimComponentManufacturerID(),
+        addStringAttribute(tcRim.getCrimComponentManufacturerId(),
                 TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_ID_INT, out);
     }
 

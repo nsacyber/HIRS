@@ -647,20 +647,20 @@ public class ReferenceManifestDetailsPageService {
         data.put("fileName", cRim.getFileName());
 
         // concise-swid-tag
-        data.put("tagId", crim.getTagId());
-        data.put("tagVersion", crim.getTagVersion());
         data.put("softwareName", crim.getSoftwareName());
         data.put("softwareVersion", crim.getSoftwareVersion());
-        data.put("corpus", crim.isCorpus());
+        data.put("tagId", crim.getTagId());
+        data.put("tagVersion", crim.getTagVersion());
+        data.put("corpus", crim.isCorpus());                    // ietf coswid only
         data.put("patch", crim.isPatch());
         data.put("supplemental", crim.isSupplemental());
-        data.put("lang", crim.getLang());
+        data.put("lang", crim.getLang());                       // ietf coswid only
 
         // entity
         data.put("entityName", crim.getEntityName());
         data.put("redId", crim.getRegId());
         data.put("roles", crim.getRoleCoswid());
-        data.put("thumbprint", crim.getThumbprint());
+        data.put("thumbprint", crim.getThumbprint());           // ietf coswid only
 
         // link
         data.put("href", crim.getHref());
@@ -670,18 +670,18 @@ public class ReferenceManifestDetailsPageService {
         data.put("colloquialVersion", crim.getColloquialVersion());
         data.put("edition", crim.getEdition());
         data.put("product", crim.getProduct());
-        data.put("productFamily", crim.getProductFamily());
+        data.put("productFamily", crim.getProductFamily());     // ietf coswid only
         data.put("revision", crim.getRevision());
-        data.put("description", crim.getDescription());
-        data.put("summary", crim.getSummary());
+        data.put("description", crim.getDescription());         // ietf coswid only
+        data.put("summary", crim.getSummary());                 // ietf coswid only
         data.put("persistentId", crim.getPersistentId());
 
         // TCG Component RIM software-meta extensions
+        data.put("componentManufacturer", crim.getCrimComponentManufacturer());
+        data.put("componentManufacturerId", crim.getCrimComponentManufacturerId());
         data.put("bindingSpec", crim.getCrimBindingSpec());
         data.put("bindingSpecVersion", crim.getCrimBindingSpecVersion());
         data.put("payloadType", crim.getCrimPayloadType());
-        data.put("componentManufacturer", crim.getCrimComponentManufacturer());
-        data.put("componentManufacturerId", crim.getCrimComponentManufacturerID());
 
         // payload /measurements
         data.put("measurements", crim.getReferenceMeasurements());

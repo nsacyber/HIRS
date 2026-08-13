@@ -73,7 +73,7 @@ public class ComponentReferenceManifest extends ReferenceManifest {
             this.setSwidPatch(crim.isPatch());
             this.setSwidSupplemental(crim.isSupplemental());
             this.setPlatformManufacturer(crim.getCrimComponentManufacturer());
-            this.setPlatformManufacturerId(crim.getCrimComponentManufacturerID());
+            this.setPlatformManufacturerId(crim.getCrimComponentManufacturerId());
             this.setPlatformModel(firstNonBlank(crim.getProduct(), crim.getSoftwareName()));
             this.setPayloadType(crim.getCrimPayloadType());
 
