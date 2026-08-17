@@ -145,7 +145,9 @@ The following table shows the relationship between some of the common formats:
 
 ## IETF CoSWID
 
-Concise Software Identification is a CBOR-encoded, size-optimized reformulation of the 
+The IETF Concise Software Identification (CoSWID) defined by 
+[RFC 9393 :fontawesome-solid-external-link:](https://datatracker.ietf.org/doc/html/rfc9393){:target="_blank"}
+is a CBOR-encoded, size-optimized reformulation of the 
 ISO/IEC 19770-2 SWID tag. It carries the same semantic model - a globally unique tag identifying
 a software product, its version, the entities responsible for it (creator, distributor, etc.), 
 and optionally payload/evidence data such as file manifests with hashes - but replaces SWID's 
@@ -156,12 +158,14 @@ build on.
 ## TCG Component RIM CoSWID
 
 The TCG Reference Integrity Manifest family defines how a platform/component vendor publishes the 
-*golden* measurements a verifier should expect from a TPM-anchored device. The PC Client RIM spec
-defines a SWID/CoSWID *binding*: the RIM is expressed as a signed CoSWID whose payload references 
-support RIMs (e.g., canonical TCG event logs / PCR reference values) and whose link/meta 
+*golden* measurements a Verifier should expect from a TPM-anchored device. The PC Client RIM spec
+defines a 
+[SWID/CoSWID *binding* :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/tcg-component-rim-binding-for-swid-and-coswid/){:target="_blank"}
+: the RIM is expressed as a signed CoSWID whose payload references 
+support RIMs (e.g., canonical TCG Event Logs / PCR reference values) and whose link/meta 
 extensions carry TCG-specific fields (platform manufacturer/model, binding spec version, RIM 
 linkage). In short, it's CoSWID used as the signed envelope for TPM reference measurements so 
-an appraiser can match a quote + event log against vendor-published expected values.
+an appraiser can match a Quote + Event Log against vendor-published expected values.
 
 Two examples of TCG Component RIMs are shown below, along with some insight into the bytes in 
 each. The first has a 96-byte COSE signature, and the second has a 384-byte COSE signature.
@@ -176,11 +180,13 @@ each. The first has a 96-byte COSE signature, and the second has a 384-byte COSE
 
 ## IETF CoRIM
 
-The Concise Reference Integrity Manifest, from the IETF RATS working group, generalizes the RIM
-idea beyond a single TPM-measured component. A CoRIM is a signed CBOR container holding one
+The Concise Reference Integrity Manifest 
+([CoRIM draft here :fontawesome-solid-external-link:](https://datatracker.ietf.org/doc/draft-ietf-rats-corim/){:target="_blank"})
+, from the IETF RATS working group, generalizes the RIM idea beyond a single TPM-measured component. 
+A CoRIM is a signed CBOR container holding one
 or more CoMID (Concise Module Identifier) and/or CoSWID tags, each expressing reference values, 
 endorsed values, identity/attestation-key material, or conditional endorsements for a 
-target environment. It gives verifiers a uniform, composable way to ingest reference/endorsement
+target environment. It gives Verifiers a uniform, composable way to ingest reference/endorsement
 data for heterogeneous attesters (TPM, DICE, PSA, Intel TDX/SGX, CCA, etc.) rather than a 
 per-technology format, and is the intended input to a RATS Verifier's appraisal policy.
 
