@@ -251,6 +251,9 @@ namespace hirs {
                         Log.Debug("The ACA accepted the identity claim.");
                     } else {
                         Log.Debug("The ACA did not accept the identity claim. See details on the ACA.");
+                        if (icr.HasStatusDetails && !icr.StatusDetails.IsWhiteSpace()) {
+                            Log.Information(icr.StatusDetails);
+                        }
                         result = ClientExitCodes.PASS_1_STATUS_FAIL;
                         return (int)result;
                     }
