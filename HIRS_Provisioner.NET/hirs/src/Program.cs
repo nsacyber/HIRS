@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Tpm2Lib;
 
 namespace hirs {
     class Program {
@@ -43,9 +44,21 @@ namespace hirs {
                     result = (ClientExitCodes)await p.Provision(tpm);
                     Log.Information("----> Provisioning " + (result == 0 ? "successful" : "failed") + ".");
                 }
+            } catch (AcaConnectionException e) {
+                result = ClientExitCodes.ACA_UNREACHABLE;
+                Log.Error(e, "Network connection to the ACA failed. Verify the ACA address, network connection, and server availability.");
+            } catch (AcaClientException e) {
+                result = ClientExitCodes.EXTERNAL_APP_ERROR;
+                Log.Error(e, "ACA client failure. The ACA response could not be used to continue provisioning.");
+            } catch (ProvisioningFailureException e) {
+                result = e.ExitCode;
+                Log.Error(e, e.Message);
+            } catch (TpmException e) {
+                result = ClientExitCodes.TPM_ERROR;
+                Log.Error(e, "TPM failure. Check that the TPM is available and that the provisioner has the required permissions.");
             } catch (Exception e) {
                 result = ClientExitCodes.FAIL;
-                Log.Fatal(e, "Provisioning Failed. See details on the ACA.");
+                Log.Error(e, "Provisioning Failed. See details on the ACA.");
             }
             Log.CloseAndFlush();
 
