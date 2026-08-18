@@ -8,17 +8,31 @@ on:
     branches:
       - '*v3*'
       - 'main'
-    paths-ignore:
-      - '**/*.md'       # Ignores all Markdown files
-      - '**/*.png'      # Ignores all PNG images
-      - '**/*.jpg'      # Ignores all JPG images
-      - 'mkdocs.yml'    # Ignores the MkDocs config
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code_changed: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code:
+            - '!**/*.md'       # all Markdown files
+            - '!**/*.png'      # all PNG images
+            - '!**/*.jpg'      # all JPG images
+            - '!mkdocs.yml'    # the MkDocs config
+            - '**'
   # Run the unit tests and package HIRS ACA, provisoner, and tools
   ACA_Provisioner_Unit_Tests:
+    needs: check-changes
+    # Run if code changes exist OR if triggered manually
+    if: ${{ needs.check-changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest  # Configures the job to run on the latest version of an Ubuntu Linux runner
     steps:
       - uses: actions/checkout@v6  # run v6 of actions/checkout action, which checks out your repository onto the runner
