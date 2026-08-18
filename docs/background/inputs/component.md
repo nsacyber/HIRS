@@ -153,7 +153,7 @@ a software product, its version, the entities responsible for it (creator, distr
 and optionally payload/evidence data such as file manifests with hashes - but replaces SWID's 
 verbose XML with CDDL-defined CBOR so tags are small enough for constrained devices and can be 
 COSE-signed. It's the base "what software is this" descriptor that other attestation specs 
-build on.
+build on. 
 
 ## TCG Component RIM CoSWID
 
