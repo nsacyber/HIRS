@@ -379,6 +379,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                         remainingComponentResults.size()));
 
                 for (ComponentResult componentResult : remainingComponentResults) {
+                    componentAttributeRepository.save(new ComponentAttributeResult(
+                            componentResult.getId(), provisionSessionId,
+                            "Component", "No matching device component",
+                            componentResult.getComponentClassRegistryType()));
                     resultMessage.append(componentResult.toString())
                             .append("%n");
                 }
@@ -506,6 +510,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
                         remainingComponentResults.size()));
 
                 for (ComponentResult componentResult : remainingComponentResults) {
+                    componentAttributeRepository.save(new ComponentAttributeResult(
+                            componentResult.getId(), provisionSessionId,
+                            "Component", "No matching device component",
+                            componentResult.getComponentClassRegistryType()));
                     resultMessage.append("Component not found: ")
                             .append(componentResult.toString());
                 }

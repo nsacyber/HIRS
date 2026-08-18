@@ -19,6 +19,8 @@ public class CertificateDetailsPageParams implements PageParams {
 
     private String type;
 
+    private String provisionSessionId;
+
     /**
      * Allows PageController to iterate over the url parameters.
      *
@@ -29,6 +31,7 @@ public class CertificateDetailsPageParams implements PageParams {
         LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         map.put("id", id);
         map.put("type", type);
+        map.put("provisionSessionId", provisionSessionId);
         return map;
     }
 }
