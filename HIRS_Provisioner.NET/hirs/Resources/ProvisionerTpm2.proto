@@ -99,5 +99,6 @@ message CertificateResponse {
   optional string certificate = 1;
   optional ResponseStatus status = 2 [default = FAIL];
   optional string ldevidCertificate = 3;
+  optional string status_details = 4;
 }
 
