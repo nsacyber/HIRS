@@ -310,6 +310,9 @@ namespace hirs {
                             Log.Debug("ACA returned a positive response to the Certificate Request.");
                         } else {
                             Log.Debug("The ACA did not return any certificates. See details on the ACA.");
+                            if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {
+                                Log.Information(cr.StatusDetails);
+                            }
                             result = ClientExitCodes.PASS_2_STATUS_FAIL;
                             return (int)result;
                         }
