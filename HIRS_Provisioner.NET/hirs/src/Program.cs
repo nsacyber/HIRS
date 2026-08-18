@@ -45,7 +45,7 @@ namespace hirs {
                 }
             } catch (Exception e) {
                 result = ClientExitCodes.FAIL;
-                Log.Fatal(e, "Application stopped.");
+                Log.Fatal(e, "Provisioning Failed. See details on the ACA.");
             }
             Log.CloseAndFlush();
 
