@@ -71,6 +71,7 @@ namespace hirs {
                                        byte[] endorsementCredential, List<byte[]> platformCredentials,
                                        string paccoroutput, byte[] ldevidPublicArea = null) {
             IdentityClaim identityClaim = new();
+            identityClaim.ClientVersion = Program.VERSION;
             identityClaim.Dv = dv;
             identityClaim.AkPublicArea = ByteString.CopyFrom(akPublicArea);
             identityClaim.EkPublicArea = ByteString.CopyFrom(ekPublicArea);
