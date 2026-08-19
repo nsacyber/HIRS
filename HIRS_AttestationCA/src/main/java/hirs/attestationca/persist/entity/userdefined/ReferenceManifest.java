@@ -61,7 +61,7 @@ public class ReferenceManifest extends ArchivableEntity {
     /**
      * String for display of a Comp RIM.
      */
-    public static final String COMP_RIM = "Comp1";
+    public static final String COMP_RIM = "Comp3";
 
     
 
