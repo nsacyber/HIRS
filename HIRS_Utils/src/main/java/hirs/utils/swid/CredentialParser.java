@@ -140,37 +140,27 @@ public final class CredentialParser {
      */
     private List<X509Certificate> parsePEMCertificates(final String filename) {
         List<X509Certificate> certificates = null;
-        FileInputStream fis = null;
-        BufferedInputStream bis = null;
-        try {
-            fis = new FileInputStream(filename);
-            bis = new BufferedInputStream(fis);
-            CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
-
-            while (bis.available() > 0) {
-                certificates =
-                        (List<X509Certificate>) certificateFactory.generateCertificates(bis);
-            }
-
-            if (certificates.size() < 1) {
-                System.out.println("ERROR: No certificates parsed from " + filename);
-            }
-            bis.close();
-        } catch (CertificateException e) {
-            System.out.println("Error in certificate factory: " + e.getMessage());
-        } catch (IOException e) {
-            System.out.println("Error reading from input stream: " + e.getMessage());
-        } finally {
+        try (FileInputStream fis = new FileInputStream(filename); BufferedInputStream bis = new BufferedInputStream(fis)) {
             try {
-                if (fis != null) {
-                    fis.close();
+                CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
+
+                while (bis.available() > 0) {
+                    certificates =
+                            (List<X509Certificate>) certificateFactory.generateCertificates(bis);
                 }
-                if (bis != null) {
-                    bis.close();
+
+                assert certificates != null;
+                if (certificates.isEmpty()) {
+                    System.out.println("ERROR: No certificates parsed from " + filename);
                 }
+                bis.close();
+            } catch (CertificateException e) {
+                System.out.println("Error in certificate factory: " + e.getMessage());
             } catch (IOException e) {
-                System.out.println("Error closing input stream: " + e.getMessage());
+                System.out.println("Error reading from input stream: " + e.getMessage());
             }
+        } catch (IOException e) {
+            System.out.println("Error closing input stream: " + e.getMessage());
         }
 
         return certificates;
