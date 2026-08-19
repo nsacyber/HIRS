@@ -57,6 +57,9 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     public static final String MEASUREMENT_RIM = "Measurement";
 
+    //Component
+    public static final String COMPONENT_RIM = "Comp";
+
     /**
      * String for the xml schema ios standard.
      */
