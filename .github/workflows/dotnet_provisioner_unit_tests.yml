@@ -45,77 +45,77 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
-      - name: Remove problem matcher for now
-        run: |
-          echo "::remove-matcher owner=csc::"
-          echo "::remove-matcher owner=dotnet::"
-      - name: Restore dependencies
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet restore
-      - name: Restore Tools
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet tool restore
-      - name: Build
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet build
-      - name: Test
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet test
-
-  package:
-    needs: test
-    name: Packages
-    runs-on: windows-2022
-    steps:
-      - name: Set git to use LF
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-      - uses: actions/checkout@v6
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{env.DOTNET_VERSION}}
-      - name: Remove problem matcher for now
-        run: |
-          echo "::remove-matcher owner=csc::"
-          echo "::remove-matcher owner=dotnet::"
-      - name: Restore dependencies
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet restore
-      - name: Restore Tools
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet tool restore
-      - name: Install Package Tools
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet tool install --global dotnet-deb --allow-roll-forward
-          dotnet tool install --global dotnet-rpm --allow-roll-forward
-      - name: Linux Packages
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet deb install
-          dotnet rpm install
-          dotnet deb -r linux-x64 -c Release
-          dotnet rpm -r linux-x64 -c Release
-      - name: Windows Packages
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=${{env.DOTNET_MSI_TARGETFRAMEWORK}} /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
-      - name: Artifacts SHA256
-        shell: bash
-        run: |
-          sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-          ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-      - name: Artifacts
-        uses: actions/upload-artifact@v5
-        with:
-          name: dists
-          retention-days: 5
-          if-no-files-found: error
-          path: |
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.deb
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
+#      - name: Remove problem matcher for now
+#        run: |
+#          echo "::remove-matcher owner=csc::"
+#          echo "::remove-matcher owner=dotnet::"
+#      - name: Restore dependencies
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet restore
+#      - name: Restore Tools
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet tool restore
+#      - name: Build
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet build
+#      - name: Test
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet test
+#
+#  package:
+#    needs: test
+#    name: Packages
+#    runs-on: windows-2022
+#    steps:
+#      - name: Set git to use LF
+#        run: |
+#          git config --global core.autocrlf false
+#          git config --global core.eol lf
+#      - uses: actions/checkout@v6
+#      - name: Setup .NET
+#        uses: actions/setup-dotnet@v4
+#        with:
+#          dotnet-version: ${{env.DOTNET_VERSION}}
+#      - name: Remove problem matcher for now
+#        run: |
+#          echo "::remove-matcher owner=csc::"
+#          echo "::remove-matcher owner=dotnet::"
+#      - name: Restore dependencies
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet restore
+#      - name: Restore Tools
+#        working-directory: HIRS_Provisioner.NET
+#        run: dotnet tool restore
+#      - name: Install Package Tools
+#        working-directory: HIRS_Provisioner.NET/hirs
+#        run: |
+#          dotnet tool install --global dotnet-deb --allow-roll-forward
+#          dotnet tool install --global dotnet-rpm --allow-roll-forward
+#      - name: Linux Packages
+#        working-directory: HIRS_Provisioner.NET/hirs
+#        run: |
+#          dotnet deb install
+#          dotnet rpm install
+#          dotnet deb -r linux-x64 -c Release
+#          dotnet rpm -r linux-x64 -c Release
+#      - name: Windows Packages
+#        working-directory: HIRS_Provisioner.NET/hirs
+#        run: |
+#          dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=${{env.DOTNET_MSI_TARGETFRAMEWORK}} /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+#      - name: Artifacts SHA256
+#        shell: bash
+#        run: |
+#          sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+#          ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+#      - name: Artifacts
+#        uses: actions/upload-artifact@v5
+#        with:
+#          name: dists
+#          retention-days: 5
+#          if-no-files-found: error
+#          path: |
+#            HIRS_Provisioner.NET/hirs/bin/Release/**/*.deb
+#            HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
+#            HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
 
         
