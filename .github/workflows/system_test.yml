@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-      - name: ACA TPM2 System Tests Setup
+#      - name: ACA TPM2 System Tests Setup
 #        continue-on-error: true
 #        shell: bash
 #        run: |
