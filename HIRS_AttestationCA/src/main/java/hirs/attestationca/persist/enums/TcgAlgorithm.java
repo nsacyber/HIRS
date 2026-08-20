@@ -21,10 +21,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public enum TcgAlgorithm {
-    /**
-     * RSA Public Key Algorithm.
-     */
+    /** RSA Public Key Algorithm. */
     RSA(0x0001, "RSA"),
+
+    /** AES algorithm. */
+    AES(0x0006, "AES"),
 
     /** SHA-256 algorithm. */
     SHA256(0x000B, "SHA-256"),
@@ -32,6 +33,9 @@ public enum TcgAlgorithm {
     SHA384(0x000C, "SHA-384"),
     /** SHA-512 algorithm. */
     SHA512(0x000D, "SHA-512"),
+
+    /** NULL algorithm. */
+    NULL(0x0010, "NULL"),
 
     /** RSASSA algorithm. */
     RSASSA(0x0014, "RSASSA"),
@@ -44,20 +48,20 @@ public enum TcgAlgorithm {
 
     /** ECDSA algorithm. */
     ECDSA(0x0018, "ECDSA"),
-
     /** ECDH algorithm. */
     ECDH(0x0019, "ECDH"),
 
-    /**
-     * ECC Public Key Algorithm.
-     */
+    /** ECC Public Key Algorithm. */
     ECC(0x0023, "ECC"),
 
-    /** AES algorithm. */
-    AES(0x0006, "AES"),
+    /** Cipher Feedback mode. */
+    CFB(0x0043, "CFB"),
 
-    /** NULL algorithm. */
-    NULL(0x0010, "NULL"),
+    /** ML-KEM algorithm. */
+    MLKEM(0x00A0, "ML-KEM"),
+
+    /** ML-DSA algorithm. */
+    MLDSA(0x00A1, "ML-DSA"),
 
     /**
      * Represents an unknown public key algorithm.

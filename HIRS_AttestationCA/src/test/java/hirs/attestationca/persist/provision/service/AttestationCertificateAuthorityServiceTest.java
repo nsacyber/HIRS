@@ -8,6 +8,8 @@ import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.utils.HexUtils;
+import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
+import org.bouncycastle.jcajce.interfaces.MLKEMPublicKey;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,11 @@ public class AttestationCertificateAuthorityServiceTest {
     private static final String AK_PUBLIC_KEY_PATH_ECC = "/tpm2/ak_ecc.pub";
     private static final String EK_POINT_PATH_ECC = "/tpm2/ek_ecc.point";
     private static final String AK_POINT_PATH_ECC = "/tpm2/ak_ecc.point";
+
+    private static final String EK_PUBLIC_KEY_PATH_MLKEM = "/tpm2/ek_mlkem.pub";
+    private static final String AK_PUBLIC_KEY_PATH_MLDSA = "/tpm2/ak_mldsa.pub";
+    private static final String EK_HEX_PATH_MLKEM = "/tpm2/ek_mlkem.hex";
+    private static final String AK_HEX_PATH_MLDSA = "/tpm2/ak_mldsa.hex";
 
     private AutoCloseable mocks;
 
@@ -392,5 +399,47 @@ public class AttestationCertificateAuthorityServiceTest {
                 pointBytes.length) : pointBytes;
         String hex = HexUtils.byteArrayToHexString(unsignedPointBytes);
         assertEquals(realPoint, hex);
+    }
+
+    /**
+     * Tests parsing the ML-KEM EK from the TPM2 output file.
+     *
+     * @throws URISyntaxException incorrect resource path
+     * @throws IOException        unable to read from file
+     */
+    @Test
+    public void testParseEkMlKem() throws URISyntaxException, IOException {
+        Path ekPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_PUBLIC_KEY_PATH_MLKEM)).toURI());
+        Path ekPubKeyPath = Paths.get(Objects.requireNonNull(getClass().getResource(EK_HEX_PATH_MLKEM)).toURI());
+
+        byte[] ekFile = Files.readAllBytes(ekPath);
+        String ekPubKeyStr = Files.readString(ekPubKeyPath).replaceAll("\\s+", "");
+
+        ParsedTpmPublic ekPub = TpmPublicHelper.parseTpmPublicArea(ekFile);
+        MLKEMPublicKey mlkemPublicKey = (MLKEMPublicKey) ekPub.publicKey();
+
+        byte[] ekPubKeyBytes = HexUtils.hexStringToByteArray(ekPubKeyStr);
+        assertArrayEquals(ekPubKeyBytes, mlkemPublicKey.getPublicData());
+    }
+
+    /**
+     * Tests parsing the ML-DSA AK from the TPM2 output file.
+     *
+     * @throws URISyntaxException incorrect resource path
+     * @throws IOException        unable to read from file
+     */
+    @Test
+    public void testParseAkMlDsa() throws URISyntaxException, IOException {
+        Path akPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_PUBLIC_KEY_PATH_MLDSA)).toURI());
+        Path akPubKeyPath = Paths.get(Objects.requireNonNull(getClass().getResource(AK_HEX_PATH_MLDSA)).toURI());
+
+        byte[] akFile = Files.readAllBytes(akPath);
+        String akPubKeyStr = Files.readString(akPubKeyPath).replaceAll("\\s+", "");
+
+        ParsedTpmPublic akPub = TpmPublicHelper.parseTpmPublicArea(akFile);
+        MLDSAPublicKey mldsaPublicKey = (MLDSAPublicKey) akPub.publicKey();
+
+        byte[] akPubKeyBytes = HexUtils.hexStringToByteArray(akPubKeyStr);
+        assertArrayEquals(akPubKeyBytes, mldsaPublicKey.getPublicData());
     }
 }
