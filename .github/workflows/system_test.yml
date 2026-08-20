@@ -6,28 +6,14 @@ on:
     branches:
       - '*v3*'
       - 'main'
+    paths-ignore:
+      - '**/*.md'       # Ignores all Markdown files
+      - '**/*.png'      # Ignores all PNG images
+      - '**/*.jpg'      # Ignores all JPG images
+      - 'mkdocs.yml'    # Ignores the MkDocs config
   workflow_dispatch:
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      code_changed: ${{ steps.filter.outputs.code }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            code:
-            - '!**/*.md'       # all Markdown files
-            - '!**/*.png'      # all PNG images
-            - '!**/*.jpg'      # all JPG images
-            - '!mkdocs.yml'    # the MkDocs config
-            - '**'
   DockerTests:
-    needs: check-changes
-    # Run if code changes exist OR if triggered manually
-    if: ${{ needs.check-changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     outputs:
       test-result: ${{ steps.set_outputs.outputs.test-result }}

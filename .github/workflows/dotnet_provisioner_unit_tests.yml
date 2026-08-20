@@ -1,33 +1,19 @@
 # Updated: 02/03/2026
 name: Dotnet Provisioner Unit Tests and Packages
 
-on: 
+on:
   push:
+    paths-ignore:
+      - '**/*.md'       # Ignores all Markdown files
+      - '**/*.png'      # Ignores all PNG images
+      - '**/*.jpg'      # Ignores all JPG images
+      - 'mkdocs.yml'    # Ignores the MkDocs config
 env:
   DOTNET_VERSION: 10.0.x
   DOTNET_MSI_TARGETFRAMEWORK: net10.0
   DOTNET_ROLL_FORWARD: LatestMajor
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      code_changed: ${{ steps.filter.outputs.code }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            code:
-            - '!**/*.md'       # all Markdown files
-            - '!**/*.png'      # all PNG images
-            - '!**/*.jpg'      # all JPG images
-            - '!mkdocs.yml'    # the MkDocs config
-            - '**'
   test:
-    needs: check-changes
-    # Run if code changes exist OR if triggered manually
-    if: ${{ needs.check-changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' }}
     name: Run Unit Tests
     runs-on: ${{ matrix.os }}
     strategy:
@@ -118,4 +104,3 @@ jobs:
             HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
             HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
 
-        
