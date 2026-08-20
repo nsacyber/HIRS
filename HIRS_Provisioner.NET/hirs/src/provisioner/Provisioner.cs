@@ -258,19 +258,19 @@ namespace hirs {
 
                 byte[] integrityHMAC = null, encIdentity = null, encryptedSecret = null;
                 if (icr.HasCredentialBlob) {
-                    byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // look for the nonce
+                    byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // TPM2B_ID_OBJECT; look for the nonce
+                    byte[] encryptedSecretBlob = icr.EncryptedSecret.ToByteArray(); // TPM2B_ENCRYPTED_SECRET
                     Log.Debug("ACA delivered IdentityClaimResponse credentialBlob " + BitConverter.ToString(credentialBlob));
-                    int credentialBlobLen = credentialBlob[0] | (credentialBlob[1] << 8); 
-                    int integrityHmacLen = (credentialBlob[2] << 8) | credentialBlob[3]; 
-                    integrityHMAC = new byte[integrityHmacLen];
+                    int credentialBlobLen = (credentialBlob[0] << 8) | credentialBlob[1];
+                    int integrityHmacLen = (credentialBlob[2] << 8) | credentialBlob[3];
+                    integrityHMAC = new byte[integrityHmacLen]; // Extract HMAC
                     Array.Copy(credentialBlob, 4, integrityHMAC, 0, integrityHmacLen);
                     int encIdentityLen = credentialBlobLen - integrityHmacLen - 2;
                     encIdentity = new byte[encIdentityLen];
                     Array.Copy(credentialBlob, 4 + integrityHmacLen, encIdentity, 0, encIdentityLen);
-                    // The following offsets are bound tightly to the way makecredential is implemented on the ACA.
-                    int encryptedSecretLen = credentialBlob[134] | (credentialBlob[135] << 8);
+                    int encryptedSecretLen = (encryptedSecretBlob[0] << 8) | encryptedSecretBlob[1];
                     encryptedSecret = new byte[encryptedSecretLen];
-                    Array.Copy(credentialBlob, 136, encryptedSecret, 0, encryptedSecretLen);
+                    Array.Copy(encryptedSecretBlob, 2, encryptedSecret, 0, encryptedSecretLen);
                     Log.Debug("Prepared values to give to activateCredential.");
                     Log.Debug("    integrityHMAC: " + BitConverter.ToString(integrityHMAC));
                     Log.Debug("    encIdentity: " + BitConverter.ToString(encIdentity));

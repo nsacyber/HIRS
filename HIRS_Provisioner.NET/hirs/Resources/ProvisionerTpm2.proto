@@ -87,6 +87,7 @@ message IdentityClaimResponse {
   optional bytes credential_blob = 1;
   optional string pcr_mask = 2;
   optional ResponseStatus status = 3 [default = FAIL];
+  optional bytes encrypted_secret = 4;
 }
 
 message CertificateRequest {
