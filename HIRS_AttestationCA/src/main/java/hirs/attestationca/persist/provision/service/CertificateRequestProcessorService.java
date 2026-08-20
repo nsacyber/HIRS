@@ -163,7 +163,7 @@ public class CertificateRequestProcessorService {
             // Get attestation public key
             ParsedTpmPublic akPub;
             try {
-                akPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getEkPublicArea().toByteArray());
+                akPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getAkPublicArea().toByteArray());
             } catch (Exception e) {
                 log.error("Could not parse AK pub: {}", e.getMessage());
                 throw new IllegalStateException(e.getMessage());
