@@ -7,9 +7,19 @@ include 'HIRS_Utils',
         ':tools:tcg_rim_tool'
 
 dependencyResolutionManagement {
+
     versionCatalogs {
         create("libs") {
             from(files("gradle/versions.toml"))
         }
+    }
+    
+    repositories {
+                     
+        maven { url = uri("https://maven-central-eu.storage-download.googleapis.com/maven2/") } // default to google mirror
+        
+        maven { url = uri("https://packages.atlassian.com/mvn/maven-atlassian-external/") } // fallback to atlassian mirror   
+       
+        mavenCentral() // Fallback to Sonatype maven root
     }
 }
