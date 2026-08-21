@@ -524,7 +524,7 @@ public class SwidTagGateway {
         file.setName(jsonObject.getString(SwidTagConstants.NAME, ""));
         file.setSize(new BigInteger(jsonObject.getString(SwidTagConstants.SIZE, "0")));
         Map<QName, String> attributes = file.getOtherAttributes();
-        QName hashKey = new QName("");
+        QName hashKey = SwidTagConstants.SHA_256_HASH; //default to SHA256
         String fileHash = jsonObject.getString(SwidTagConstants.HASH, "");
 
         if (fileHash.isEmpty()) {
