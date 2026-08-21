@@ -13,7 +13,7 @@ dependencyResolutionManagement {
         }
     }
     repositories {
-        maven { url = uri("https://maven-central-eu.storage-download.googleapis.com/maven2/") } // default to google mirror
+        maven { url = uri("https://googleapis.com") } // default to google mirror
         maven { url = uri("https://packages.atlassian.com/mvn/maven-atlassian-external/") } // fallback to cloudflares mirror
         mavenCentral() // Fallback to maven
     }
