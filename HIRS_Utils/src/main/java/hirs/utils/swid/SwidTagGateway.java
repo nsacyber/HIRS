@@ -532,7 +532,7 @@ public class SwidTagGateway {
                 throw new RuntimeException("The config file must declare a file hash, "
                        + "or a support RIM and hash algorithm must be given.");
             } else {
-                switch (hashAlgorithm) {
+                switch (hashAlgorithm.toUpperCase()) {
                     case SwidTagConstants.SHA256:
                         fileHash = HashSwid.get256Hash(rimEventLog);
                         hashKey = SwidTagConstants.SHA_256_HASH;
