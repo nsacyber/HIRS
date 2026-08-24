@@ -10,6 +10,7 @@ import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
@@ -21,6 +22,8 @@ import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.rim.SwidTagParser;
+import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswid;
+import hirs.utils.signature.cose.CoseParser;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
@@ -33,6 +36,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
@@ -111,6 +115,12 @@ public class ReferenceManifestDetailsPageService {
 
         if (bios != null) {
             data.putAll(getMeasurementsRimInfo(bios));
+        }
+
+        ComponentReferenceManifest cRim = this.referenceManifestRepository.getComponentRimEntityById(uuid);
+
+        if (cRim != null) {
+            data.putAll(getComponentRimInfo(cRim));
         }
 
         return data;
@@ -621,6 +631,70 @@ public class ReferenceManifestDetailsPageService {
         return data;
     }
 
+    /**
+     * Builds the display map for a Component RIM (COSE-signed TCG Component RIM CoSWID).
+     *
+     * @param cRim the component reference manifest
+     * @return map of display attributes for {@code rim-details.html}
+     */
+    private HashMap<String, Object> getComponentRimInfo (final ComponentReferenceManifest cRim) {
+        final HashMap<String, Object> data = new HashMap<>();
+
+        final CoseParser cose = cRim.parseCose();
+        final TcgCompRimCoswid crim = cRim.parseComponentRim();
+
+        data.put("rimType", cRim.getRimType());
+        data.put("fileName", cRim.getFileName());
+
+        // concise-swid-tag
+        data.put("softwareName", crim.getSoftwareName());
+        data.put("softwareVersion", crim.getSoftwareVersion());
+        data.put("tagId", crim.getTagId());
+        data.put("tagVersion", crim.getTagVersion());
+        data.put("corpus", crim.isCorpus());                    // ietf coswid only
+        data.put("patch", crim.isPatch());
+        data.put("supplemental", crim.isSupplemental());
+        data.put("lang", crim.getLang());                       // ietf coswid only
+
+        // entity
+        data.put("entityName", crim.getEntityName());
+        data.put("redId", crim.getRegId());
+        data.put("roles", crim.getRoleCoswid());
+        data.put("thumbprint", crim.getThumbprint());           // ietf coswid only
+
+        // link
+        data.put("href", crim.getHref());
+        data.put("rel", crim.getRel());
+
+        // software-meta
+        data.put("colloquialVersion", crim.getColloquialVersion());
+        data.put("edition", crim.getEdition());
+        data.put("product", crim.getProduct());
+        data.put("productFamily", crim.getProductFamily());     // ietf coswid only
+        data.put("revision", crim.getRevision());
+        data.put("description", crim.getDescription());         // ietf coswid only
+        data.put("summary", crim.getSummary());                 // ietf coswid only
+        data.put("persistentId", crim.getPersistentId());
+
+        // TCG Component RIM software-meta extensions
+        data.put("componentManufacturer", crim.getCrimComponentManufacturer());
+        data.put("componentManufacturerId", crim.getCrimComponentManufacturerId());
+        data.put("bindingSpec", crim.getCrimBindingSpec());
+        data.put("bindingSpecVersion", crim.getCrimBindingSpecVersion());
+        data.put("payloadType", crim.getCrimPayloadType());
+
+        // payload /measurements
+        data.put("measurements", crim.getReferenceMeasurements());
+        data.put("payloadPretty", crim.getPayloadPrintPretty());
+
+        // COSE header (signature verification deferred)
+        data.put("coseAlgorithm", cose.getAlgIdentifier());
+        data.put("coseKeyId", cose.getKeyIdentifier());
+        data.put("coseContentType", cose.getContentType());
+        data.put("signatureValid", "Not verified");
+
+        return data;
+    }
 
     /**
      * This method checks if the given event is of the below event types.
