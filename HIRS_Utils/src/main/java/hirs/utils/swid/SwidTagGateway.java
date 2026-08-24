@@ -528,27 +528,28 @@ public class SwidTagGateway {
         String fileHash = jsonObject.getString(SwidTagConstants.HASH, "");
 
         if (fileHash.isEmpty()) {
-            if (rimEventLog.isEmpty() || hashAlgorithm.isEmpty()) {
+            if (rimEventLog.isEmpty()) {
                 throw new RuntimeException("The config file must declare a file hash, "
-                       + "or a support RIM and hash algorithm must be given.");
-            } else {
-                switch (hashAlgorithm.toUpperCase()) {
-                    case SwidTagConstants.SHA256:
-                        fileHash = HashSwid.get256Hash(rimEventLog);
-                        hashKey = SwidTagConstants.SHA_256_HASH;
-                        break;
-                    case SwidTagConstants.SHA384:
-                        fileHash = HashSwid.get384Hash(rimEventLog);
-                        hashKey = SwidTagConstants.SHA_384_HASH;
-                        break;
-                    case SwidTagConstants.SHA512:
-                        fileHash = HashSwid.get512Hash(rimEventLog);
-                        hashKey = SwidTagConstants.SHA_512_HASH;
-                        break;
-                    default:
-                        throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
-                };
+                        + "or a support RIM and hash algorithm must be given.");
+            } else if (hashAlgorithm.isEmpty()) {
+                System.out.println("No hash algorithm given, defaulting to SHA256.");
             }
+            switch (hashAlgorithm.toUpperCase()) {
+                case SwidTagConstants.SHA256:
+                    fileHash = HashSwid.get256Hash(rimEventLog);
+                    hashKey = SwidTagConstants.SHA_256_HASH;
+                    break;
+                case SwidTagConstants.SHA384:
+                    fileHash = HashSwid.get384Hash(rimEventLog);
+                    hashKey = SwidTagConstants.SHA_384_HASH;
+                    break;
+                case SwidTagConstants.SHA512:
+                    fileHash = HashSwid.get512Hash(rimEventLog);
+                    hashKey = SwidTagConstants.SHA_512_HASH;
+                    break;
+                default:
+                    throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
+            };
         }
         addNonNullAttribute(attributes, hashKey, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,
