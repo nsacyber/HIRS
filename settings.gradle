@@ -1,3 +1,4 @@
+
 rootProject.name = 'HIRS'
 
 include 'HIRS_Utils',
@@ -13,8 +14,12 @@ dependencyResolutionManagement {
         }
     }
     repositories {
-        maven { url = uri("https://googleapis.com") } // default to google mirror
-        maven { url = uri("https://packages.atlassian.com/mvn/maven-atlassian-external/") } // fallback to cloudflares mirror
+     
+        flatDir { dirs "lib" }
+        maven { url = uri("https://maven-central.storage-download.googleapis.com/maven2") } // default to google mirror
+        maven { url = uri("https://packages.atlassian.com/mvn/maven-atlassian-external/") } // fallback to atlassian  mirror
+        maven { url = uri("https://repo.maven.apache.org/maven2/") } // fallback to cloudflares mirror
         mavenCentral() // Fallback to maven
+        gradlePluginPortal()  // default gradle plugin repo 
     }
 }
