@@ -20,22 +20,27 @@ Attestation, Endorsement, or Platform certificate).
 
 <img src= "../../images/portal-trust.png" alt="Portal Trustchain page" style="border: 2px solid grey;">
 
-The user can upload/download trusted certificates (intermediate and root)
-from all organizations involved with the supply chain via
-buttons at the top left of the page. To download a specific certificate, the user can click on the "
-<img src="../../images/portal-download.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">
-icon to the far right of that certificate listed.
-
-The user can also view or download the ACA trust chain certificates via buttons at the top left of 
-the page. By default, the ACA generates a certificate chain that is used for verifying all issued 
+By default, the ACA generates a certificate chain that is used for verifying all issued 
 Attestation Certificates. An Attestation CA certificate may be signed by a CA and replaced 
 (the ACA certificate would become a subordinate to the root CA). In either case, the CA 
 certificate must be trusted by a TPM Quote appraiser.
 
-For example, selecting the "View ACA Certificates" button at the top left will allow the user to 
-select one of the certificates in the chain (root, intermediate, leaf) and view the details: 
+Clicking the
+<img src="../../images/portal-clipboard.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">
+icon next to the “HIRS Attestation CA Certificate” label on the Trust Chain 
+Management page allows a user to view the ACA’s certificates. 
+
+<img src= "../../images/portal-trust-clipboard.png" alt="Portal Trustchain page" class="center" style="border: 2px solid grey;">
+
+This HIRS certificate chain will be required in future processing of TPM Quotes, since TPM Quotes 
+are signed by the TPM’s Attestation Key (AK). For example, selecting the clipboard to view 
+the HIRS certificate chain would look like:
 
 <img src= "../../images/portal-trust-hirsroot.png" alt="Portal Trustchain page" style="border: 2px solid grey;">
 
-This ACA trust chain certificates will be required in future processing of TPM Quotes, since TPM Quotes
-are signed by the TPM’s Attestation Key. 
+Clicking the
+<img src="../../images/portal-download.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">
+icon allows a user to download the ACA's certificates. 
+
+Other CA certificates (from any organization involved with the supply chain) can be uploaded, 
+downloaded, deleted, or viewed using the icon selections next to the "Trust Chain CA Certificates" label. 

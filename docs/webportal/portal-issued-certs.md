@@ -25,4 +25,6 @@ The user can view the details in the Issued Certificate by clicking the
 <img src="../../images/portal-clipboard.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">
 icon under the `Options` tab:
 
+<img src= "../../images/portal-issued-clipboard.png" alt="Portal Issued Certificates page" class="center" style="border: 2px solid grey;">
+
 <img src= "../../images/portal-issued-cert.png" alt="Portal Platform Cert page" style="border: 2px solid grey;">

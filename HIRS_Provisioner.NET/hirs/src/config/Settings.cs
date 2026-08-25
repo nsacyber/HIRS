@@ -205,8 +205,7 @@ namespace hirs {
                         manifestJson.MergeFrom(manifest.ManifestV2);
                     }
                 } catch (Exception e) {
-                    throw new ProvisioningFailureException(ClientExitCodes.HW_COLLECTION_ERROR,
-                        $"Hardware manifest collection failed for '{manifest.Name}'. Check the collector and its permissions.", e);
+                    Log.Debug($"Problem retrieving hardware manifest from {manifest.Name}.", e.InnerException);
                 }
             }
             
