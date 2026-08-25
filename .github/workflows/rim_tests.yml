@@ -4,30 +4,11 @@ name: RIM Test
 on:
   push:
     branches:
-      - '*v3*'
+      - 'development'
       - 'main'
   workflow_dispatch:
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      code_changed: ${{ steps.filter.outputs.code }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            code:
-            - '!**/*.md'       # all Markdown files
-            - '!**/*.png'      # all PNG images
-            - '!**/*.jpg'      # all JPG images
-            - '!mkdocs.yml'    # the MkDocs config
-            - '**'
   tcg_rim_tool_tests:
-    needs: check-changes
-    # Run if code changes exist OR if triggered manually
-    if: ${{ needs.check-changes.outputs.code_changed == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,7 +39,3 @@ jobs:
       - name: RIM tests
         run: |
           ./.ci/tcg-rim-tool/scripts/run_all_tests.sh --verbose
-
-
-
-
