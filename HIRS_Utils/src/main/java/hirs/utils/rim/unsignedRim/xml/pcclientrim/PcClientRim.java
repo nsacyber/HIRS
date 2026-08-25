@@ -195,17 +195,19 @@ public class PcClientRim extends SwidTagGateway implements GenericRim {
      *
      * @param configFile      config file
      * @param rimEventLog     event log
+     * @param hashAlgorithm   hash algorithm
      * @param certificateFile certificate
      * @param privateKeyFile  private key
      * @param embeddedCert    true if cert should be embedded
      * @param outFile         ouptut RIM
      */
-    public void create(final String configFile, final String rimEventLog, final String certificateFile,
-                       final String privateKeyFile, final boolean embeddedCert, final String outFile) {
+    public void create(final String configFile, final String rimEventLog, final String hashAlgorithm,
+                       final String certificateFile, final String privateKeyFile,
+                       final boolean embeddedCert, final String outFile) {
         SwidTagGateway gateway = new SwidTagGateway();
         gateway.setAttributesFile(configFile);
         gateway.setRimEventLog(rimEventLog);
-
+        gateway.setHashAlgorithm(hashAlgorithm);
         gateway.setDefaultCredentials(false);
         gateway.setPemCertificateFile(certificateFile);
         gateway.setPemPrivateKeyFile(privateKeyFile);

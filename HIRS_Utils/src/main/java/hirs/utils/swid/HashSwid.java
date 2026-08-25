@@ -22,18 +22,6 @@ public class HashSwid {
     public static final String SHA512 = "SHA-512";
 
     /**
-     * Getter method for the hash that uses 256 bit hash.
-     *
-     * @param filepath the file to hash.
-     * @return the SHA-256 hash of the file's contents, as a hexadecimal string.
-     * @throws Exception if any issues arise while retrieving the SHA256 hash
-     */
-    public static String get256Hash(final String filepath)
-            throws NoSuchAlgorithmException, IOException {
-        return getHashValue(filepath, SHA256);
-    }
-
-    /**
      * This method creates the hash based on the provided algorithm
      * only accessible through helper methods.
      * This method assumes an input file that is small enough to read in its
@@ -111,13 +99,26 @@ public class HashSwid {
     }
 
     /**
+     * Getter method for the hash that uses 256 bit hash.
+     *
+     * @param filepath the file to hash.
+     * @return the SHA-256 hash of the file's contents, as a hexadecimal string.
+     * @throws Exception if any issues arise while retrieving the SHA256 hash
+     */
+    public static String get256Hash(final String filepath)
+            throws NoSuchAlgorithmException, IOException {
+        return getHashValue(filepath, SHA256);
+    }
+
+    /**
      * Getter method for the hash that uses 384 bit hash.
      *
      * @param filepath the file to hash.
      * @return the SHA-384 hash of the file's contents, as a hexadecimal string.
      * @throws Exception if any issues arise while retrieving the SHA384 hash.
      */
-    public String get384Hash(final String filepath) throws Exception {
+    public static String get384Hash(final String filepath)
+            throws NoSuchAlgorithmException, IOException {
         return getHashValue(filepath, SHA384);
     }
 
@@ -128,7 +129,8 @@ public class HashSwid {
      * @return the SHA-512 hash of the file's contents, as a hexadecimal string.
      * @throws Exception if any issues arise while retrieving the SHA512 hash.
      */
-    public String get512Hash(final String filepath) throws Exception {
+    public static String get512Hash(final String filepath)
+            throws NoSuchAlgorithmException, IOException {
         return getHashValue(filepath, SHA512);
     }
 }

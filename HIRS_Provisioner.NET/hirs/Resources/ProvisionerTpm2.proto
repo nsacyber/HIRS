@@ -88,6 +88,7 @@ message IdentityClaimResponse {
   optional string pcr_mask = 2;
   optional ResponseStatus status = 3 [default = FAIL];
   optional bytes encrypted_secret = 4;
+  optional string status_details = 5;
 }
 
 message CertificateRequest {
@@ -99,5 +100,6 @@ message CertificateResponse {
   optional string certificate = 1;
   optional ResponseStatus status = 2 [default = FAIL];
   optional string ldevidCertificate = 3;
+  optional string status_details = 4;
 }
 

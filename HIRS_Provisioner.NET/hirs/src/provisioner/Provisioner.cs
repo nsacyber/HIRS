@@ -180,7 +180,13 @@ namespace hirs {
                 }
 
                 Log.Information("----> Collecting device information.");
-                DeviceInfo dv = deviceInfoCollector.CollectDeviceInfo(acaAddress.AbsoluteUri);
+                DeviceInfo dv;
+                try {
+                    dv = deviceInfoCollector.CollectDeviceInfo(acaAddress.AbsoluteUri);
+                } catch (Exception e) {
+                    throw new ProvisioningFailureException(ClientExitCodes.HW_COLLECTION_ERROR,
+                        "Device information collection failed. Check the system information sources and permissions.", e);
+                }
                 if (baseRims != null) {
                     foreach (byte[] baseRim in baseRims) {
                         dv.Swidfile.Add(ByteString.CopyFrom(baseRim));
@@ -245,12 +251,20 @@ namespace hirs {
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
+                if (icr == null) {
+                    throw new AcaClientException("The ACA client did not return an identity-claim response.");
+                }
                 Log.Information("----> Received response. Attempting to decrypt nonce");
                 if (icr.HasStatus) {
                     if (icr.Status == ResponseStatus.Pass) {
                         Log.Debug("The ACA accepted the identity claim.");
                     } else {
                         Log.Debug("The ACA did not accept the identity claim. See details on the ACA.");
+                        if (icr.HasStatusDetails && !icr.StatusDetails.IsWhiteSpace()) {
+                            Log.Error("Validation failed during identity-claim processing: {StatusDetails}", icr.StatusDetails);
+                        } else {
+                            Log.Error("Validation failed during identity-claim processing. The ACA did not provide additional details.");
+                        }
                         result = ClientExitCodes.PASS_1_STATUS_FAIL;
                         return (int)result;
                     }
@@ -301,12 +315,20 @@ namespace hirs {
                     string certificate;
                     Log.Debug("Communicate certificate request to the ACA.");
                     CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
+                    if (cr == null) {
+                        throw new AcaClientException("The ACA client did not return a certificate response.");
+                    }
                     Log.Debug("Response received from the ACA regarding the certificate request.");
                      if (cr.HasStatus) {
                         if (cr.Status == ResponseStatus.Pass) {
                             Log.Debug("ACA returned a positive response to the Certificate Request.");
                         } else {
                             Log.Debug("The ACA did not return any certificates. See details on the ACA.");
+                            if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {
+                                Log.Error("Validation failed during certificate processing: {StatusDetails}", cr.StatusDetails);
+                            } else {
+                                Log.Error("Validation failed during certificate processing. The ACA did not provide additional details.");
+                            }
                             result = ClientExitCodes.PASS_2_STATUS_FAIL;
                             return (int)result;
                         }
