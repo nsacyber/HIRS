@@ -4,7 +4,7 @@ name: HIRS Build and Unit Test
 
 on:
   # Runs this workflow whenever there is a push to main from a branch annotated with "v3"
-  push:
+  pull_request:
     branches:
       - 'development'
       - 'main'

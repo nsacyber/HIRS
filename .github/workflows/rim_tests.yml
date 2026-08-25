@@ -2,7 +2,7 @@
 # Updated: 02/03/2026
 name: RIM Test
 on:
-  push:
+  pull_request:
     branches:
       - 'development'
       - 'main'
