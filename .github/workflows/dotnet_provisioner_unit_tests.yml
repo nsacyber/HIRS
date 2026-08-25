@@ -2,7 +2,7 @@
 name: Dotnet Provisioner Unit Tests and Packages
 
 on:
-  push:
+  pull_request:
     branches:
     - 'development'
     - 'main'

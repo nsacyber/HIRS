@@ -1,7 +1,7 @@
 # Updated: 02/03/2026
 name: HIRS build and packages for Linux
 on:
-  push:
+  pull_request:
     branches:
       - 'development'
       - 'main'
