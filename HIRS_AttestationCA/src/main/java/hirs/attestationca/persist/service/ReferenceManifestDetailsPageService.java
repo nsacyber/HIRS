@@ -632,7 +632,7 @@ public class ReferenceManifestDetailsPageService {
     }
 
     /**
-     * Builds the display map for a Component RIM (COSE-signed TCG Component RIM CoSWID).
+     * Builds display map for a Component RIM (COSE-signed TCG Component RIM CoSWID).
      *
      * @param cRim the component reference manifest
      * @return map of display attributes for {@code rim-details.html}
