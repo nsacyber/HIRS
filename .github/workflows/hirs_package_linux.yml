@@ -5,11 +5,6 @@ on:
     branches:
       - 'development'
       - 'main'
-    paths-ignore:
-      - '**/*.md'       # Ignores all Markdown files
-      - '**/*.png'      # Ignores all PNG images
-      - '**/*.jpg'      # Ignores all JPG images
-      - 'mkdocs.yml'    # Ignores the MkDocs config
   workflow_dispatch:
 
 jobs:

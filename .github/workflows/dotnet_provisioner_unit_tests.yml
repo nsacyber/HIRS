@@ -6,11 +6,6 @@ on:
     branches:
     - 'development'
     - 'main'
-    paths-ignore:
-      - '**/*.md'       # Ignores all Markdown files
-      - '**/*.png'      # Ignores all PNG images
-      - '**/*.jpg'      # Ignores all JPG images
-      - 'mkdocs.yml'    # Ignores the MkDocs config
 env:
   DOTNET_VERSION: 10.0.x
   DOTNET_MSI_TARGETFRAMEWORK: net10.0
