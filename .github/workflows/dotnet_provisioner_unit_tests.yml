@@ -3,6 +3,8 @@ name: Dotnet Provisioner Unit Tests and Packages
 
 on: 
   push:
+  - 'development'
+  - 'main'
 env:
   DOTNET_VERSION: 10.0.x
   DOTNET_MSI_TARGETFRAMEWORK: net10.0

@@ -3,7 +3,7 @@ name: HIRS build and packages for Linux
 on:
   push:
     branches:
-      - '*v3*'
+      - 'development'
       - 'main'
   workflow_dispatch:
 
