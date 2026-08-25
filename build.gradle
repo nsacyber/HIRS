@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'com.github.ben-manes.versions' version '0.54.0'
+    id 'io.github.ben-manes.versions' version '0.61.0'
     id 'application'
     id 'com.github.spotbugs' version '6.5.6' apply false
-    id 'org.owasp.dependencycheck' version '12.2.2'
+    id 'org.owasp.dependencycheck' version '13.0.0'
     id 'com.palantir.git-version' version '5.0.0'
 }
 
@@ -22,7 +22,6 @@ subprojects {
     apply plugin: "org.owasp.dependencycheck"
 
     repositories {
-        flatDir { dirs "lib" }
         mavenCentral()
     }
 
