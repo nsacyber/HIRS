@@ -8,11 +8,6 @@ on:
     branches:
       - '*v3*'
       - 'main'
-    paths-ignore:
-      - '**/*.md'       # Ignores all Markdown files
-      - '**/*.png'      # Ignores all PNG images
-      - '**/*.jpg'      # Ignores all JPG images
-      - 'mkdocs.yml'    # Ignores the MkDocs config
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
