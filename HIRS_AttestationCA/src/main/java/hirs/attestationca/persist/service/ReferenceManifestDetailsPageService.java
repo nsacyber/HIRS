@@ -20,23 +20,26 @@ import hirs.attestationca.persist.validation.PcrValidator;
 import hirs.attestationca.persist.validation.SupplyChainCredentialValidator;
 import hirs.attestationca.persist.validation.ValidationService;
 import hirs.utils.SwidResource;
+import hirs.utils.crypto.DefaultCrypto;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.rim.SwidTagParser;
 import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswid;
+import hirs.utils.signature.cose.CoseAlgorithm;
 import hirs.utils.signature.cose.CoseParser;
+import hirs.utils.signature.cose.CoseSignature;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import jakarta.xml.bind.UnmarshalException;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.cert.CertificateEncodingException;
@@ -61,6 +64,9 @@ import java.util.regex.Pattern;
 @Log4j2
 @Service
 public class ReferenceManifestDetailsPageService {
+
+    private static final int SKID_LENGTH = 20;
+
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
     private final CertificateRepository certificateRepository;
@@ -633,6 +639,8 @@ public class ReferenceManifestDetailsPageService {
 
     /**
      * Builds the display map for a Component RIM (COSE-signed TCG Component RIM CoSWID).
+     * Verifies the COSE_Sign1 signature and requires the signer to chain to a trust root
+     * in {@code CACredentialRespository} (Base-RIM semantics).
      *
      * @param cRim the component reference manifest
      * @return map of display attributes for {@code rim-details.html}
@@ -687,11 +695,53 @@ public class ReferenceManifestDetailsPageService {
         data.put("measurements", crim.getReferenceMeasurements());
         data.put("payloadPretty", crim.getPayloadPrintPretty());
 
-        // COSE header (signature verification deferred)
+        // COSE header
         data.put("coseAlgorithm", cose.getAlgIdentifier());
         data.put("coseKeyId", cose.getKeyIdentifier());
         data.put("coseContentType", cose.getContentType());
-        data.put("signatureValid", "Not verified");
+
+        // COSE signature verification (RFC 9052 Sig_structure1 + chain to trust root).
+        data.put("signatureValid", false);
+        data.put("issuerID", null);
+        data.put("skID", null);
+        try {
+            final CoseSignature cs = new CoseSignature();
+            final byte[] tbs = cs.getToBeVerified(cRim.getRimBytes());
+            final byte[] sig = cs.getSignature();
+            final String algName = CoseAlgorithm.getAlgName((cs.getAlgId()));
+
+            // Locate signer: x5chain (RFC 9360) first, else kid -> SKID -> CA repo.
+            X509Certificate signer = cs.getEmbeddedCert(tbs);
+            CertificateAuthorityCredential caCred = null;
+            if (signer == null) {
+                final byte[] kid = cs.getKeyId();
+                final byte[] skid = kid.length > SKID_LENGTH
+                        ? Arrays.copyOfRange(kid, kid.length - SKID_LENGTH, kid.length) : kid;
+                data.put("skID", Hex.encodeHexString(skid));
+                caCred = this.caCertificateRepository
+                        .findBySubjectKeyIdStringAndArchiveFlag(Hex.encodeHexString(skid), false);
+                if(caCred != null) {
+                    signer = caCred.getX509Certificate();
+                }
+            } else {
+                caCred = new CertificateAuthorityCredential(signer.getEncoded());
+                data.put("skID", caCred.getSubjectKeyIdString());
+            }
+
+            if (signer != null) {
+                final boolean sigOk = new DefaultCrypto()
+                        .verify(signer, signer.getPublicKey(), algName, tbs, sig);
+                final KeyStore ks = ValidationService.getCaChain(caCred, this.caCertificateRepository);
+                final boolean chainOk = SupplyChainCredentialValidator.verifyCertificate(signer, ks);
+                data.put("signatureValid", sigOk && chainOk);
+                if (caCred.getId() != null) {
+                    data.put("issuerID", caCred.getId().toString());
+                }
+            }
+        } catch (Exception e) {
+            log.warn("COSE signature verification failed for {}: {}",
+                    cRim.getFileName(), e.getMessage());
+        }
 
         return data;
     }
