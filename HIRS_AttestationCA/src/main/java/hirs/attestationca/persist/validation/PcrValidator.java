@@ -160,7 +160,7 @@ public class PcrValidator {
     }
 
     /**
-     * Checks that the expected FM events occurring. There are policy options that
+     * Checks that the expected FW events occurring. There are policy options that
      * will ignore certin PCRs, Event Types and Event Variables present.
      *
      * @param tcgMeasurementLog Measurement log from the client
@@ -175,11 +175,14 @@ public class PcrValidator {
         // log firmware policy settings
         if (policySettings.isIgnoreImaEnabled()) {
             log.info("IMA Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoretBootEnabled()) {
+        }
+        if (policySettings.isIgnoretBootEnabled()) {
             log.info("TBOOT Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoreGptEnabled()) {
+        }
+        if (policySettings.isIgnoreGptEnabled()) {
             log.info("GPT Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoreOsEvtEnabled()) {
+        }
+        if (policySettings.isIgnoreOsEvtEnabled()) {
             log.info("OS Ignored - any associated events will not be checked");
         }
 
@@ -197,6 +200,10 @@ public class PcrValidator {
             } else {
                 if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                     log.debug(String.format("GPT Ignored -> %s", tpe));
+                } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()
+                        && tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
+                        && tpe.getEventContentStr().contains("root=(http:")) {
+                    log.debug(String.format("OS Evt Ignored during PXE Boot -> %s", tpe));
                 } else if (policySettings.isIgnoreOsEvtEnabled()
                         && firmwareBootFinished[tpe.getPcrIndex()]) {
                     log.debug(String.format("Firmware boot finished -> %s", tpe));
