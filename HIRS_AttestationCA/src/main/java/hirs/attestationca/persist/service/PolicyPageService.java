@@ -311,6 +311,37 @@ public class PolicyPageService {
     }
 
     /**
+     * Updates the Ignore OS Events for PXE Boot policy under the Firmware Validation policy setting
+     * according to user input.
+     *
+     * @param isIgnoreOSEvtPxeBootOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateIgnoreOSEventsPxeBootPolicy(final boolean isIgnoreOSEvtPxeBootOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        //If Ignore OS events is enabled and Firmware Validation is not enabled, disallow change
+        if (isIgnoreOSEvtPxeBootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+            log.error("Ignore OS Events for PXE Boot cannot be enabled without Firmware Validation "
+                    + "policy enabled.");
+            return false;
+        }
+
+        if (isIgnoreOSEvtPxeBootOptionEnabled) {
+            policySettings.setIgnoreGptEnabled(true);
+        }
+
+        policySettings.setIgnoreOsEvtPxeBootEnabled(isIgnoreOSEvtPxeBootOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the Ignore OS Events for PXE Boot policy:"
+                + " {}", policySettings);
+
+        return true;
+    }
+
+    /**
      * Updates the Issued Attestation Certificate generation policy according to user input.
      *
      * @param isIssuedAttestationOptionEnabled boolean value representation of the current policy option's

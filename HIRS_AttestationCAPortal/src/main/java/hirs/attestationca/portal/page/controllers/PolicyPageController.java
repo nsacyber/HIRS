@@ -537,6 +537,56 @@ public class PolicyPageController extends PageController<NoPageParams> {
     }
 
     /**
+     * Updates the Ignore OS Events for PXE Boot policy under the Firmware Validation policy setting
+     * and redirects the user back to the Policy Settings page.
+     *
+     * @param ppModel            The data posted by the form mapped into an object.
+     * @param redirectAttributes RedirectAttributes used to forward data back to the original
+     *                           page.
+     * @return redirect to Policy Settings page
+     * @throws URISyntaxException if malformed URI
+     */
+    @PostMapping("update-os-events-pxe-boot-ignore")
+    public RedirectView updateIgnoreOsEventsPxeBootPolicy(@ModelAttribute final PolicyPageModel ppModel,
+                                                   final RedirectAttributes redirectAttributes)
+            throws URISyntaxException {
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+
+        log.info(
+                "Received request to update the Ignore OS Events for PXE Boot policy "
+                        + "under the Firmware Validation policy setting");
+
+        try {
+            final boolean isIgnoreOsEvtPxeBootOptionEnabled = ppModel.isIgnoreOsEvtPxeBootEnabled();
+            final boolean isIgnoreOsEvtPxeBootPolicyUpdateSuccessful =
+                    policyPageService.updateIgnoreOSEventsPxeBootPolicy(
+                            isIgnoreOsEvtPxeBootOptionEnabled);
+
+            if (!isIgnoreOsEvtPxeBootPolicyUpdateSuccessful) {
+                messages.addErrorMessage(
+                        "Ignore OS Events cannot be enabled without Firmware Validation policy enabled.");
+                model.put(MESSAGES_ATTRIBUTE, messages);
+                return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+            }
+
+            // if the Ignore OS events policy update was successful
+            messages.addSuccessMessage(
+                    isIgnoreOsEvtPxeBootOptionEnabled ? "Ignore OS Events for PXE Boot enabled" :
+                            "Ignore OS Events for PXE Boot disabled");
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        } catch (Exception exception) {
+            final String errorMessage =
+                    "An exception was thrown while updating ACA OS Events Ignore for PXE Boot policy";
+            log.error(errorMessage, exception);
+            messages.addErrorMessage(errorMessage);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+        }
+
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+    }
+
+    /**
      * Updates the Attestation Certificate generation policy setting and redirects the user
      * back to the Policy Settings page.
      *
