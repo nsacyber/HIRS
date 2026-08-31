@@ -327,10 +327,6 @@ public class PolicyPageService {
             return false;
         }
 
-        if (isIgnoreOSEvtPxeBootOptionEnabled) {
-            policySettings.setIgnoreGptEnabled(true);
-        }
-
         policySettings.setIgnoreOsEvtPxeBootEnabled(isIgnoreOSEvtPxeBootOptionEnabled);
 
         policyRepository.saveAndFlush(policySettings);
