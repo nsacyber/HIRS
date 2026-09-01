@@ -101,7 +101,7 @@ subprojects {
 
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
             if (details.requested.group == 'org.apache.logging.log4j') {
-                details.useVersion '2.25.3' // Force patched Log4j version
+                details.useVersion '2.26.1' // Force patched Log4j version
             }
 
             if (details.requested.group == 'org.apache.commons' &&
