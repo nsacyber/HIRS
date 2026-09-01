@@ -747,7 +747,18 @@
                       th:if="${not #strings.isEmpty(initialData.get('coseKeyId'))}" />
                 <span th:text="${'Content Type: ' + initialData.get('coseContentType')}"
                       th:if="${not #strings.isEmpty(initialData.get('coseContentType'))}" />
-                <span th:text="${'Verification: ' + initialData.get('signatureValid')}" />
+                <span>Validity:
+                    <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Signature valid."
+                         th:if="${initialData.get('signatureValid')}" />
+                    <img th:src="@{/icons/ic_error_red_24dp.png}" title="Signature not valid!"
+                         th:unless="${initialData.get('signatureValid')}" />
+                </span>
+                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}"
+                   th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                    Signing certificate
+                </a>
+                <span th:text="${'Subject key Identifier: ' + initialData.get('skID')}"
+                      th:if="${not #strings.isEmpty(initialData.get('skID'))}" />
             </div>
         </div><!--componentCose row-->
     </th:block><!--Component RIM-->

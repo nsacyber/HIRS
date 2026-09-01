@@ -708,7 +708,7 @@ public class ReferenceManifestDetailsPageService {
             final CoseSignature cs = new CoseSignature();
             final byte[] tbs = cs.getToBeVerified(cRim.getRimBytes());
             final byte[] sig = cs.getSignature();
-            final String algName = CoseAlgorithm.getAlgName((cs.getAlgId()));
+            final String algName = CoseAlgorithm.getAlgName(cs.getAlgId());
 
             // Locate signer: x5chain (RFC 9360) first, else kid -> SKID -> CA repo.
             X509Certificate signer = cs.getEmbeddedCert(tbs);
