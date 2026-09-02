@@ -697,13 +697,13 @@ public class ReferenceManifestDetailsPageService {
 
         // COSE header
         data.put("coseAlgorithm", cose.getAlgIdentifier());
-        data.put("coseKeyId", cose.getKeyIdentifier());
         data.put("coseContentType", cose.getContentType());
 
         // COSE signature verification (RFC 9052 Sig_structure1 + chain to trust root).
         data.put("signatureValid", false);
         data.put("issuerID", null);
-        data.put("skID", null);
+        data.put("issuer", null);
+        data.put("authKeyId", null);
         try {
             final CoseSignature cs = new CoseSignature();
             final byte[] tbs = cs.getToBeVerified(cRim.getRimBytes());
@@ -717,7 +717,7 @@ public class ReferenceManifestDetailsPageService {
                 final byte[] kid = cs.getKeyId();
                 final byte[] skid = kid.length > SKID_LENGTH
                         ? Arrays.copyOfRange(kid, kid.length - SKID_LENGTH, kid.length) : kid;
-                data.put("skID", Hex.encodeHexString(skid));
+                data.put("authKeyId", Hex.encodeHexString(skid));
                 caCred = this.caCertificateRepository
                         .findBySubjectKeyIdStringAndArchiveFlag(Hex.encodeHexString(skid), false);
                 if(caCred != null) {
@@ -725,18 +725,18 @@ public class ReferenceManifestDetailsPageService {
                 }
             } else {
                 caCred = new CertificateAuthorityCredential(signer.getEncoded());
-                data.put("skID", caCred.getSubjectKeyIdString());
+                data.put("authKeyId", caCred.getSubjectKeyIdString());
             }
-
             if (signer != null) {
+                data.put("issuer", caCred.getSubject());
+                if (caCred.getId() != null) {
+                    data.put("issuerID", caCred.getId().toString());
+                }
                 final boolean sigOk = new DefaultCrypto()
                         .verify(signer, signer.getPublicKey(), algName, tbs, sig);
                 final KeyStore ks = ValidationService.getCaChain(caCred, this.caCertificateRepository);
                 final boolean chainOk = SupplyChainCredentialValidator.verifyCertificate(signer, ks);
                 data.put("signatureValid", sigOk && chainOk);
-                if (caCred.getId() != null) {
-                    data.put("issuerID", caCred.getId().toString());
-                }
             }
         } catch (Exception e) {
             log.warn("COSE signature verification failed for {}: {}",

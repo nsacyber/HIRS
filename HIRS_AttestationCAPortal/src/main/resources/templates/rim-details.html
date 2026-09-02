@@ -742,23 +742,26 @@
                 <span class="colHeader">COSE Signature</span>
             </div>
             <div id="componentCose" class="col col-md-8">
+                <span th:if="${not #strings.isEmpty(initialData.get('issuer'))}">Issuer:
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}"
+                       th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                       [[${initialData.get('issuer')}]]
+                    </a>
+                    <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
+                       [[${initialData.get('issuer')}]]
+                    </th:block>
+                </span>
+                <span th:text="${'Authority Key Identifier: ' + initialData.get('authKeyId')}"
+                      th:if="${not #strings.isEmpty(initialData.get('authKeyId'))}" />
                 <span th:text="${'Algorithm: ' + initialData.get('coseAlgorithm')}" />
-                <span th:text="${'Key Identifier: ' + initialData.get('coseKeyId')}"
-                      th:if="${not #strings.isEmpty(initialData.get('coseKeyId'))}" />
                 <span th:text="${'Content Type: ' + initialData.get('coseContentType')}"
                       th:if="${not #strings.isEmpty(initialData.get('coseContentType'))}" />
-                <span>Validity:
+                <span>
                     <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Signature valid."
                          th:if="${initialData.get('signatureValid')}" />
                     <img th:src="@{/icons/ic_error_red_24dp.png}" title="Signature not valid!"
                          th:unless="${initialData.get('signatureValid')}" />
                 </span>
-                <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=${initialData.get('issuerID')})}"
-                   th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
-                    Signing certificate
-                </a>
-                <span th:text="${'Subject key Identifier: ' + initialData.get('skID')}"
-                      th:if="${not #strings.isEmpty(initialData.get('skID'))}" />
             </div>
         </div><!--componentCose row-->
     </th:block><!--Component RIM-->
