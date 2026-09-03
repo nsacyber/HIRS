@@ -6,7 +6,7 @@ title: RIM-Tool
 
 The **RIM-Tool** is an open source tool used to create, sign, print, and verify Reference  
 Integrity Manifest (RIM) files that target integrity of firmware.
-For information on RIMs, please see the [Reference Integrity Manifest](../background/inputs/rim.md) page.
+For information on RIMs, please see the [Reference Integrity Manifest](../../background/inputs/rim.md) page.
 
 !!! info
 

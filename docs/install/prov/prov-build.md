@@ -10,14 +10,14 @@ The HIRS .NET Provisioner requires the
 [.NET SDK :fontawesome-solid-external-link:](https://learn.microsoft.com/en-us/dotnet/core/install/){:target="_blank"}
 version 10 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
 
-!!! note
+!!! tip
 
     If you are on a RHEL or Rocky, you can use:<br>
     ```shell
-    sudo dnf install dotnet-sdk-10.0.x86_64
+    sudo dnf install dotnet-sdk-10.0
     ```
 
-!!! note
+!!! tip
 
     After installing the .NET SDK, you must restart your terminal for the 
     environment variables to get updated.
@@ -89,22 +89,18 @@ The directory the command should be run from is included in each section below.
         dotnet zip -r win-x64 -c Release  
         ```
 
-!!! note
+!!! info
 
     After building, you can find the generated file(s) in the relative path (from above):
     <br> 
-    /bin/Release/net10.0/< platform >/HIRS_Provisioner.NET.*
+    ```
+    /bin/Release/net10.0/<platform>/HIRS_Provisioner.NET.*
+    ```
 
 ## Install the Provisioner Package
 
-=== "RHEL/Rocky"
-    ```shell
-    sudo dnf install <HIRS_Provisioner.NET.*>.rpm
-    ```
-=== "Ubuntu"
-    ```shell
-    sudo apt install ./<HIRS_Provisioner.NET.*>.deb
-    ```
+To install the Provisioner package, see the
+[Provisioner install](prov-install.md/#package-installation) section.
 
 ## Installation Directory
 

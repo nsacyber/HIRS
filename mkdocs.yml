@@ -48,8 +48,10 @@ nav:
       - webportal/portal-help.md
   - Tools:
       - tools/index.md
-      - tools/paccor.md
-      - tools/rimtool.md
+      - PACCOR:
+          - tools/paccor/index.md
+      - RIM-Tool:
+          - tools/rimtool/index.md
       - Event Log Tool:
           - tools/eventlogtool/index.md
           - tools/eventlogtool/elt-install.md
