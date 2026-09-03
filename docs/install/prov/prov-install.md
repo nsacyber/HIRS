@@ -8,11 +8,15 @@ title: Provisioner Package Install
 
 The HIRS_Provisioner.NET currently supports package based installation on:
 
-- Redhat OS versions 8 (latest) and 9
-- Rocky OS versions 8 (latest) and 9
-- Ubuntu 22 LTS with limited support
-- Windows 10 (latest)
-- Windows 11 
+
+=== "RHEL/Rocky"
+    Redhat OS versions 8 (latest) and 9<br>
+    Rocky OS versions 8 (latest) and 9
+=== "Ubuntu"
+    Ubuntu 22 LTS with limited support
+=== "Windows"
+    Windows 10 (latest)<br>
+    Windows 11 
 
 ## Dependencies
 
@@ -41,15 +45,14 @@ The HIRS .NET Provisioner is self-contained. No dependencies should be needed to
 
 ## Troubleshooting
 
-- GPG Error:<br><br>
-   If you see the following, for example on Linux Redhat:
-   ```text
-   Downloading Packages:
-   Public key for HIRS_Provisioner.NET.3.2.0.linux-x64.rpm is not installed
-   Error: GPG check FAILED
-   ```
-   Try installing with the gpg check disabled. For instance for Linux Redhat:
-   ```shell
-   sudo dnf install --nogpgcheck HIRS_Provisioner.NET.*.rpm
-   ```
+### GPG Error
+
+When installing the Provisioner RPM on RHEL Linux, if you see the following:
+```text
+Error: GPG check FAILED
+```
+Try installing with the gpg check disabled:
+```shell
+sudo dnf install --nogpgcheck HIRS_Provisioner.NET.*.rpm
+```
 
