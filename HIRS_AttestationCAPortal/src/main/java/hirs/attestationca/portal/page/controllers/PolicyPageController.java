@@ -572,8 +572,8 @@ public class PolicyPageController extends PageController<NoPageParams> {
 
             // if the Ignore OS events policy update was successful
             messages.addSuccessMessage(
-                    isIgnoreOsEvtPxeBootOptionEnabled ? "Ignore OS Events for PXE Boot enabled" :
-                            "Ignore OS Events for PXE Boot disabled");
+                    isIgnoreOsEvtPxeBootOptionEnabled ? "Ignore OS Events for PXE Boot enabled"
+                            : "Ignore OS Events for PXE Boot disabled");
             model.put(MESSAGES_ATTRIBUTE, messages);
         } catch (Exception exception) {
             final String errorMessage =
