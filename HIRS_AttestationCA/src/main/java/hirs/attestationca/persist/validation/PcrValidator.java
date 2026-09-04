@@ -197,23 +197,28 @@ public class PcrValidator {
                 log.debug(String.format("TBOOT Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() > FIRMWARE_PCR_END)) {
                 log.debug(String.format("OS Evt Ignored -> %s", tpe));
+            } else if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
+                log.debug(String.format("GPT Ignored -> %s", tpe));
+            } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()) {
+                if (tpe.getPcrIndex() > FIRMWARE_PCR_END) {
+                    log.debug(String.format("OS Evt Ignored -> %s", tpe));
+                } else if (tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
+                        && tpe.getEventContentStr().contains("PIWG Firmware Volume Path")) {
+                    log.debug(String.format("Boot event ignored during PXE Boot -> %s", tpe));
+                    String eventDigest = tpe.getEventDigestStr();
+                    if (eventLogRecords.containsKey(eventDigest)) {
+                        log.debug(String.format("%s found in the Support RIM", eventDigest));
+                    }
+                }
+            } else if (policySettings.isIgnoreOsEvtEnabled()
+                    && firmwareBootFinished[tpe.getPcrIndex()]) {
+                log.debug(String.format("Firmware boot finished -> %s", tpe));
             } else {
-                if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.debug(String.format("GPT Ignored -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()
-                        && tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
-                        && tpe.getEventContentStr().contains("root=(http:")) {
-                    log.debug(String.format("OS Evt Ignored during PXE Boot -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtEnabled()
-                        && firmwareBootFinished[tpe.getPcrIndex()]) {
-                    log.debug(String.format("Firmware boot finished -> %s", tpe));
-                } else {
-                    if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
-                        tpmPcrEventsNotExpected.add(tpe);
-                    }
-                    if (tpe.getEventType() == EvConstants.EV_SEPARATOR) {
-                        firmwareBootFinished[tpe.getPcrIndex()] = true;
-                    }
+                if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
+                    tpmPcrEventsNotExpected.add(tpe);
+                }
+                if (tpe.getEventType() == EvConstants.EV_SEPARATOR) {
+                    firmwareBootFinished[tpe.getPcrIndex()] = true;
                 }
             }
         }
