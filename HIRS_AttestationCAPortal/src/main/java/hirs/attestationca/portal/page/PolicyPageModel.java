@@ -24,6 +24,7 @@ public class PolicyPageModel {
     private boolean ignoreTbootEnabled;
     private boolean ignoreGptEnabled;
     private boolean ignoreOsEvtEnabled;
+    private boolean ignoreOsEvtPxeBootEnabled;
     private boolean ignorePcieVpdAttributeEnabled;
     private boolean issueAttestationCertificateEnabled;
     private boolean issueDevIdCertificateEnabled;
@@ -62,6 +63,7 @@ public class PolicyPageModel {
         this.ignoreTbootEnabled = policySettings.isIgnoretBootEnabled();
         this.ignoreGptEnabled = policySettings.isIgnoreGptEnabled();
         this.ignoreOsEvtEnabled = policySettings.isIgnoreOsEvtEnabled();
+        this.ignoreOsEvtPxeBootEnabled = policySettings.isIgnoreOsEvtPxeBootEnabled();
         this.generateAttestCertExpirationValue = policySettings.getValidityDays();
         this.generateAttestCertThresholdValue = policySettings.getReissueThreshold();
         this.generateDevIdCertExpirationValue = policySettings.getDevIdValidityDays();

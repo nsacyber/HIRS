@@ -535,12 +535,13 @@ public final class CertificateStringMapBuilder {
      * @return certificate information
      * @throws IOException when parsing the certificate
      */
-    public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-                                                                 final CertificateRepository certificateRepository,
-                                                                 final ComponentResultRepository componentResultRepository,
-                                                                 final ComponentAttributeRepository componentAttributeRepository,
-                                                                 final CACredentialRepository caCertificateRepository,
-                                                                 final String provisionSessionId)
+    public static HashMap<String, Object> getPlatformInformation(
+                                                final UUID uuid,
+                                                final CertificateRepository certificateRepository,
+                                                final ComponentResultRepository componentResultRepository,
+                                                final ComponentAttributeRepository componentAttributeRepository,
+                                                final CACredentialRepository caCertificateRepository,
+                                                final String provisionSessionId)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);

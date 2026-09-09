@@ -70,6 +70,7 @@ public class ReferenceManifestDetailsPageService {
      * @param referenceDigestValueRepository reference digest value repository
      * @param certificateRepository          certificate repository
      * @param caCertificateRepository        certificate authority credential repository
+     * @param policyRepository               policy settings repository
      */
     @Autowired
     public ReferenceManifestDetailsPageService(final ReferenceManifestRepository referenceManifestRepository,
