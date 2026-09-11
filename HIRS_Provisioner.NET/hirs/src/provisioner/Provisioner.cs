@@ -10,15 +10,15 @@ namespace hirs {
 
         private Settings Settings { get; }
 
-        private IHirsDeviceInfoCollector deviceInfoCollector {
+        private IHirsDeviceInfoCollector? deviceInfoCollector {
             get;
             set;
-        }
+        } = null;
 
-        private IHirsAcaClient acaClient {
+        private IHirsAcaClient? acaClient {
             get;
             set;
-        }
+        } = null;
 
         private const string DefaultLDevIDPubKeyFileName = "ldevid.pub";
         private const string DefaultLDevIDPrivKeyFileName = "ldevid.priv";
@@ -119,7 +119,7 @@ namespace hirs {
         private static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath,
             string certificateFileName) {
             StringBuilder sb = new();
-            if (dv?.Hw != null) {
+            if (dv.Hw != null) {
                 if (dv.Hw.HasSystemSerialNumber &&
                     !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
                     sb.Append($"{dv.Hw.SystemSerialNumber}-");
@@ -134,7 +134,7 @@ namespace hirs {
             return Path.GetFullPath(Path.Join(certificateDirPath, sb.ToString()));
         }
 
-        public async Task<int> Provision(IHirsAcaTpm tpm) {
+        public async Task<int> Provision(IHirsAcaTpm? tpm) {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
@@ -224,7 +224,7 @@ namespace hirs {
                     eventLog = tpm.GetEventLog();
                 }
 
-                if (eventLog != null) {
+                if (eventLog is not null or []) {
                     Log.Debug("Event log gathered is " + eventLog.Length + " bytes.");
                     dv.Livelog = ByteString.CopyFrom(eventLog);
                 }
@@ -350,9 +350,9 @@ namespace hirs {
                 }
 
                 if (cr.HasCertificate) {
-                    certificate = cr.Certificate.ToString(); // contains certificate
+                    certificate = cr.Certificate; // contains certificate
                     String certificateDirPath = Settings.certificate_output_directory;
-                    if (certificateDirPath != null) {
+                    if (!string.IsNullOrWhiteSpace(certificateDirPath)) {
                         String certificateFilePath =
                             FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
                         try {
@@ -368,9 +368,9 @@ namespace hirs {
                 }
 
                 if (cr.HasLdevidCertificate) {
-                    certificate = cr.LdevidCertificate.ToString(); // contains certificate
+                    certificate = cr.LdevidCertificate; // contains certificate
                     String ldevidCertificateDirPath = Settings.certificate_output_directory;
-                    if (ldevidCertificateDirPath != null) {
+                    if (!string.IsNullOrWhiteSpace(ldevidCertificateDirPath)) {
                         String certificateFilePath =
                             FormatCertificatePath(dv, ldevidCertificateDirPath, DefaultLDevIDCertFileName);
                         try {

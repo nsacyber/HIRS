@@ -1,12 +1,5 @@
-﻿using Newtonsoft.Json.Converters;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using Serilog;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using Tpm2Lib;
 
 namespace hirs {

@@ -1,15 +1,9 @@
 ﻿using Hirs.Pb;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.IO;
 using Serilog;
 
 namespace hirs {
@@ -57,12 +51,13 @@ namespace hirs {
             FirmwareInfo fw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new("root\\CIMV2");
+                ManagementScope _ = new("root\\CIMV2");
                 ManagementObjectSearcher s = new("SELECT * FROM Win32_BIOS");
                 fw.BiosVendor = NOT_SPECIFIED;
                 fw.BiosVersion = NOT_SPECIFIED;
                 fw.BiosReleaseDate = NOT_SPECIFIED;
-                foreach (ManagementObject o in s.Get()) {
+                foreach (ManagementBaseObject managementBaseObject in s.Get()) {
+                    ManagementObject o = (ManagementObject)managementBaseObject;
                     string manufacturer = (string)o.GetPropertyValue("Manufacturer");
                     string version = (string)o.GetPropertyValue("Version");
                     string releasedate = (string)o.GetPropertyValue("ReleaseDate");
@@ -109,13 +104,14 @@ namespace hirs {
             HardwareInfo hw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new("root\\CIMV2");
+                ManagementScope _ = new("root\\CIMV2");
                 ManagementObjectSearcher s = new("SELECT * FROM Win32_ComputerSystemProduct");
                 hw.Manufacturer = NOT_SPECIFIED;
                 hw.ProductName = NOT_SPECIFIED;
                 hw.ProductVersion = NOT_SPECIFIED;
                 hw.SystemSerialNumber = NOT_SPECIFIED;
-                foreach (ManagementObject o in s.Get()) {
+                foreach (ManagementBaseObject managementBaseObject in s.Get()) {
+                    ManagementObject o = (ManagementObject)managementBaseObject;
                     string vendor = (string)o.GetPropertyValue("Vendor");
                     string name = (string)o.GetPropertyValue("Name");
                     string version = (string)o.GetPropertyValue("Version");

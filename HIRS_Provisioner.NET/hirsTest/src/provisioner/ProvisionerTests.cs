@@ -12,9 +12,11 @@ namespace hirsTest.provisioner {
             byte[] ekCert = [.. "EK CERTIFICATE"u8];
             byte[] secret = [.. "AuthCredential Secret"u8];
             const string acaIssuedCert = "ACA ISSUED CERTIFICATE";
+            /*
             byte[] integrityHMAC = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
             byte[] encIdentity = Convert.FromBase64String("6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
             byte[] encryptedSecret = Convert.FromBase64String("NekvnOX8RPRdyd0/cxBI4FTCuNkiu0KAnS28yT7yYJUL5Lwfcv5ctEK6zQA0fq0IsX5TlAYSidGKxrAilOSwALJmJ+m7sMiXwMKrZn1cd4gzXObZEQimQoWgSEQbPO7rfpUn1UfI8K5SzmUFUTxc5X3D8zFonaEBp6QCjtdLegKGgioCDcQFdz20Y0PFAa1Itug7YbZdCFpfit570eQQinmqdVryiNyn6CLQdMgIejuBxoEpoTSWszB5eFKEdn5g/+8wcvhp6RpNBQ0hikF+6688TOVK/j8n3JDwKVltJ/WNHjVO+lxa2aLIMJRgs5ZRuzuz6OSMf10KqJjSWZE04w==");
+            */
             byte[] encryptedSecretBlob = Convert.FromBase64String("AQA16S+c5fxE9F3J3T9zEEjgVMK42SK7QoCdLbzJPvJglQvkvB9y/ly0QrrNADR+rQixflOUBhKJ0YrGsCKU5LAAsmYn6buwyJfAwqtmfVx3iDNc5tkRCKZChaBIRBs87ut+lSfVR8jwrlLOZQVRPFzlfcPzMWidoQGnpAKO10t6AoaCKgINxAV3PbRjQ8UBrUi26Dthtl0IWl+K3nvR5BCKeap1WvKI3KfoItB0yAh6O4HGgSmhNJazMHl4UoR2fmD/7zBy+GnpGk0FDSGKQX7rrzxM5Ur+PyfckPApWW0n9Y0eNU76XFrZosgwlGCzllG7O7Po5Ix/XQqomNJZkTTj");
             byte[] credentialBlob = Convert.FromBase64String("ADgAIFQLXnXNUZTQNcNF367cJoRNCCwZSCz+tet07q+R0SKN6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
             TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
@@ -100,7 +102,7 @@ namespace hirsTest.provisioner {
             TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
             TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
             TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
-            TpmPublic ldevidPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "LDEVID PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            //TpmPublic ldevidPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "LDEVID PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
             Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
             Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
             IdentityClaimResponse idClaimResp = new() {

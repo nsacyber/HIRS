@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Tpm2Lib;
+﻿using Tpm2Lib;
 
 namespace hirs {
     public interface IHirsAcaTpm {
