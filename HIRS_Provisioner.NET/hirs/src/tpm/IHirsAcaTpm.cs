@@ -5,6 +5,7 @@ using Tpm2Lib;
 
 namespace hirs {
     public interface IHirsAcaTpm {
+        bool IsTpmPresent();
         byte[] GetCertificateFromNvIndex(uint index);
         TpmPublic ReadPublicArea(uint handleInt, out byte[] name, out byte[] qualifiedName);
         void CreateEndorsementKey(uint ekHandleInt);
@@ -15,6 +16,7 @@ namespace hirs {
         Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null);
         void GetQuote(uint akHandleInt, TpmAlgId pcrBankDigestAlg, byte[] nonce, out CommandTpmQuoteResponse ctqr, uint[] pcrs = null);
         byte[] ActivateCredential(uint akHandleInt, uint ekHandleInt, byte[] integrityHMAC, byte[] encIdentity, byte[] encryptedSecret);
+        byte[] ActivateCredential(uint akHandleInt, uint ekHandleInt, byte[] credentialBlob, byte[] encryptedSecret);
         byte[] GetEventLog();
 
     }

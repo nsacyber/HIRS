@@ -1,11 +1,13 @@
 ﻿using Hirs.Pb;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace hirs {
     public interface IHirsAcaClient {
+        /// <summary>
+        /// Determines if the ACA is reachable.
+        /// </summary>
+        /// <returns>True if reachable.</returns>
+        Task<bool> IsReachable();
+        
         /// <summary>
         /// Send the <see cref="IdentityClaim"/> to the ACA. The claim is delivered
         /// asynchronously to the ACA. However, the client will wait for the response.

@@ -29,6 +29,16 @@ namespace hirs {
             LogConnectionTarget(uri);
         }
 
+        public async Task<bool> IsReachable() {
+            try {
+                HttpResponseMessage response = await client.GetAsync(uri);
+                return response.IsSuccessStatusCode || (int)response.StatusCode < 500;
+            }
+            catch {
+                return false;
+            }
+        }
+
         public async Task<IdentityClaimResponse> PostIdentityClaim(IdentityClaim identityClaim) {
             MemoryStream stream = new(identityClaim.ToByteArray());
             // serialize to stream

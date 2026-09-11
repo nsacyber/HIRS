@@ -1,69 +1,55 @@
 ﻿using Google.Protobuf;
 using Hirs.Pb;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace hirs {
-
     public class Provisioner : IHirsProvisioner {
-        private CLI cli = null;
-        private Settings settings = null;
-        private IHirsDeviceInfoCollector deviceInfoCollector = null;
-        private IHirsAcaClient acaClient = null;
-        
+        private CLI Cli { get; }
+
+        private Settings Settings { get; }
+
+        private IHirsDeviceInfoCollector deviceInfoCollector {
+            get;
+            set;
+        }
+
+        private IHirsAcaClient acaClient {
+            get;
+            set;
+        }
+
         private const string DefaultLDevIDPubKeyFileName = "ldevid.pub";
         private const string DefaultLDevIDPrivKeyFileName = "ldevid.priv";
 
         private const string DefaultAKCertFileName = "ak.pem";
         private const string DefaultLDevIDCertFileName = "ldevid.pem";
 
-        public Provisioner() {
-        }
-
         public Provisioner(Settings settings, CLI cli) {
-            SetSettings(settings);
-            SetCLI(cli);
-        }
-
-        public void SetSettings(Settings settings) {
-            if (settings == null) {
-                Log.Error("Unknown error. Settings were supposed to have been parsed.");
-            }
-            this.settings = settings!;
-        }
-
-        public void SetCLI(CLI cli) {
-            if (cli == null) {
-                Log.Error("Unknown error. CLI arguments were supposed to have been parsed.");
-            }
-            this.cli = cli;
+            Settings = settings;
+            Cli = cli;
         }
 
         public IHirsAcaTpm ConnectTpm() {
             IHirsAcaTpm tpm = null;
             // If tpm device type is set on the command line
-            if (cli.Nix) {
+            if (Cli.Nix) {
                 tpm = new CommandTpm(CommandTpm.Devices.NIX);
-            } else if (cli.Tcp && cli.Ip != null) {
-                string[] split = cli.Ip.Split(":");
+            } else if (Cli.Tcp && !String.IsNullOrWhiteSpace(Cli.Ip)) {
+                string[] split = Cli.Ip.Split(":");
                 if (split.Length == 2) {
-                    tpm = new CommandTpm(cli.Sim, split[0], Int32.Parse(split[1]));
-                    Log.Debug("Connected to TPM via TCP at " + cli.Ip);
+                    tpm = new CommandTpm(Cli.Sim, split[0], Int32.Parse(split[1]));
+                    Log.Debug("Connected to TPM via TCP at " + Cli.Ip);
                 } else {
-                    Log.Error("ip input should have the format servername:port. The given input was '" + cli.Ip + "'.");
+                    Log.Error("ip input should have the format servername:port. The given input was '" + Cli.Ip + "'.");
                 }
-            } else if (cli.Win) {
+            } else if (Cli.Win) {
                 tpm = new CommandTpm(CommandTpm.Devices.WIN);
             }
 
-            // If command line not set, check if auto detect is enabled
-            if ((tpm == null) && settings.IsAutoDetectTpmEnabled()) {
+            // If command line not set, check if autodetect is enabled
+            if ((tpm == null) && Settings.IsAutoDetectTpmEnabled()) {
                 Log.Debug("Auto Detect TPM is Enabled. Starting search for the TPM.");
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                     try {
@@ -81,7 +67,7 @@ namespace hirs {
                     }
                 }
 
-                // if tpm still null, try set up TcpTpmDevice on sim, catch exception
+                // if tpm still null, try to set up TcpTpmDevice on sim, catch exception
                 if (tpm == null) {
                     try {
                         string[] split = CommandTpm.DefaultSimulatorNamePort.Split(":");
@@ -91,23 +77,26 @@ namespace hirs {
                         Log.Debug("No TPM simulator found by auto detect.");
                     }
                 }
-            } else if ((tpm != null) && settings.IsAutoDetectTpmEnabled()) {
-                Log.Debug("Auto detect TPM was enabled in settings, but command line options were also given. Using command line options.");
+            } else if ((tpm != null) && Settings.IsAutoDetectTpmEnabled()) {
+                Log.Debug(
+                    "Auto detect TPM was enabled in settings, but command line options were also given. Using command line options.");
             }
-            
+
             // If TPM is still not set up, offer help message
             if (tpm == null) {
                 Log.Fatal(
                     "To connect to a TPM device on Windows, add the command line argument --win\n" +
                     "To connect to a TPM device on LINUX, add the command line argument --nix\n" +
                     "To connect to a TPM via TCP, add the command line arguments --tcp <address>:<port>\n" +
-                    "To connect to a TPM simulator at the default TCP socket of " + CommandTpm.DefaultSimulatorNamePort + ", add the command line arguments --tcp --sim\n" +
+                    "To connect to a TPM simulator at the default TCP socket of " +
+                    CommandTpm.DefaultSimulatorNamePort + ", add the command line arguments --tcp --sim\n" +
                     "To connect to a TPM simulator at any other socket, add the command line arguments --tcp --sim <address>:<port>\n");
             }
+
             return tpm;
         }
 
-        public void UseBuiltInClient(string addr) {
+        private void UseBuiltInClient(string addr) {
             acaClient = new Client(addr);
         }
 
@@ -116,65 +105,71 @@ namespace hirs {
         }
 
         public void UseClassicDeviceInfoCollector() {
-            deviceInfoCollector = new ClassicDeviceInfoCollector(settings);
+            deviceInfoCollector = new ClassicDeviceInfoCollector(Settings);
         }
 
-        public void SetDeviceInfoCollector(IHirsDeviceInfoCollector collector) {
-            if (collector == null) {
+        public void SetDeviceInfoCollector(IHirsDeviceInfoCollector? collector) {
+            if (collector is null) {
                 UseClassicDeviceInfoCollector();
             } else {
                 deviceInfoCollector = collector;
             }
         }
 
-        public static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath, string certificateFileName) {
-            StringBuilder sb = new StringBuilder();
+        private static string FormatCertificatePath(DeviceInfo dv, string certificateDirPath,
+            string certificateFileName) {
+            StringBuilder sb = new();
             if (dv?.Hw != null) {
-                if (dv.Hw.HasSystemSerialNumber && !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
-                    sb.AppendFormat("{0}-", dv.Hw.SystemSerialNumber);
+                if (dv.Hw.HasSystemSerialNumber &&
+                    !dv.Hw.SystemSerialNumber.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
+                    sb.Append($"{dv.Hw.SystemSerialNumber}-");
                 }
+
                 if (dv.Hw.HasManufacturer && !dv.Hw.Manufacturer.Equals(ClassicDeviceInfoCollector.NOT_SPECIFIED)) {
-                    sb.AppendFormat("{0}-", dv.Hw.Manufacturer);
+                    sb.Append($"{dv.Hw.Manufacturer}-");
                 }
             }
+
             sb.Append(certificateFileName);
             return Path.GetFullPath(Path.Join(certificateDirPath, sb.ToString()));
         }
 
         public async Task<int> Provision(IHirsAcaTpm tpm) {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
-            if (tpm != null) {
+            if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
                 Log.Information("----> Gathering Endorsement Key Certificate.");
                 byte[] ekc = tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex);
-                if (ekc.Length == 0) {
+                if (ekc is null or []) {
                     Log.Information("------> No Endorsement Key Certificate found at the expected index. The ACA may have one uploaded for this TPM.");
                 }
+
                 Log.Debug("Checking EK PUBLIC");
                 tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle); // Will not create key if obj already exists at handle
-                byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out byte[] name, out byte[] qualifiedName);
+                byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out byte[] _, out byte[] _);
 
-                Log.Information("----> " + (cli.ReplaceAK ? "Creating new" : "Verifying existence of") + " Attestation Key.");
-                tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, cli.ReplaceAK);
+                Log.Information("----> " + (Cli.ReplaceAK ? "Creating new" : "Verifying existence of") + " Attestation Key.");
+                tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
 
                 Log.Debug("Gathering AK PUBLIC.");
-                byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName);
-                
+                byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] _, out byte[] _);
+
                 Log.Debug("Checking SRK PUBLIC");
-                tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle); // Will not create key if obj already exists at handle
-                byte[] srkPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] name2, out byte[] qualifiedName2);
+                tpm.CreateStorageRootKey(CommandTpm
+                    .DefaultSrkHandle); // Will not create key if obj already exists at handle
+                byte[] _ = tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out byte[] _, out byte[] _);
 
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
-                if (settings.HasEfiPrefix()) {
+                if (Settings.HasEfiPrefix()) {
                     Log.Information("----> Gathering artifacts from EFI.");
-                    pcs = settings.gatherPlatformCertificatesFromEFI();
-                    baseRims = settings.gatherRIMBasesFromEFI();
-                    supportRimELs = settings.gatherSupportRIMELsFromEFI();
-                    supportRimPCRs = settings.gatherSupportRIMPCRsFromEFI();
+                    pcs = Settings.gatherPlatformCertificatesFromEFI();
+                    baseRims = Settings.gatherRIMBasesFromEFI();
+                    supportRimELs = Settings.gatherSupportRIMELsFromEFI();
+                    supportRimPCRs = Settings.gatherSupportRIMPCRsFromEFI();
                 }
 
                 Log.Debug("Setting up the Client.");
-                Uri acaAddress = settings.aca_address_port;
+                Uri acaAddress = Settings.aca_address_port;
                 if (acaClient == null) {
                     UseBuiltInClient(acaAddress.AbsoluteUri);
                 }
@@ -185,18 +180,22 @@ namespace hirs {
                     dv = deviceInfoCollector.CollectDeviceInfo(acaAddress.AbsoluteUri);
                 } catch (Exception e) {
                     throw new ProvisioningFailureException(ClientExitCodes.HW_COLLECTION_ERROR,
-                        "Device information collection failed. Check the system information sources and permissions.", e);
+                        "Device information collection failed. Check the system information sources and permissions.",
+                        e);
                 }
+
                 if (baseRims != null) {
                     foreach (byte[] baseRim in baseRims) {
                         dv.Swidfile.Add(ByteString.CopyFrom(baseRim));
                     }
                 }
+
                 if (supportRimELs != null) {
                     foreach (byte[] supportRimEL in supportRimELs) {
                         dv.Logfile.Add(ByteString.CopyFrom(supportRimEL));
                     }
                 }
+
                 if (supportRimPCRs != null) {
                     foreach (byte[] supportRimPCR in supportRimPCRs) {
                         dv.Logfile.Add(ByteString.CopyFrom(supportRimPCR));
@@ -205,25 +204,26 @@ namespace hirs {
 
                 Log.Debug("Gathering hardware component information:");
                 string manifest = "";
-                if (settings.HasHardwareManifestPlugins()) {
-                    manifest = settings.RunHardwareManifestCollectors();
-                } else if (settings.HasPaccorOutputFromFile()) {
-                    manifest = settings.paccor_output;
+                if (Settings.HasHardwareManifestPlugins()) {
+                    manifest = Settings.RunHardwareManifestCollectors();
+                } else if (Settings.HasPaccorOutputFromFile()) {
+                    manifest = Settings.paccor_output;
                 } else {
                     Log.Warning("No hardware collectors nor paccor output file were identified.");
                 }
+
                 Log.Debug("Hardware component information that will be sent to the ACA: " + manifest);
 
                 Log.Debug("Gathering the event log.");
                 byte[] eventLog;
-                if (settings.HasEventLogFromFile()) {
+                if (Settings.HasEventLogFromFile()) {
                     Log.Debug("  Using the event log identified in settings.");
-                    eventLog = settings.event_log;
+                    eventLog = Settings.event_log;
                 } else {
                     Log.Debug("  Attempting to collect the event log from the system.");
                     eventLog = tpm.GetEventLog();
                 }
-                    
+
                 if (eventLog != null) {
                     Log.Debug("Event log gathered is " + eventLog.Length + " bytes.");
                     dv.Livelog = ByteString.CopyFrom(eventLog);
@@ -238,22 +238,27 @@ namespace hirs {
                 Log.Debug("\n" + pcrsList);
                 dv.Pcrslist = ByteString.CopyFromUtf8(pcrsList);
 
-                Log.Information("----> " + (cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") + " LDevID Key.");
-                string ldevidPubPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPubKeyFileName);
-                string ldevidPrivPath = FormatCertificatePath(dv, settings.certificate_output_directory, DefaultLDevIDPrivKeyFileName);
-                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, cli.ReplaceLDevID);
+                Log.Information("----> " + (Cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") +
+                                " LDevID Key.");
+                string ldevidPubPath = FormatCertificatePath(dv, Settings.certificate_output_directory,
+                    DefaultLDevIDPubKeyFileName);
+                string ldevidPrivPath = FormatCertificatePath(dv, Settings.certificate_output_directory,
+                    DefaultLDevIDPrivKeyFileName);
+                tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, Cli.ReplaceLDevID);
 
                 Log.Debug("Gathering LDevID PUBLIC.");
                 byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
 
                 Log.Debug("Create identity claim");
-                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs, manifest, ldevidPublicArea);
+                IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs,
+                    manifest, ldevidPublicArea);
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
                 if (icr == null) {
                     throw new AcaClientException("The ACA client did not return an identity-claim response.");
                 }
+
                 Log.Information("----> Received response. Attempting to decrypt nonce");
                 if (icr.HasStatus) {
                     if (icr.Status == ResponseStatus.Pass) {
@@ -261,118 +266,128 @@ namespace hirs {
                     } else {
                         Log.Debug("The ACA did not accept the identity claim. See details on the ACA.");
                         if (icr.HasStatusDetails && !icr.StatusDetails.IsWhiteSpace()) {
-                            Log.Error("Validation failed during identity-claim processing: {StatusDetails}", icr.StatusDetails);
+                            Log.Error("Validation failed during identity-claim processing: {StatusDetails}",
+                                icr.StatusDetails);
                         } else {
-                            Log.Error("Validation failed during identity-claim processing. The ACA did not provide additional details.");
+                            Log.Error(
+                                "Validation failed during identity-claim processing. The ACA did not provide additional details.");
                         }
+
                         result = ClientExitCodes.PASS_1_STATUS_FAIL;
                         return (int)result;
                     }
                 }
 
-                byte[] integrityHMAC = null, encIdentity = null, encryptedSecret = null;
-                if (icr.HasCredentialBlob) {
-                    byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // TPM2B_ID_OBJECT; look for the nonce
-                    byte[] encryptedSecretBlob = icr.EncryptedSecret.ToByteArray(); // TPM2B_ENCRYPTED_SECRET
-                    Log.Debug("ACA delivered IdentityClaimResponse credentialBlob " + BitConverter.ToString(credentialBlob));
-                    int credentialBlobLen = (credentialBlob[0] << 8) | credentialBlob[1];
-                    int integrityHmacLen = (credentialBlob[2] << 8) | credentialBlob[3];
-                    integrityHMAC = new byte[integrityHmacLen]; // Extract HMAC
-                    Array.Copy(credentialBlob, 4, integrityHMAC, 0, integrityHmacLen);
-                    int encIdentityLen = credentialBlobLen - integrityHmacLen - 2;
-                    encIdentity = new byte[encIdentityLen];
-                    Array.Copy(credentialBlob, 4 + integrityHmacLen, encIdentity, 0, encIdentityLen);
-                    int encryptedSecretLen = (encryptedSecretBlob[0] << 8) | encryptedSecretBlob[1];
-                    encryptedSecret = new byte[encryptedSecretLen];
-                    Array.Copy(encryptedSecretBlob, 2, encryptedSecret, 0, encryptedSecretLen);
-                    Log.Debug("Prepared values to give to activateCredential.");
-                    Log.Debug("    integrityHMAC: " + BitConverter.ToString(integrityHMAC));
-                    Log.Debug("    encIdentity: " + BitConverter.ToString(encIdentity));
-                    Log.Debug("    encryptedSecret: " + BitConverter.ToString(encryptedSecret));
-                } else {
-                    result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
+                if (!icr.HasCredentialBlob) {
                     Log.Error("The response from the ACA did not contain a CredentialBlob.");
+                    return (int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
                 }
 
-                if (integrityHMAC != null && encIdentity != null && encryptedSecret != null) {
-                    Log.Debug("Executing activateCredential.");
-                    byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, integrityHMAC, encIdentity, encryptedSecret);
-                    Log.Debug("Gathering quote.");
-                    uint[] selectPcrs = null;
-                    if (icr.HasPcrMask) {
-                        // For now, the ACA will send a comma separated selection of PCRs as a string
-                        try {
-                            selectPcrs = icr.PcrMask.Split(',').Select(uint.Parse).ToList().ToArray();
-                        } catch (Exception) {
-                            Log.Warning("PcrMask was included in the IdentityClaimResponse, but could not be parsed." +
-                                        "Collecting quote over default PCR selection.");
-                            Log.Debug("This PcrMask could not be parsed: " + icr.PcrMask);
-                        }
+                if (!icr.HasEncryptedSecret) {
+                    Log.Error("The response from the ACA did not contain a EncryptedSecret.");
+                    return (int)ClientExitCodes.MAKE_CREDENTIAL_ENCRYPTED_SECRET_MALFORMED;
+                }
+
+                byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // TPM2B_ID_OBJECT; look for the nonce
+                byte[] encryptedSecret = icr.EncryptedSecret.ToByteArray(); // TPM2B_ENCRYPTED_SECRET
+                Log.Debug("ACA delivered IdentityClaimResponse credentialBlob " +
+                          BitConverter.ToString(credentialBlob));
+                Log.Debug("ACA delivered IdentityClaimResponse encryptedSecret " +
+                          BitConverter.ToString(encryptedSecret));
+
+                Log.Debug("Executing activateCredential.");
+                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle,
+                    credentialBlob, encryptedSecret);
+
+                if (!recoveredSecret.Any()) {
+                    Log.Debug("Nonce could not be decrypted. ActivateCredential failed.");
+                    return (int)ClientExitCodes.PASS_1_STATUS_FAIL;
+                }
+                
+                Log.Information("----> Nonce successfully decrypted. Sending attestation certificate request");
+                
+                uint[] selectPcrs = null;
+                if (icr.HasPcrMask) {
+                    // For now, the ACA will send a comma separated selection of PCRs as a string
+                    try {
+                        selectPcrs = [.. icr.PcrMask.Split(',').Select(uint.Parse)];
+                    } catch (Exception) {
+                        Log.Warning("PcrMask was included in the IdentityClaimResponse, but could not be parsed." +
+                                    "Collecting quote over default PCR selection.");
+                        Log.Debug("This PcrMask could not be parsed: " + icr.PcrMask);
                     }
-                    tpm.GetQuote(CommandTpm.DefaultAkHandle, Tpm2Lib.TpmAlgId.Sha256, recoveredSecret, out CommandTpmQuoteResponse ctqr, selectPcrs);
-                    Log.Information("----> Nonce successfully decrypted. Sending attestation certificate request");
-                    CertificateRequest akCertReq = acaClient.CreateAkCertificateRequest(recoveredSecret, ctqr);
-                    string certificate;
-                    Log.Debug("Communicate certificate request to the ACA.");
-                    CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
-                    if (cr == null) {
-                        throw new AcaClientException("The ACA client did not return a certificate response.");
-                    }
-                    Log.Debug("Response received from the ACA regarding the certificate request.");
-                     if (cr.HasStatus) {
-                        if (cr.Status == ResponseStatus.Pass) {
-                            Log.Debug("ACA returned a positive response to the Certificate Request.");
+                }
+
+                Log.Debug("Gathering quote.");
+                tpm.GetQuote(CommandTpm.DefaultAkHandle, Tpm2Lib.TpmAlgId.Sha256, recoveredSecret,
+                    out CommandTpmQuoteResponse ctqr, selectPcrs);
+                
+                CertificateRequest akCertReq = acaClient.CreateAkCertificateRequest(recoveredSecret, ctqr);
+                string certificate;
+                Log.Debug("Communicate certificate request to the ACA.");
+                CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
+                if (cr == null) {
+                    throw new AcaClientException("The ACA client did not return a certificate response.");
+                }
+
+                Log.Debug("Response received from the ACA regarding the certificate request.");
+                if (cr.HasStatus) {
+                    if (cr.Status == ResponseStatus.Pass) {
+                        Log.Debug("ACA returned a positive response to the Certificate Request.");
+                    } else {
+                        Log.Debug("The ACA did not return any certificates. See details on the ACA.");
+                        if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {
+                            Log.Error("Validation failed during certificate processing: {StatusDetails}",
+                                cr.StatusDetails);
                         } else {
-                            Log.Debug("The ACA did not return any certificates. See details on the ACA.");
-                            if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {
-                                Log.Error("Validation failed during certificate processing: {StatusDetails}", cr.StatusDetails);
-                            } else {
-                                Log.Error("Validation failed during certificate processing. The ACA did not provide additional details.");
-                            }
-                            result = ClientExitCodes.PASS_2_STATUS_FAIL;
-                            return (int)result;
+                            Log.Error(
+                                "Validation failed during certificate processing. The ACA did not provide additional details.");
+                        }
+
+                        result = ClientExitCodes.PASS_2_STATUS_FAIL;
+                        return (int)result;
+                    }
+                }
+
+                if (cr.HasCertificate) {
+                    certificate = cr.Certificate.ToString(); // contains certificate
+                    String certificateDirPath = Settings.certificate_output_directory;
+                    if (certificateDirPath != null) {
+                        String certificateFilePath =
+                            FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
+                        try {
+                            File.WriteAllText(certificateFilePath, certificate);
+                            Log.Debug("Attestation key certificate written to local file system: {0}",
+                                certificateFilePath);
+                        } catch (Exception) {
+                            Log.Debug("Failed to write attestation key certificate to local file system.");
                         }
                     }
-                    if (cr.HasCertificate) {
-                        certificate = cr.Certificate.ToString(); // contains certificate
-                        String certificateDirPath = settings.certificate_output_directory;
-                        if (certificateDirPath != null) {
-                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
-                            try {
-                                File.WriteAllText(certificateFilePath, certificate);
-                                Log.Debug("Attestation key certificate written to local file system: {0}", certificateFilePath);
-                            }
-                            catch (Exception) {
-                                Log.Debug("Failed to write attestation key certificate to local file system.");
-                            }
+
+                    Log.Debug("Printing attestation key certificate: " + certificate);
+                }
+
+                if (cr.HasLdevidCertificate) {
+                    certificate = cr.LdevidCertificate.ToString(); // contains certificate
+                    String ldevidCertificateDirPath = Settings.certificate_output_directory;
+                    if (ldevidCertificateDirPath != null) {
+                        String certificateFilePath =
+                            FormatCertificatePath(dv, ldevidCertificateDirPath, DefaultLDevIDCertFileName);
+                        try {
+                            File.WriteAllText(certificateFilePath, certificate);
+                            Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
+                        } catch (Exception) {
+                            Log.Debug("Failed to write LDevID certificate to local file system.");
                         }
-                        Log.Debug("Printing attestation key certificate: " + certificate);
                     }
-                    if (cr.HasLdevidCertificate) {
-                        certificate = cr.LdevidCertificate.ToString(); // contains certificate
-                        String certificateDirPath = settings.certificate_output_directory;
-                        if (certificateDirPath != null) {
-                            String certificateFilePath = FormatCertificatePath(dv, certificateDirPath, DefaultLDevIDCertFileName);
-                            try {
-                                File.WriteAllText(certificateFilePath, certificate);
-                                Log.Debug("LDevID certificate written to local file system: {0}", certificateFilePath);
-                            }
-                            catch (Exception) {
-                                Log.Debug("Failed to write LDevID certificate to local file system.");
-                            }
-                        }
-                        Log.Debug("Printing LDevID certificate: " + certificate);
-                    }
-                } else {
-                    result = ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
-                    Log.Error("Credential elements could not be extracted from the ACA's response.");
+                    Log.Debug("Printing LDevID certificate: " + certificate);
                 }
             } else {
                 result = ClientExitCodes.TPM_ERROR;
                 Log.Error("Could not provision because the TPM object was null.");
             }
+
             return (int)result;
         }
-
     }
 }

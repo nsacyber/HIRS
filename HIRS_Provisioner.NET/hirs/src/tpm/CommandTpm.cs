@@ -74,24 +74,25 @@ namespace hirs {
         }
 
         ~CommandTpm() {
-            if (tpm != null) {
-                tpm.Dispose();
-            }
+            tpm.Dispose();
+        }
+        
+        public bool IsTpmPresent() {
+            return tpm._GetUnderlyingDevice() != null && tpm._GetUnderlyingDevice()._HasRM;
         }
 
         public byte[] GetCertificateFromNvIndex(uint index) {
             Log.Debug("GetCertificateFromNvIndex 0x" + index.ToString("X"));
-            byte[] certificate = Array.Empty<byte>();
+            byte[] certificate = [];
             
             TpmHandle nvHandle = new(index);
             try {
-                byte[] nvName; // not used for this function. have to collect from NvReadPublic. 
-                NvPublic obj = tpm.NvReadPublic(nvHandle, out nvName);
+                NvPublic obj = tpm.NvReadPublic(nvHandle, out byte[] _); // out param not used for this function. have to collect from NvReadPublic. 
                 if (obj != null) {
                     byte[] indexData = NvBufferedRead(TpmHandle.RhOwner, nvHandle, obj.dataSize, 0);
-                    if (indexData != null) {
+                    if (indexData is null or []) {
                         certificate = ExtractFirstCertificate(indexData); // the nvIndex could contain random fill around the certificate
-                        if (certificate != null) {
+                        if (certificate is null or []) {
                             Log.Debug("GetCertificateFromNvIndex: Read: " + BitConverter.ToString(certificate));
                         } else {
                             Log.Debug("GetCertificateFromNvIndex: No certificate found within data at index.");
@@ -499,6 +500,26 @@ namespace hirs {
 
             return recoveredSecret;
         }
+        
+        public byte[] ActivateCredential(uint akHandleInt, uint ekHandleInt, byte[] credentialBlob, byte[] encryptedSecret) {
+            if (!CanMarshal<Tpm2bIdObject>(credentialBlob)) {
+                Log.Debug("Credential ID elements could not be extracted from the ACA's response.");
+                return [];
+            }
+            if (!CanMarshal<Tpm2bEncryptedSecret>(encryptedSecret)) {
+                Log.Debug("Encrypted secret elements could not be extracted from the ACA's response.");
+                return [];
+            }
+
+            Tpm2bIdObject credentialBlobObj = Marshal<Tpm2bIdObject>(credentialBlob);
+            Tpm2bEncryptedSecret encryptedSecretObj = Marshal<Tpm2bEncryptedSecret>(encryptedSecret);
+            Log.Debug("Prepared values to give to activateCredential.");
+            Log.Debug("    integrityHMAC: " + BitConverter.ToString(credentialBlobObj.credential.integrityHMAC));
+            Log.Debug("    encIdentity: " + BitConverter.ToString(credentialBlobObj.credential.encIdentity));
+            Log.Debug("    encryptedSecret: " + BitConverter.ToString(encryptedSecretObj.secret));
+
+            return ActivateCredential(akHandleInt, ekHandleInt, credentialBlobObj.credential.integrityHMAC, credentialBlobObj.credential.encIdentity, encryptedSecretObj.secret);
+        }
 
         public byte[] GetEventLog() {
             byte[] eventLog = null;
@@ -595,6 +616,26 @@ namespace hirs {
                 pcrValuesStr += ((i > 9) ? " " : "  ") + ": ";
                 pcrValuesStr += BitConverter.ToString(pcrValue.buffer).Replace("-", "").ToLower().Trim() + "\n";
             }
+        }
+
+        public static bool CanMarshal<T>(byte[] data) {
+            bool result = false;
+            try {
+                Marshaller m = new(data, DataRepresentation.Tpm);
+                m.Get<T>();
+                result = true;
+            } catch (Exception e) {
+                Log.Error("Error marshalling data: " + e.Message);
+            }
+            return result;
+        }
+        
+        /**
+         * Run CanMarshal first to test if marshalling will work
+         */
+        public static T Marshal<T>(byte[] data) {
+            Marshaller m = new(data, DataRepresentation.Tpm);
+            return m.Get<T>();
         }
     }
 }
