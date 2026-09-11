@@ -8,4 +8,4 @@ The **Homepage** displays the various features of the
 [ACA Validation service](../started/gs6-validation-run.md). Configuration 
 setup options are on the left, and output/status reports are on the right.
 
-<img src= "../../images/portal-home.png" alt="HIRS ACA Homepage" style="border: 2px solid grey;">
+<img src= "../../images/portal-home.png" alt="HIRS portal homepage" style="border: 2px solid grey;" class="portal-wide">

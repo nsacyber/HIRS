@@ -11,24 +11,26 @@ or attributes for TPM provisioning. This initial setting is intended to:
 1. Test the proper installation of HIRS, with no validation of supply chain credentials performed.
 2. Support TPM provisioning of systems that might not be delivered with supply chain credentials.
 
-<img src= "../../images/portal-policy-default.png" alt="HIRS Policy Page" style="border: 2px solid grey;">
+<img src= "../../images/portal-policy-default.png" alt="HIRS Policy Page" style="border: 2px solid grey;" class="portal-wide">
 
-**[Endorsement Certificate Validation](../started/gs3-hirs-config/#configuration-with-the-endorsement-check-enabled)**: 
-If selected, the ACA will validate the Endorsement Certificate
+## **[Endorsement Validation](../started/gs3-hirs-config/#configuration-with-the-endorsement-check-enabled)**
+If Endorsement Certificate Validation is selected, the ACA will validate the Endorsement Certificate
 prior to issuing an Attestation Certificate. The default is ‘Disabled’.
 
-**[Platform Certificate Validation](../started/gs3-hirs-config/#configuration-with-the-platform-check-enabled)**: 
-If selected, the ACA will validate the Platform Certificate
+## **[Platform Validation](../started/gs3-hirs-config/#configuration-with-the-platform-check-enabled)**
+If Platform Certificate Validation is selected, the ACA will validate the Platform Certificate
 prior to issuing an Attestation Certificate. This option only validates the Certificate itself,
 not the attributes within the Platform Certificate. Endorsement Certificate Validation is required
 to be enabled prior to enabling this policy option. The default is ‘Disabled’.
 
-**Platform Attribute Certificate Validation**: If selected, the ACA will validate the Platform
+### **Platform Attribute Certificate**
+If Platform Attribute Certificate Validation is selected, the ACA will validate the Platform
 Certificate Attributes prior to issuing an Attestation Certificate. This option only validates
 the Certificate Attributes, not the Platform Certificate. Platform Certificate Validation is
 required to be enabled prior to enabling this policy option. The default is ‘Disabled’.
 
-**[Firmware Validation](../started/gs3-hirs-config/#configuration-with-the-firmware-check-enabled)**: If selected, 
+## **[Firmware Validation](../started/gs3-hirs-config/#configuration-with-the-firmware-check-enabled)**
+If selected, 
 the ACA will validate firmware prior to issuing an Attestation Credential. The TCG-defined artifacts necessary for 
 this validation are:
 
@@ -40,39 +42,44 @@ this validation are:
 - Certificate chain of the organization that produced the Platform Certificate
 - Certificate chain of the organization that produced the RIM
 
-**Ignore IMA PCR Entry**: If selected, the ACA will ignore the IMA PCR Entry prior to issuing
+### **Ignore IMA PCR Entry**
+If selected, the ACA will ignore the IMA PCR Entry prior to issuing
 an Attestation Certificate. Firmware Validation is required to be enabled prior to enabling
 this policy option.
 
-**Ignore TBOOT PCRs Entry**: If selected, the ACA will ignore the TBOOT PCRs Entry prior to
+### **Ignore TBOOT PCRs Entry**
+If selected, the ACA will ignore the TBOOT PCRs Entry prior to
 issuing an Attestation Certificate. Firmware Validation is required to be enabled prior to
 enabling this policy option.
 
-**Ignore GPT PCRs Entry**: If selected, the ACA will ignore the GPT PCRs Entry prior to issuing
+### **Ignore GPT PCRs Entry**
+If selected, the ACA will ignore the GPT PCRs Entry prior to issuing
 an Attestation Certificate. Firmware Validation is required to be enabled prior to enabling
 this policy option.
 
-**[Generate Attestation Certificate](../started/gs3-hirs-config.md/#configuration-with-attestation-certificate)**: 
+## **[Generate Attestation Certificate](../started/gs3-hirs-config.md/#configuration-with-attestation-certificate)**
 If selected, the ACA will conditionally generate an
 Attestation Certificate after a successful TPM provisioning.
 
-**[Generate LDevID Certificate](../started/gs3-hirs-config.md/#configuration-with-ldevid)**: 
-If selected, the ACA will conditionally generate a Local
-Device ID (LDevID) certificate after a successful TPM provisioning.
-
-**Attestation Certificate Validity period**: If selected, the ACA will have an Attestation
+### **Attestation Certificate Validity**
+If Attestation Certificate Validity period is selected, the ACA will have an Attestation
 Certificate Validity period of the input number of days. ```Generate Attestation Certificate```
 is required to be enabled prior to enabling this option. ```Attestation Certificate Validity
 period``` being enabled automatically causes ```Attestation Certificate Renewal period``` to become
 enabled. If ```Attestation Certificate Renewal period``` is disabled, this will also disable
 ```Attestation Certificate Validity period```.
 
-**Attestation Certificate Renewal period**: If selected, the ACA will renew the input ```n```
+### **Attestation Certificate Renewal**
+If Attestation Certificate Renewal period is selected, the ACA will renew the input ```n```
 number of days before the Attestation Certificate’s ‘Not After’ validity date which has
 a default of 365 days. ```Generate Attestation Certificate``` is required to be enabled prior
 to enabling this option. ```Attestation Certificate Validity period``` being enabled automatically
 causes ```Attestation Certificate Renewal period``` to become enabled. If ```Attestation Certificate
 Validity period``` is disabled, this will also disable ```Attestation Certificate Renewal period```.
+
+## **[Generate LDevID Certificate](../started/gs3-hirs-config.md/#configuration-with-ldevid)**
+If selected, the ACA will conditionally generate a Local
+Device ID (LDevID) certificate after a successful TPM provisioning.
 
 !!! note
 

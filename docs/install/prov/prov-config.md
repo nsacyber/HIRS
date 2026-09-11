@@ -5,7 +5,7 @@ title: Provisioner Configuration
 # Provisioner Configuration
 
 By default, the HIRS .NET Provisioner is configured to auto-detect a discrete or firmware TPM.
-It will also use a bundled version of [PACCOR](../../tools/paccor.md) to collect hardware information.
+It will also use a bundled version of [PACCOR](../../tools/paccor/index.md) to collect hardware information.
 
 ## Config file: appsettings.json
 
@@ -77,27 +77,31 @@ to the server running the HIRS ACA.
 ### `path`
 
 * This value specifies the name of the Provisioner log file and the directory
-where it will be placed. The default location is the current installation directory, 
-and the default name is:
-    ```shell
+where it will be placed. The default location is the directory that
+the HIRS .NET Provisioner is executed from via the 
+[validation run](../validation/validation-run.md/#run) command. 
+The default name of the log file in the appsettings.json file is:
+    ```
     hirs.log
     ```
 
 * A common option is to change this to the ACA log directory:
-    ```shell
+    ```
     /var/log/hirs/hirs.log
     ```
 
-    !!! note
+    !!! important
 
-        The Provisioner will add a date to the end of the log file. For instance,
-        if you have configured your log file path to be 
+        The Provisioner will automatically add a date to the end of the log file. For instance,
+        if you have configured your log file path in appsettings.json to be <br>
+        &emsp;&emsp;```      
+        /var/log/hirs/hirs.log
+        ```
         <br>
-        &emsp;&emsp;/var/log/hirs/hirs.log
-        <br>
-        the actual log file will look like 
-        <br>
-        &emsp;&emsp;/var/log/hirs/hirs< date >.log.
+        the actual log file will actually appear as <br>
+        &emsp;&emsp;``` 
+        /var/log/hirs/hirs<date>.log
+            ```
 
 ## Other configuration options
 
