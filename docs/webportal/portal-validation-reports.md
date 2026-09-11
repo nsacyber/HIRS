@@ -9,7 +9,7 @@ from HIRS TPM Provisioners.
 
 The following is an image with one validation report. 
 
-<img src= "../../images/portal-validation-default.png" alt="Portal Platform Cert page" style="border: 2px solid grey;">
+<img src= "../../images/portal-validation-default.png" alt="Portal validation reports default page" style="border: 2px solid grey;" class="portal-wide">
 
 The `Credential Validation` columns are populated only if the 
 [ACA policy](portal-policy.md) included those items at the time the validation was 
@@ -23,7 +23,7 @@ The following example shows a validation report for a run that included
 endorsement, platform, and firmware validation. This configuration is the 
 recommended report policy for supply chain validation.
 
-<img src= "../../images/portal-validation.png" alt="Portal Platform Cert page" style="border: 2px solid grey;">
+<img src= "../../images/portal-validation.png" alt="Portal validation reports green-checks page" style="border: 2px solid grey;" class="portal-wide">
 
 You can download any of these reports using the
 <img src="../../images/portal-download.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">

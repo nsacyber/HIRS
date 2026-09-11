@@ -7,7 +7,7 @@ title: Endorsement Key Certificates
 The **Endorsement Certificates** page is used to upload, download, delete, and view 
 [Endorsement Certificates](../background/inputs/endorsement-cert.md).
 
-<img src= "../../images/portal-endorse.png" alt="Portal Endorsement Cert page" style="border: 2px solid grey;">
+<img src= "../../images/portal-endorse.png" alt="Portal Endorsement Cert page" style="border: 2px solid grey;" class="portal-wide">
 
 The EK Credential must contain:
 
@@ -23,7 +23,7 @@ The user can view the uploaded EK Certificate by clicking the
 <img src="../../images/portal-clipboard.png" alt="clipboard" width="20" height="20" style="vertical-align:middle;">
 icon under the `Options` tab.
 
-<img src= "../../images/portal-endorse-cert.png" alt="Portal Endorsement Cert page" style="border: 2px solid grey;">
+<img src= "../../images/portal-endorse-cert.png" alt="Portal Endorsement Cert details" style="border: 2px solid grey;" class="portal-wide">
 
 !!! note
 

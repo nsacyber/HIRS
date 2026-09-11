@@ -110,6 +110,8 @@ theme:
     - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
+extra_css:
+  - stylesheets/extra.css
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -133,4 +135,3 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
         #plugins:
         # - to-pdf
-

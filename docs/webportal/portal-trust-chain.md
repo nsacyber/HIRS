@@ -18,7 +18,7 @@ used by the ACA for certificate validation. A certificate chain consists of the 
 intermediate CA certificates required to validate a specific certificate (such as an
 Attestation, Endorsement, or Platform certificate). 
 
-<img src= "../../images/portal-trust.png" alt="Portal Trustchain page" style="border: 2px solid grey;">
+<img src= "../../images/portal-trust.png" alt="Portal trust chain page" style="border: 2px solid grey;" class="portal-wide">
 
 The user can upload/download trusted certificates (intermediate and root)
 from all organizations involved with the supply chain via
@@ -35,7 +35,7 @@ certificate must be trusted by a TPM Quote appraiser.
 For example, selecting the "View ACA Certificates" button at the top left will allow the user to 
 select one of the certificates in the chain (root, intermediate, leaf) and view the details: 
 
-<img src= "../../images/portal-trust-hirsroot.png" alt="Portal Trustchain page" style="border: 2px solid grey;">
+<img src= "../../images/portal-trust-hirsroot.png" alt="Portal trust chain root cert" style="border: 2px solid grey;" class="portal-wide">
 
 This ACA trust chain certificates will be required in future processing of TPM Quotes, since TPM Quotes
 are signed by the TPM’s Attestation Key. 
