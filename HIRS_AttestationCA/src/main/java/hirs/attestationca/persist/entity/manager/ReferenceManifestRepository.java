@@ -191,14 +191,14 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
 
     /**
      * Query that retrieves a list of {@link SupportReferenceManifest} objects using the provided manufacturer and
-     * platform model and where the rim type is support.
+     * platform model and where the rim type is support, ordered by create_time.
      *
      * @param manufacturer string representation of platform manufacturer
      * @param model        string representation of platform model
      * @return a list of {@link SupportReferenceManifest} objects
      */
     @Query(value = "SELECT * FROM ReferenceManifest WHERE platformManufacturer = ?1 AND platformModel = ?2 "
-            + "AND rimType = 'Support'", nativeQuery = true)
+            + "AND rimType = 'Support' ORDER BY create_time ASC", nativeQuery = true)
     List<SupportReferenceManifest> getSupportByManufacturerModel(String manufacturer, String model);
 
     /**
