@@ -7,7 +7,7 @@ title: Reference Integrity Manifests
 The **Reference Integrity Manifests** (RIM) page is used to upload, view, manage, and delete 
 [RIM files](../background/inputs/rim.md).  
 
-<img src= "../../images/portal-rim.png" alt="Portal RIM page" style="border: 2px solid grey;">
+<img src= "../../images/portal-rim.png" alt="Portal RIM page" style="border: 2px solid grey;" class="portal-wide">
 
 When a RIM file is uploaded to the ACA, both the Base and Support RIMs (if there are any 
 Support RIMS) appear within this section. The `Tag ID` column shows the SWID (Software Identification) 
@@ -25,7 +25,7 @@ The user can view the uploaded RIM or Measurement file by clicking the
 icon under the `Options` tab. The Base RIM shows information defined by the SWID standard and 
 other meta fields defined by the TCG:
 
-<img src= "../../images/portal-rim-base.png" alt="Portal RIM page" style="border: 2px solid grey;">
+<img src= "../../images/portal-rim-base.png" alt="Portal RIM details" style="border: 2px solid grey;" class="portal-wide">
 
 !!! note
 

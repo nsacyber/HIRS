@@ -8,7 +8,7 @@ The **Platform Attribute Certificate Creator** (PACCOR) is an open source tool u
 and testing Platform Certificates according to the 
 [TCG Platform Certificate Profile :fontawesome-solid-external-link:](https://trustedcomputinggroup.org/resource/tcg-platform-certificate-profile/){:target="_blank"}. 
 
-!!! note
+!!! important
 
     **At this time, the current ACA is not compatible with Platform Certificate v2.0. 
     If you are using paccor to create platform certificates for HIRS ACA validation runs,
@@ -19,7 +19,7 @@ about components on a host and the security standards met by the platform manufa
 
 - Creates Platform Certificates according to the Platform Certificate Profile
 - Assists in gathering the data in a device to produce a signed attribute certificate
-- Validates signatures on TCG [Platform Certificate](../background/inputs/platform-cert.md)
+- Validates signatures on TCG [Platform Certificate](../../background/inputs/platform-cert.md)
 
 !!! info
 

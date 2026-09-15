@@ -4,15 +4,35 @@ title: Example Output
 
 # Event Log Tool Example Output
 
-The following is an example output of from the Event Log Tool when viewing a TPM Event Log from a laptop:
+The following are examples of Event Log Tool commands when viewing a TPM Event Log:
 
-Command: 
+## Example 1
+
+### Command
+
+``` shell
+elt -f /home/username/binary_bios_measurements.bin -e 2
+```
+
+### Output
+
+``` shell
+Event# 2: Index PCR[0]
+Event Type: 0x8 EV_S_CRTM_VERSION
+Event Content:
+SCRM Version = 546bfb1e-1d0c-4055-a4ad-4ef4bf17b83a
+digest (TPM_ALG_SHA256): d4720b4009438213b803568017f903093f6bea8ab47d283db32b6eabedbbf155
+```
+
+## Example 2
+
+### Command
 
 ``` shell
 elt -f /home/username/binary_bios_measurements.bin -e
 ```
 
-Output:
+### Output
 
 ``` shell
 
