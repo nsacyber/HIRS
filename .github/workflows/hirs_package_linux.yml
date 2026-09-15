@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  # run the package script for HIRS ACA, Provisioners,  and tcg_eventlog_tool
   Package_linux:
     runs-on: ubuntu-latest
     permissions:
@@ -45,7 +45,6 @@ jobs:
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
-          cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
           cp tools/tcg_eventlog_tool/build/distributions/*.zip artifacts/win
           cp package/win/tcg-rim-tool/* artifacts/win/hirstools
       - name: Archive RPM files
@@ -54,7 +53,6 @@ jobs:
           name: RPM_Files
           path: |
             HIRS_AttestationCAPortal/build/distributions/*.rpm
-            tools/tcg_rim_tool/build/distributions/*.rpm
             tools/tcg_eventlog_tool/build/distributions/*.rpm
           if-no-files-found: error
       - name: Archive DEB files
