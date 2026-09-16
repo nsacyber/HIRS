@@ -590,7 +590,7 @@ public class DeviceInfoProcessorService {
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
 
         List<SupportReferenceManifest> dbSupportRims = referenceManifestRepository
-                .getSupportByManufacturerModel(manufacturer, model);
+                .getSupportByManufacturerModelOrderByTime(manufacturer, model);
         List<ReferenceDigestValue> expectedValues = referenceDigestValueRepository
                 .findByManufacturerAndModel(manufacturer, model);
 
