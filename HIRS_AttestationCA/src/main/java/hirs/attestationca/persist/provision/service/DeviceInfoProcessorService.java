@@ -590,7 +590,7 @@ public class DeviceInfoProcessorService {
         List<SupportReferenceManifest> patchRims = new ArrayList<>();
 
         List<SupportReferenceManifest> dbSupportRims = referenceManifestRepository
-                .getSupportByManufacturerModel(manufacturer, model);
+                .getSupportByManufacturerModelOrderByTime(manufacturer, model);
         List<ReferenceDigestValue> expectedValues = referenceDigestValueRepository
                 .findByManufacturerAndModel(manufacturer, model);
 
@@ -645,9 +645,6 @@ public class DeviceInfoProcessorService {
                         tempRdv = digestValueMap.get(subRdv.getDigestValue());
                         if (tempRdv.getPcrIndex() != subRdv.getPcrIndex()
                                 && !tempRdv.getEventType().equals(subRdv.getEventType())) {
-                            referenceDigestValueRepository.save(subRdv);
-                        } else {
-                            // will this be a problem down the line?
                             referenceDigestValueRepository.save(subRdv);
                         }
                     } else {
