@@ -646,9 +646,6 @@ public class DeviceInfoProcessorService {
                         if (tempRdv.getPcrIndex() != subRdv.getPcrIndex()
                                 && !tempRdv.getEventType().equals(subRdv.getEventType())) {
                             referenceDigestValueRepository.save(subRdv);
-                        } else {
-                            // will this be a problem down the line?
-                            referenceDigestValueRepository.save(subRdv);
                         }
                     } else {
                         referenceDigestValueRepository.save(subRdv);
