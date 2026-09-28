@@ -51,14 +51,13 @@ namespace pcrextend {
                 if (simulator) {
                     uint rc = 0;
                     try {
-                        rc = tpm.PcrRead(new PcrSelection[] { new PcrSelection(TpmAlgId.Sha1, new uint[] { 0 }) }, out _, out _);
+                        rc = tpm.GetRandom(16); // Startup sentinel
                     } catch (TpmException e) {
                         if (e.RawResponse == TpmRc.Initialize) {
                             Console.WriteLine("TPM simulator not initialized. Running startup with clear.");
-                            tpmDevice.PowerCycle();
                             tpm.Startup(Su.Clear);
                         } else {
-                            Console.WriteLine("TPM simulator already initialized. Skipping TPM2_Startup.");
+                            Log.Debug("TPM readiness failed with {RawResponse}", e.RawResponse);
                         }
                     }
                 }
