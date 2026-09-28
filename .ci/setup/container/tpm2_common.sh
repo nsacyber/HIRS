@@ -25,14 +25,6 @@ function setTpmPcrValues {
   popd  > /dev/null
 }
 
-# Set startup variables
-function setStartupVariables {
-  _sim_bin_var="HIRS_CI_TPM_SIM_BIN_${HIRS_CI_TPM_SIM}"
-  _sim_args_var="HIRS_CI_TPM_SIM_ARGS_${HIRS_CI_TPM_SIM}"
-  HIRS_CI_TPM_SIM_BIN="${!_sim_bin_var}"
-  HIRS_CI_TPM_SIM_ARGS="${!_sim_args_var}"
-}
-
 # Set default values tcg_boot_properties
 function setTcgProperties {
   propFile="/etc/hirs/tcg_boot.properties";
@@ -299,14 +291,7 @@ function startFreshTpmServer {
     echo "TPM server already running."
   else
     echo -n "Starting TPM server..."
-
-    # Remove NV file if wolftpm (no cmd option)
-    if [ "$HIRS_CI_TPM_SIM" == "wolftpm" ]; then
-      export FWTPM_NV_FILE="${HIRS_CI_TPM_SIM_NVFILE_wolfTPM:-/tpm/fwtpm_nv.bin}"
-      rm -f "$FWTPM_NV_FILE"
-    fi
-
-    "$HIRS_CI_TPM_SIM_BIN" $HIRS_CI_TPM_SIM_ARGS &> /dev/null &
+    /ibmswtpm2/src/tpm_server -rm &> /dev/null &
     sleep 2
     pid=$(findTpmServerPid)
     echo "...running with pid: $pid"
@@ -315,7 +300,7 @@ function startFreshTpmServer {
 
 function startupTpm {
   echo "Running tpm2_startup"
-  tpm2_startup -T "$HIRS_CI_TPM_TCTI" -c
+  tpm2_startup -T mssim -c
   sleep 2
 }
 
@@ -324,13 +309,13 @@ function installEkCert {
   . /hirs/.ci/docker/.env
   
   echo "Installing EK Cert $HIRS_CI_TPM_EK_CERT_FILE into TPM NVRAM at index $HIRS_CI_TPM_EK_CERT_NV_INDEX"
-  tpm2_nvdefine -T "$HIRS_CI_TPM_TCTI" -C o -a $HIRS_CI_TPM_EK_CERT_NV_ATTR -s $(cat $HIRS_CI_TPM_EK_CERT_FILE | wc -c) $HIRS_CI_TPM_EK_CERT_NV_INDEX
-  tpm2_nvwrite -T "$HIRS_CI_TPM_TCTI" -C o -i $HIRS_CI_TPM_EK_CERT_FILE $HIRS_CI_TPM_EK_CERT_NV_INDEX
+  tpm2_nvdefine -T mssim -C o -a $HIRS_CI_TPM_EK_CERT_NV_ATTR -s $(cat $HIRS_CI_TPM_EK_CERT_FILE | wc -c) $HIRS_CI_TPM_EK_CERT_NV_INDEX
+  tpm2_nvwrite -T mssim -C o -i $HIRS_CI_TPM_EK_CERT_FILE $HIRS_CI_TPM_EK_CERT_NV_INDEX
   echo "Finished installing EK cert."
 }
 
 function findTpmServerPid {
-  pid=$(pgrep -f "$HIRS_CI_TPM_SIM_BIN" 2> /dev/null)
+  pid=$(pgrep -f /ibmswtpm2/src/tpm_server 2> /dev/null)
   echo -n "$pid"
 }
 

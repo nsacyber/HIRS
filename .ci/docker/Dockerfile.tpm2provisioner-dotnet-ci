@@ -50,18 +50,6 @@ RUN git clone https://github.com/kgoldman/ibmtss /ibmtss
 WORKDIR /ibmtss/utils
 RUN make -f makefiletpmc
 
-# Build wolfTPM software TPM (fwtpm_server) with v1.85
-ARG WOLFSSL_REF=v5.9.4
-ARG WOLFTPM_REF=v4.2.0
-RUN git clone --depth 1 -b ${WOLFSSL_REF} https://github.com/wolfSSL/wolfssl /wolfssl \
- && cd /wolfssl && ./autogen.sh \
- && ./configure --enable-wolftpm --enable-mldsa --enable-mlkem \
- && make -j"$(nproc)" && make install && ldconfig
-RUN git clone --depth 1 -b ${WOLFTPM_REF} https://github.com/wolfSSL/wolfTPM /wolftpm \
- && cd /wolftpm && ./autogen.sh \
- && ./configure --enable-fwtpm --enable-swtpm --enable-pqc \
- && make -j"$(nproc)"
-
 # The following script tests that the SW TPM and TSS were compiled in the docker image. And documents how to start the SW TPM after container launch using both IBM's tss and TPM2-TOOLS.
 RUN echo "#!/bin/bash" > /tmp/tpm_config && \
     echo "/ibmswtpm2/src/tpm_server &" >> /tmp/tpm_config && \

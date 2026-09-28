@@ -9,10 +9,6 @@ on:
   workflow_dispatch:
 jobs:
   DockerTests:
-    strategy:
-      fail-fast: false
-      matrix:
-        tpm_sim: [ibmswtpm2, wolftpm]
     runs-on: ubuntu-latest
     outputs:
       test-result: ${{ steps.set_outputs.outputs.test-result }}
@@ -23,8 +19,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
       - name: ACA TPM2 System Tests Setup
-        env:
-          HIRS_CI_TPM_SIM: ${{ matrix.tpm_sim }}
         continue-on-error: true
         shell: bash
         run: |
