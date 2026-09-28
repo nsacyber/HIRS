@@ -43,9 +43,9 @@ namespace hirsTest.provisioner {
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
             A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName)).Returns(ekPublic);
-            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
+            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle)).DoesNothing();
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
@@ -53,7 +53,7 @@ namespace hirsTest.provisioner {
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
             A.CallTo(() => tpm.GetQuote(CommandTpm.DefaultAkHandle, TpmAlgId.Sha256, secret, out ctqr, A<uint[]>.Ignored)).DoesNothing();
-            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle,
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
                 A<byte[]>.That.IsSameSequenceAs(credentialBlob),
                 A<byte[]>.That.IsSameSequenceAs(encryptedSecretBlob))).Returns([]);
 
@@ -77,7 +77,7 @@ namespace hirsTest.provisioner {
             
             int result = await p.Provision(tpm);
 
-            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, A<byte[]>.That.IsSameSequenceAs(credentialBlob), A<byte[]>.That.IsSameSequenceAs(encryptedSecretBlob))).MustHaveHappenedOnceExactly();
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle, A<byte[]>.That.IsSameSequenceAs(credentialBlob), A<byte[]>.That.IsSameSequenceAs(encryptedSecretBlob))).MustHaveHappenedOnceExactly();
             Assert.That(result, Is.EqualTo(61));  // Proves activate credential was called with the expected parameters. 
         }
 
@@ -114,7 +114,7 @@ namespace hirsTest.provisioner {
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
             A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
             A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
@@ -166,9 +166,9 @@ namespace hirsTest.provisioner {
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
             A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName)).Returns(ekPublic);
-            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
+            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle)).DoesNothing();
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(ekPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);

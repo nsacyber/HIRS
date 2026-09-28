@@ -25,7 +25,8 @@ namespace hirs {
             linux_product_name_file,
             linux_product_version_file,
             linux_product_serial_file,
-            certificate_output_directory
+            certificate_output_directory,
+            ek_template
         }
 
         private static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";

@@ -145,11 +145,11 @@ namespace hirs {
                 }
 
                 Log.Debug("Checking EK PUBLIC");
-                tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle); // Will not create key if obj already exists at handle
-                byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out byte[] _, out byte[] _);
+                tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle); // Will not create key if obj already exists at handle
+                byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out byte[] _, out byte[] _);
 
                 Log.Information("----> " + (Cli.ReplaceAK ? "Creating new" : "Verifying existence of") + " Attestation Key.");
-                tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
+                tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
 
                 Log.Debug("Gathering AK PUBLIC.");
                 byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] _, out byte[] _);
@@ -296,7 +296,7 @@ namespace hirs {
                           BitConverter.ToString(encryptedSecret));
 
                 Log.Debug("Executing activateCredential.");
-                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle,
+                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
                     credentialBlob, encryptedSecret);
 
                 if (!recoveredSecret.Any()) {

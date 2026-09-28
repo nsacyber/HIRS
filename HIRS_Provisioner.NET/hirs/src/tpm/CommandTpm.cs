@@ -10,6 +10,11 @@ namespace hirs {
             WIN
         }
 
+        public enum Templates {
+            L1,
+            L2
+        }
+
         /// <summary>
         /// If using a TCP connection, the default DNS name/IP address for the
         /// simulator.
@@ -17,9 +22,12 @@ namespace hirs {
         public const string DefaultSimulatorNamePort = "127.0.0.1:2321";
 
         public const uint DefaultEkcNvIndex = 0x1c00002;
-        public const uint DefaultEkHandle = 0x81010001;
-        public const uint DefaultAkHandle = 0x81010002;
+        public const uint DefaultL1EkHandle = 0x81010001;
+        public const uint DefaultL2EkHandle = 0x81010001;
+        public const uint DefaultAkHandle = 0x81000002;
         public const uint DefaultSrkHandle = 0x81000001;
+        
+        public const uint L2EkcNvIndex = 0x01c0000a;
         
         private readonly Tpm2 tpm;
 
@@ -94,7 +102,7 @@ namespace hirs {
                         Log.Debug("GetCertificateFromNvIndex: Could not read any data.");
                     }
                 } else {
-                    Log.Debug("GetCertificateFromNvIndex: Nothing found at index: " + DefaultEkcNvIndex);
+                    Log.Debug("GetCertificateFromNvIndex: Nothing found at index: " + index);
                 }
             } catch (TpmException e) {
                 Log.Debug(e, "GetCertificateFromNvIndex TPM error");
@@ -190,6 +198,30 @@ namespace hirs {
             Array.Fill<byte>(zero256, 0x00);
             Tpm2bPublicKeyRsa unique = new(zero256);
             TpmPublic inPublic = new(nameAlg, attributes, auth_policy, rsa, unique);
+            return inPublic;
+        }
+        
+        public static TpmPublic GenerateEKTemplateL2() {
+            TpmAlgId nameAlg = TpmAlgId.Sha256;
+            ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt;
+            byte[] auth_policy = { // Template L-2
+                0x83, 0x71, 0x97, 0x67, 0x44, 0x84,
+                0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D,
+                0x46, 0xA5, 0xD7, 0x24, 0xFD, 0x52,
+                0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64,
+                0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14,
+                0x69, 0xAA
+            };
+            // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
+            EccParms ecc = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), EccCurve.TpmEccNistP256, new NullKdfScheme());
+            // unique buffer must be filled with 0 for the EK Template L-1.
+            byte[] zero16 = new byte[16];
+            Array.Fill<byte>(zero16, 0x00);
+            EccPoint point = new() {
+                x = zero16,
+                y = zero16
+            };
+            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, ecc, point);
             return inPublic;
         }
 
