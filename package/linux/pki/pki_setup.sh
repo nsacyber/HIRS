@@ -1,9 +1,9 @@
 #!/bin/bash
 ############################################################################################
-# Creates 2 Certificate Chains for the ACA:
+# Creates 3 Certificate Chains for the ACA:
 # 1 RSA 3K SHA 384
 # 2 ECC 512 SHA 384
-# 
+# 3 ML-DSA-65
 ############################################################################################
 
 #PROP_FILE=/etc/hirs/aca/application.properties
@@ -66,18 +66,25 @@ if [ ! -d "/etc/hirs/certificates" ]; then
   cp $PKI_SETUP_DIR/ca.conf .
     $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
     $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "mldsa" "65" "none" "$PKI_PASS" "$LOG_FILE"
   popd &> /dev/null
 
 echo "Setting MYSQL permissions for DB TLS Certs..." | tee -a "$LOG_FILE"
   find $HIRS_CERT_DIR -type f -iname "*.pem" -exec chmod 600 {} \; 
   find $HIRS_CERT_DIR -type f -iname "*.jks" -exec chmod 600 {} \; 
   find $HIRS_CERT_DIR -type f -iname "*.key" -exec chmod 600 {} \;
-  chown root:mysql $HIRS_CERT_DIR $HIRS_CERT_DIR/HIRS $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs
+  chown root:mysql \
+      $HIRS_CERT_DIR \
+      $HIRS_CERT_DIR/HIRS \
+      $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs \
+      $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_65_certs
   chmod 750 $HIRS_CERT_DIR $HIRS_CERT_DIR/HIRS $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs
   chmod 755 $HIRS_DIR
   chmod 750 $HIRS_CONF_DIR
   chmod 755 $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem
   chmod 755 $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem
+  chmod 755 $HIRS_CERT_DIR/HIRS/mldsa_65_certs/HIRS_mldsa_65_Cert_Chain.pem
   
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP
   echo "server.ssl.key-store-password="$PKI_PASS >> $SPRING_PROP_FILE

@@ -59,6 +59,7 @@ while [[ $# -gt 0 ]]; do
       ARG_TLS_ALG=YES
       shift # past argument
       TLS_ALG=$1
+      shift # past parameter
       ;;
    -da|--db-alg)
       ARG_DB_ALG=YES
@@ -101,16 +102,16 @@ if [ -z "$ARG_DB_ALG" ]; then
 fi
 
 # Check for valid algorithms
-if [ ! "$ACA_ALG" == "rsa" ] && [ ! "$ACA_ALG" == "ecc" ] ; then
-   echo  "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa or ecc."
+if [ ! "$ACA_ALG" == "rsa" ] && [ ! "$ACA_ALG" == "ecc" ] && [ ! "$ACA_ALG" == "mldsa" ]; then
+   echo "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
-if [ ! "$TLS_ALG" == "rsa" ] && [ ! "$TLS_ALG" == "ecc" ] ; then
-   echo  "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa or ecc."
+if [ ! "$TLS_ALG" == "rsa" ] && [ ! "$TLS_ALG" == "ecc" ] && [ ! "$TLS_ALG" == "mldsa" ]; then
+   echo "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
-if [ ! "$DB_ALG" == "rsa" ] && [ ! "$DB_ALG" == "ecc" ] ; then
-   echo  "Invalid DB algorithm $DB_ALG specified. Valid options are rsa or ecc."
+if [ ! "$DB_ALG" == "rsa" ] && [ ! "$DB_ALG" == "ecc" ] && [ ! "$DB_ALG" == "mldsa" ]; then
+   echo "Invalid DB algorithm $DB_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
 
@@ -218,6 +219,9 @@ if [ "$TLS_ALG" == "rsa" ]; then
 elif [ "$TLS_ALG" == "ecc" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_ecc_512_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384_key" >> $SPRING_PROP_FILE
+elif [ "$TLS_ALG" == "mldsa" ]; then
+  echo "server.ssl.trust-alias=hirs_aca_tls_mldsa_65" >> $SPRING_PROP_FILE
+  echo "server.ssl.key-alias=hirs_aca_tls_mldsa_65_key" >> $SPRING_PROP_FILE
 fi
 
  # remove default config file lines for aca aliases
@@ -238,6 +242,12 @@ elif [ "$ACA_ALG" == "ecc" ]; then
   echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key"
   echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key"
   echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key"
+  } >> $SPRING_PROP_FILE
+elif [ "$ACA_ALG" == "mldsa" ]; then
+  {
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_mldsa_65_key"
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_mldsa_65_key"
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_mldsa_65_key"
   } >> $SPRING_PROP_FILE
 fi
 

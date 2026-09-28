@@ -11,6 +11,7 @@ SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 CERT_PATH="/etc/hirs/certificates/HIRS/"
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
+MLDSA_PATH=mldsa_65_certs
 
 RSA_HIRS_ROOT="HIRS_root_ca_rsa_3k_sha384.pem"
 RSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_rsa_3k_sha384.pem"
@@ -34,6 +35,17 @@ ECC_RIM_SIGNER="HIRS_rim_signer_ecc_512_sha384.pem"
 ECC_DB_CLIENT_CERT="HIRS_db_client_ecc_512_sha384.pem"
 ECC_DN_SRV_CERT="HIRS_db_srv_ecc_512_sha384.pem"
 ECC_WEB_TLS_CERT="HIRS_aca_tls_ecc_512_sha384.pem"
+
+MLDSA_HIRS_ROOT="HIRS_root_ca_mldsa_65.pem"
+MLDSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_mldsa_65.pem"
+MLDSA_HIRS_CA1="HIRS_leaf_ca1_mldsa_65.pem"
+MLDSA_HIRS_CA2="HIRS_leaf_ca2_mldsa_65.pem"
+MLDSA_HIRS_CA3="HIRS_leaf_ca3_mldsa_65.pem"
+MLDSA_TRUST_STORE="HIRS_mldsa_65_Cert_Chain.pem"
+MLDSA_RIM_SIGNER="HIRS_rim_signer_mldsa_65.pem"
+MLDSA_DB_CLIENT_CERT="HIRS_db_client_mldsa_65.pem"
+MLDSA_DB_SRV_CERT="HIRS_db_srv_mldsa_65.pem"
+MLDSA_WEB_TLS_CERT="HIRS_aca_tls_mldsa_65.pem"
 
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
@@ -136,8 +148,8 @@ echo "Checking HIRS ACA pki configuration:"
       "hirs_aca_tls_ecc_512_sha384")
       echo "    ACA Portal is configured for TLS using ecc 512 key with SHA 384"
       ;;
-      "hirs_aca_tls_mlsa_77_sha384")
-      echo "    ACA Portal is configured for TLS using ml-dsa 77 key with SHA 384"
+      "hirs_aca_tls_mldsa_65")
+      echo "    ACA Portal is configured for TLS using ML-DSA-65"
       ;;
       *)
       echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
@@ -152,8 +164,8 @@ echo "Checking HIRS ACA pki configuration:"
         "HIRS_root_ca_ecc_512_sha384_key")
         echo "    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384"
         ;;
-        "HIRS_root_ca_mldsa_77_sha384_key")
-        echo "    ACA is configured  to sign Attestation or LDevID certificates using ml-dsa 77 key with SHA 384"
+        "HIRS_root_ca_mldsa_65_key")
+        echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-65"
         ;;
         *)
         echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
@@ -266,9 +278,21 @@ check_pki () {
    check_cert $ECC_TRUST_STORE $ECC_WEB_TLS_CERT
   popd  > /dev/null || echo "Unable to pop the directory from the stack"
 
+  pushd $CERT_PATH$MLDSA_PATH > /dev/null || echo "Unable to push the directory to the stack"
+    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_ROOT
+    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_INTERMEDIATE
+    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA1
+    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA2
+    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA3
+    check_cert $MLDSA_TRUST_STORE $MLDSA_RIM_SIGNER
+    check_cert $MLDSA_TRUST_STORE $MLDSA_DB_SRV_CERT
+    check_cert $MLDSA_TRUST_STORE $MLDSA_DB_CLIENT_CERT
+    check_cert $MLDSA_TRUST_STORE $MLDSA_WEB_TLS_CERT
+  popd > /dev/null || echo "Unable to pop the directory from the stack"
+
   if [ -z "${ARG_VERBOSE}" ]; then
     if [ $ALL_CERTS_PASSED == true ]; then
-         echo "   All RSA and ECC certificates under $CERT_PATH are valid"
+         echo "   All RSA, ECC, and ML-DSA certificates under $CERT_PATH are valid"
       else
          echo "   Error: There were error in the certificates under $CERT_PATH"
     fi
@@ -311,10 +335,13 @@ check_db () {
   fi
    if [ -n "${ARG_VERBOSE}" ]; then
    echo "   Show hirs_db user config using hirs_db password"
+   DB_SSL_CA=$(awk -F'=' '/^ssl_ca=/ {print $2}' "$DB_CLIENT_CONF")
+   DB_SSL_CERT=$(awk -F'=' '/^ssl_cert=/ {print $2}' "$DB_CLIENT_CONF")
+   DB_SSL_KEY=$(awk -F'=' '/^ssl_key=/ {print $2}' "$DB_CLIENT_CONF")
    mysql -u hirs_db --password="$hirs_db_password" -e "SHOW CREATE USER 'hirs_db'@'localhost';" \
-    --ssl-ca=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem \
-    --ssl-cert=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem \
-    --ssl-key=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key
+     --ssl-ca="$DB_SSL_CA" \
+     --ssl-cert="$DB_SSL_CERT" \
+     --ssl-key="$DB_SSL_KEY"
     echo "Mysql TLS configuration"
     mysql -u root --password="$mysql_admin_password" -e "SHOW VARIABLES LIKE '%ssl%'"
     echo "TLS versions allowed on mariadb:"
