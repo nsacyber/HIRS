@@ -51,7 +51,7 @@ WORKDIR /ibmtss/utils
 RUN make -f makefiletpmc
 
 # Build wolfTPM software TPM (fwtpm_server) with v1.85
-ARG WOLFSSL_REF=v5.9.4
+ARG WOLFSSL_REF=v5.9.4-stable
 ARG WOLFTPM_REF=v4.2.0
 RUN git clone --depth 1 -b ${WOLFSSL_REF} https://github.com/wolfSSL/wolfssl /wolfssl \
  && cd /wolfssl && ./autogen.sh \
