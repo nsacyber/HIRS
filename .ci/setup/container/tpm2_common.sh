@@ -306,6 +306,8 @@ function startFreshTpmServer {
       rm -f "$FWTPM_NV_FILE"
     fi
 
+    echo "[HIRS-CI] TPM sim: ${HIRS_CI_TPM_SIM} bin=${HIRS_CI_TPM_SIM_BIN} args='${HIRS_CI_TPM_SIM_ARGS}' tcti=${HIRS_CI_TPM_TCTI}"
+
     "$HIRS_CI_TPM_SIM_BIN" $HIRS_CI_TPM_SIM_ARGS &> /dev/null &
     sleep 2
     pid=$(findTpmServerPid)
