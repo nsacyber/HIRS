@@ -8,6 +8,7 @@ import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.util.PredicateFactory;
@@ -60,20 +61,22 @@ public class ReferenceManifestPageService {
      * Regex pattern used to identify base RIM files with a `.swidtag` extension.
      */
     public static final String BASE_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)swidtag)$";
-//    public static final String BASE_RIM_FILE_PATTERN = "(\\S+(\\.(?i)swidtag)$)";
 
     /**
      * Regex pattern used to identify supported RIM-related files, with extensions
      * including: .rimpcr, .rimel, .bin. .log.
      */
     public static final String SUPPORT_RIM_FILE_PATTERN = "(\\S+[^/\\\\]+\\.(?i)(rimpcr|rimel|bin|log))$";
-//    public static final String SUPPORT_RIM_FILE_PATTERN = "(\\S+(\\.(?i)(rimpcr|rimel|bin|log))$)";
 
     /**
      * Regex pattern used to identify supported RIM-related files, with a '.coswid' extension.
      */
     public static final String COMPONENT_RIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)coswid)$";
-//    public static final String COMPONENT_RIM_FILE_PATTERN = "(\\S+(\\.(?i)coswid)$)";
+
+    /**
+     * Regex pattern used to identify supported RIM-related files, with a '.corim' extension.
+     */
+    public static final String CORIM_FILE_PATTERN = "([^/\\\\]+\\.(?i)corim)$";
 
     /**
      * Constructor for the Reference Manifest Page Service.
@@ -249,7 +252,7 @@ public class ReferenceManifestPageService {
     public Page<ReferenceManifest> findAllBaseAndSupportRIMS(final Pageable pageable) {
         return referenceManifestRepository.findByClassIn(
                 List.of(BaseReferenceManifest.class, SupportReferenceManifest.class,
-                ComponentReferenceManifest.class), pageable);
+                ComponentReferenceManifest.class, CorimReferenceManifest.class), pageable);
     }
 
     /**
@@ -305,7 +308,8 @@ public class ReferenceManifestPageService {
         final List<ReferenceManifest> referenceManifestList =
                 allRIMs.stream().filter(rim ->
                                 rim instanceof BaseReferenceManifest || rim instanceof SupportReferenceManifest
-                                        || rim instanceof ComponentReferenceManifest)
+                                        || rim instanceof ComponentReferenceManifest
+                                        || rim instanceof CorimReferenceManifest)
                         .toList();
 
         String zipFileName;
@@ -383,10 +387,12 @@ public class ReferenceManifestPageService {
         final Pattern baseRimPattern = Pattern.compile(BASE_RIM_FILE_PATTERN);
         final Pattern supportRimPattern = Pattern.compile(SUPPORT_RIM_FILE_PATTERN);
         final Pattern componentRimPattern = Pattern.compile(COMPONENT_RIM_FILE_PATTERN);
+        final Pattern corimPattern = Pattern.compile(CORIM_FILE_PATTERN);
 
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
         List<ComponentReferenceManifest> componentRims = new ArrayList<>();
+        List<CorimReferenceManifest> corimRims = new ArrayList<>();
 
         log.info("Uploading {} RIM files", files.length);
 
@@ -401,6 +407,8 @@ public class ReferenceManifestPageService {
             final boolean isBaseRim = baseRimPattern.matcher(fileName).matches();
             final boolean isSupportRim = !isBaseRim && supportRimPattern.matcher(fileName).matches();
             final boolean isComponentRim = !isBaseRim && !isSupportRim && componentRimPattern.matcher(fileName).matches();
+            final boolean isCorim = !isBaseRim && !isSupportRim && !isComponentRim
+                    && corimPattern.matcher(fileName).matches();
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
@@ -441,20 +449,34 @@ public class ReferenceManifestPageService {
                 } else {
                     log.info("Failed to parse Component RIM file {}", fileName);
                 }
+            } else if (isCorim) {
+                final CorimReferenceManifest corimReferenceManifest =
+                        parseCoRIM(errorMessagesParse, file);
+                messages.addErrorMessages(errorMessagesParse);
+                if (corimReferenceManifest != null) {
+                    corimRims.add(corimReferenceManifest);
+                    log.info("Uploaded coRIM with id {} and profile {}",
+                            corimReferenceManifest.isCorimSigned() ? "signed" : "unsigned",
+                            corimReferenceManifest.getCorimId(),
+                            corimReferenceManifest.getProfile());
+                } else {
+                    log.info("Failed to parse CoRIM file {}", fileName);
+                }
             } else {
 
                 String errorString = "The file extension of " + fileName + " was not recognized."
                         + " Base RIMs support the extension \".swidtag\", support RIMs support "
-                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\", and component RIMs "
-                        + "support \".coswid\". "
+                        + "\".rimpcr\", \".rimel\", \".bin\", and \".log\", component RIMs "
+                        + "support \".coswid\", and CoRIMs support \".corim\". "
                         + "Please verify your upload and retry.";
-                log.error("File extension in {} not recognized as base, support, or component RIM.", fileName);
+                log.error("File extension in {} not recognized as base, support, omponent RIM, or oRIM.",
+                        fileName);
                 errorMessagesParse.add(errorString);
                 messages.addErrorMessages(errorMessagesParse);
             }
         }
 
-        this.storeRIMS(successMessagesStore, errorMessagesStore, baseRims, supportRims, componentRims);
+        this.storeRIMS(successMessagesStore, errorMessagesStore, baseRims, supportRims, componentRims, corimRims);
 
         messages.addSuccessMessages(successMessagesStore);
         messages.addErrorMessages(errorMessagesStore);
@@ -474,7 +496,8 @@ public class ReferenceManifestPageService {
                           final List<String> errorMessages,
                           final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims,
-                          final List<ComponentReferenceManifest> componentRims) {
+                          final List<ComponentReferenceManifest> componentRims,
+                          final List<CorimReferenceManifest> corimRims) {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
@@ -507,6 +530,18 @@ public class ReferenceManifestPageService {
                 final String successMessage =
                         "Stored component RIM " + componentRIM.getFileName() + " successfully";
                 referenceManifestRepository.save(componentRIM);
+                log.info(successMessage);
+                successMessages.add(successMessage);
+            }
+        });
+
+        // save the CoRIMs in the repo if they don't already exist in the repo
+        corimRims.forEach((corim) -> {
+            if (referenceManifestRepository.findByHexDecHashAndRimType(
+                    corim.getHexDecHash(), corim.getRimType()) == null) {
+                final String successMessage =
+                        "Stored CoRIM " + corim.getFileName() + " successfully";
+                referenceManifestRepository.save(corim);
                 log.info(successMessage);
                 successMessages.add(successMessage);
             }
@@ -612,6 +647,38 @@ public class ReferenceManifestPageService {
             return new ComponentReferenceManifest(fileName, fileBytes);
         } catch (Exception exception) {
             final String failMessage = String.format("Failed to parse Component RIM file (%s): ", fileName);
+            log.error(failMessage, exception);
+            errorMessages.add(failMessage + exception.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Attempts to parse the provided file in order to create a CoRIM Reference Manifest
+     * (IETF RATS Concise Reference Integrity Manifest, signed or unsigned).
+     *
+     * @param errorMessages contains any error messages that will be displayed on the page
+     * @param file file
+     * @return CoRIM reference manifest
+     */
+    public CorimReferenceManifest parseCoRIM(final List<String> errorMessages,
+                                             final MultipartFile file) {
+        byte[] fileBytes;
+        final String fileName = file.getOriginalFilename();
+
+        try {
+            fileBytes = file.getBytes();
+        } catch (IOException e) {
+            final String failMessage = String.format("Failed to read uploaded CoRIM file (%s): ", fileName);
+            log.error(failMessage, e);
+            errorMessages.add(failMessage + e.getMessage());
+            return null;
+        }
+
+        try {
+            return new CorimReferenceManifest(fileName, fileBytes);
+        } catch (Exception exception) {
+            final String failMessage = String.format("Failed to parse CoRIM file (%s): ", fileName);
             log.error(failMessage, exception);
             errorMessages.add(failMessage + exception.getMessage());
             return null;

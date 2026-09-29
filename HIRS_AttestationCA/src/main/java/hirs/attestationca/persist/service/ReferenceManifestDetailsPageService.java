@@ -11,6 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
@@ -23,7 +24,11 @@ import hirs.utils.SwidResource;
 import hirs.utils.crypto.DefaultCrypto;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.rim.SwidTagParser;
+import hirs.utils.rim.unsignedRim.cbor.ietfCorim.CoRimParser;
+import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
 import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswid;
+import hirs.utils.rim.unsignedRim.common.IanaHashAlg;
+import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.signature.cose.CoseAlgorithm;
 import hirs.utils.signature.cose.CoseParser;
 import hirs.utils.signature.cose.CoseSignature;
@@ -42,6 +47,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -49,6 +55,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +134,12 @@ public class ReferenceManifestDetailsPageService {
 
         if (cRim != null) {
             data.putAll(getComponentRimInfo(cRim));
+        }
+
+        CorimReferenceManifest coRim = this.referenceManifestRepository.getCorimRimEntityById(uuid);
+
+        if(coRim != null) {
+            data.putAll(getCorimRimInfo(coRim));
         }
 
         return data;
@@ -700,13 +713,31 @@ public class ReferenceManifestDetailsPageService {
         data.put("coseContentType", cose.getContentType());
 
         // COSE signature verification (RFC 9052 Sig_structure1 + chain to trust root).
+        verifyCoseSign1(cRim.getRimBytes(), cRim.getFileName(), data);
+
+        return data;
+    }
+
+    /**
+     * Verifies a COSE_Sign1 (RFC 9052) envelope and requires the signer to chain to a trust root
+     * in {@link CACredentialRepository} (Base-RIM semantics: {@code signatureValid == sigOk && chainOk}).
+     * Populates {@code signatureValid}, {@code issuerID}, {@code issuer} and {@code authKeyId} in the
+     * supplied display map. Shared by Component RIM and (signed) CoRIM.
+     *
+     * @param coseBytes raw COSE_Sign1 bytes (starting at CBOR tag 18)
+     * @param fileName file name for logging
+     * @param data display map to populate
+     */
+    private void verifyCoseSign1(final byte[] coseBytes, final String fileName,
+                                 final HashMap<String, Object> data) {
+        // COSE signature verification (RFC 9052 Sig_structure1 + chain to trust root).
         data.put("signatureValid", false);
         data.put("issuerID", null);
         data.put("issuer", null);
         data.put("authKeyId", null);
         try {
             final CoseSignature cs = new CoseSignature();
-            final byte[] tbs = cs.getToBeVerified(cRim.getRimBytes());
+            final byte[] tbs = cs.getToBeVerified(coseBytes);
             final byte[] sig = cs.getSignature();
             final String algName = CoseAlgorithm.getAlgName(cs.getAlgId());
 
@@ -720,7 +751,7 @@ public class ReferenceManifestDetailsPageService {
                 data.put("authKeyId", Hex.encodeHexString(skid));
                 caCred = this.caCertificateRepository
                         .findBySubjectKeyIdStringAndArchiveFlag(Hex.encodeHexString(skid), false);
-                if(caCred != null) {
+                if (caCred != null) {
                     signer = caCred.getX509Certificate();
                 }
             } else {
@@ -739,8 +770,87 @@ public class ReferenceManifestDetailsPageService {
                 data.put("signatureValid", sigOk && chainOk);
             }
         } catch (Exception e) {
-            log.warn("COSE signature verification failed for {}: {}",
-                    cRim.getFileName(), e.getMessage());
+            log.warn("COSE signature verification failed for {}: {}", fileName, e.getMessage());
+        }
+    }
+
+    /**
+     * Builds the display map for a CoRIM (IETF RATS Concise Reference Integrity Manifest).
+     * For a signed CoRIM, verifies teh COSE_Sign1 signature via {@link #verifyCoseSign1};
+     * for an unsigned CoRIM, {@code corimSigned} is {@code false} and no signature block is rendered.
+     *
+     * @param coRIM the CoRIM reference manifest
+     * @return map of display attributes for {@code rim-details.html}
+     */
+    private HashMap<String, Object> getCorimRimInfo(final CorimReferenceManifest coRim) {
+        final HashMap<String, Object> data = new HashMap<>();
+
+        data.put("rimType", coRim.getRimType());
+        data.put("fileName", coRim.getFileName());
+        data.put("corimSigned", coRim.isCorimSigned());
+
+        final CoRimParser corim = coRim.parseCorim();
+
+        //corim-map identity / profile / validity
+        data.put("corimId", corim.getId());
+        data.put("profile", corim.getProfile());
+        data.put("notBefore", corim.getNotBeforeStr());
+        data.put("notAfter", corim.getNotAfterStr());
+
+        // first entity (corim-entity-map)
+        data.put("entityName", corim.getEntityName());
+        data.put("entityRedId", corim.getEntityRegId());
+        data.put("entityRole", corim.getEntityRole());
+
+        // dependent-rims (corim-locator-map)
+        final List<Map<String, Object>> deps = new ArrayList<>();
+        for (Object[] row : corim.getDependentRimList()) {
+            final Map<String, Object> d = new HashMap<>();
+            d.put("uri", row[0]);
+            final int algId = row[1] instanceof Integer ? (int) row[1] : 0;
+            if (algId != 0) {
+                final IanaHashAlg alg = IanaHashAlg.getAlgFromId(algId);
+                d.put("digestAlg", alg != null ? alg.getAlgName() : String.valueOf(algId));
+                d.put("digestHex", row[2] != null ? HexFormat.of().formatHex((byte[]) row[2]) : null);
+            }
+            deps.add(d);
+        }
+        data.put("dependentRims", deps);
+
+        //nested concise-tag-type-choice summary
+        data.put("comidCount", corim.getComidList().size());
+        final List<Map<String, Object>> nestedCoswids = new ArrayList<>();
+        for (Coswid cs : corim.getCowidList()) {
+            final Map<String, Object> t = new HashMap<>();
+            t.put("tagId", cs.getTagId());
+            t.put("softwareName", cs.getSoftwareName());
+            t.put("softwareVersion", cs.getSoftwareVersion());
+            nestedCoswids.add(t);
+        }
+        data.put("coswidCount", nestedCoswids.size());
+        data.put("nestedCoswids", nestedCoswids);
+
+        //flattened CoMID reference-triple measurements (phase 1: render only)
+        final List<Map<String, Object>> meas = new ArrayList<>();
+        for (Measurement m : corim.getMeasurements()) {
+            final Map<String, Object> mm = new HashMap<>();
+            mm.put("manufacturer", m.getManufacturer());
+            mm.put("model", m.getModel());
+            mm.put("index", m.getIndex());
+            mm.put("revision", m.getRevision());
+            mm.put("alg", m.getAlg() != null ? m.getAlg().getAlgName() : null);
+            mm.put("digestHex", m.getMeasurementBytes() != null
+                    ? HexFormat.of().formatHex(m.getMeasurementBytes()) : null);
+            meas.add(mm);
+        }
+        data.put("corimMeasurements", meas);
+
+        // COSE header + signature (signed CoRIM only)
+        if (coRim.isCorimSigned()) {
+            final CoseParser cose = coRim.parseCose();
+            data.put("coseAlgorithm", cose.getAlgIdentifier());
+            data.put("coseContentType", cose.getContentType());
+            verifyCoseSign1(coRim.getCoseBytes(), coRim.getFileName(), data);
         }
 
         return data;
