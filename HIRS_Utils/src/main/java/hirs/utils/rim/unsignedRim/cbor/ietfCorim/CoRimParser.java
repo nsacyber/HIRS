@@ -114,32 +114,38 @@ public class CoRimParser extends CoRim {
                         }
                     }
                 }
-                status = "Processing CoRim profile";
-                final Object profileList = corimMap.get(CoRimItems.PROFILE_TYPE_CHOICE_INT);
-                if (profileList != null) {
-                    if (profileList instanceof String) {
-                        setProfile((String) corimMap.get(CoRimItems.PROFILE_TYPE_CHOICE_INT));
-                    }
-                }
-                status = "Process CoRim validity-map";
-                final LinkedHashMap validityMap = (LinkedHashMap) corimMap.get(CoRimItems.VALIDITY_MAP_INT);
 
+            }
+            status = "Processing CoRim profile";
+            final Object profileList = corimMap.get(CoRimItems.PROFILE_TYPE_CHOICE_INT);
+            if (profileList != null) {
+                if (profileList instanceof String) {
+                    setProfile((String) corimMap.get(CoRimItems.PROFILE_TYPE_CHOICE_INT));
+                }
+            }
+            status = "Process CoRim validity-map";
+            final LinkedHashMap validityMap = (LinkedHashMap) corimMap.get(CoRimItems.VALIDITY_MAP_INT);
+            if (validityMap != null) {
                 if (validityMap.get(0) != null) { // not before
                     final int before = (int) validityMap.get(0);
                     setNotBefore(valueOf(before));
                     final Date date = new Date(notBefore * 1000);
                     setNotBeforeStr(format.format(date));
                 }
-                if (validityMap.get(1) != null) { // not before
+                if (validityMap.get(1) != null) { // not after
                     final int after = (int) validityMap.get(1);
                     setNotAfter(valueOf(after));
                     final Date date = new Date(notAfter * 1000);
                     setNotAfterStr(format.format(date));
                 }
-                status = " Processing CoRim entities";
-                final ArrayList entities = (ArrayList) corimMap.get(CoRimItems.CORIM_ENTITY_MAP_INT);
+            }
+            status = " Processing CoRim entities";
+            final ArrayList entities = (ArrayList) corimMap.get(CoRimItems.CORIM_ENTITY_MAP_INT);
+            if (entities != null && !entities.isEmpty()) {
                 final LinkedHashMap corimEntityMap = (LinkedHashMap) entities.get(0);
-                setEntityName(corimEntityMap.get(0).toString());
+                if (corimEntityMap.get(0) != null) {
+                    setEntityName(corimEntityMap.get(0).toString());
+                }
                 if (corimEntityMap.get(1) != null) {
                     setEntityRegId(corimEntityMap.get(1).toString());
                 }
@@ -308,4 +314,33 @@ public class CoRimParser extends CoRim {
     public List<Measurement> getMeasurements() {
         return new ArrayList<>(measurements);
     }
+
+    /**
+     * Returns the CoMID tags nested in this CoRIM's {@code concise-tag-type-choice} (CBOR tag 506).
+     *
+     * @return a defensive copy of the CoMID list
+     */
+    public List<Comid> getComidList() {
+        return new ArrayList<>(comidList);
+    }
+
+    /**
+     * Returns the CoSWID tags nested in this CoRIM's {@code concise-tag-type-choice} (CBOR tag 505).
+     *
+     * @return a defensive copy of the CoSWID list
+     */
+    public List<Coswid> getCowidList() {
+        return new ArrayList<>(coswidList);
+    }
+
+    /**
+     * Returns the parsed {@code dependent-rims} entries as {@code [uri, digestAlgId, digestBytes]} triples.
+     * <p>Note: this shadows {@link CoRim#getDependentRims()}, which is not populated by the parser.
+     *
+     * @return a defensive copy of the dependent-RIM locator list
+     */
+    public List<Object[]> getDependentRimList() {
+        return new ArrayList<>(dependentRims);
+    }
+
 }

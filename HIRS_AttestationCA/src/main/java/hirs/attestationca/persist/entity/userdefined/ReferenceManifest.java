@@ -60,6 +60,10 @@ public class ReferenceManifest extends ArchivableEntity {
      * String for display of a Component RIM.
      */
     public static final String COMPONENT_RIM = "Component";
+    /**
+     * String for display of a CoRIM (IETF RATS Concise Reference Integrity Manifest).
+     */
+    public static final String CORIM_RIM = "CoRIM";
 
     /**
      * String for the xml schema ios standard.
@@ -223,5 +227,14 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     public boolean isComponent() {
         return rimType.equals(COMPONENT_RIM);
+    }
+
+    /**
+     * Determines if this reference manifest's rim type is a CoRIM.
+     *
+     * @return true if the rim type is a CoRIM, false otherwise
+     */
+    public boolean isCorim() {
+        return rimType.equals(CORIM_RIM);
     }
 }
