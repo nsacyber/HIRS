@@ -295,6 +295,8 @@ function startFreshTpmServer {
     esac
   done
 
+  echo -n "[HIRS-CI] TPM sim: ${HIRS_CI_TPM_SIM} bin=${HIRS_CI_TPM_SIM_BIN} args='${HIRS_CI_TPM_SIM_ARGS}' tcti=${HIRS_CI_TPM_TCTI}"
+
   if isTpmServerRunning ; then
     echo "TPM server already running."
   else
@@ -311,7 +313,6 @@ function startFreshTpmServer {
     pid=$(findTpmServerPid)
     echo "...running with pid: $pid"
 
-    echo -n "[HIRS-CI] TPM sim: ${HIRS_CI_TPM_SIM} bin=${HIRS_CI_TPM_SIM_BIN} args='${HIRS_CI_TPM_SIM_ARGS}' tcti=${HIRS_CI_TPM_TCTI}"
   fi
 }
 
