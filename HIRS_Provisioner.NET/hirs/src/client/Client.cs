@@ -75,7 +75,8 @@ namespace hirs {
 
         public IdentityClaim CreateIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
                                        byte[] endorsementCredential, List<byte[]> platformCredentials,
-                                       string paccoroutput, byte[] ldevidPublicArea = null) {
+                                       string paccoroutput, byte[] ldevidPublicArea = null,
+                                       List<KeyCandidate> keyCandidates = null) {
             IdentityClaim identityClaim = new();
             identityClaim.ClientVersion = Program.VERSION;
             identityClaim.Dv = dv;
@@ -89,10 +90,17 @@ namespace hirs {
             }
             identityClaim.PaccorOutput = paccoroutput;
             if (ldevidPublicArea is not null or []) {
-                
+
                 identityClaim.LdevidPublicArea = ByteString.CopyFrom(ldevidPublicArea);
             }
-            
+
+            // Additive: populated alongside the legacy fields above so an
+            // unaware ACA (which only reads ak_public_area/ek_public_area/
+            // ldevid_public_area) is unaffected. See ProvisionerTpm2.proto.
+            if (keyCandidates is not null) {
+                identityClaim.KeyCandidates.AddRange(keyCandidates);
+            }
+
             return identityClaim;
         }
 

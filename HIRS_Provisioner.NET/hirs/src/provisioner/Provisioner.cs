@@ -134,25 +134,85 @@ namespace hirs {
             return Path.GetFullPath(Path.Join(certificateDirPath, sb.ToString()));
         }
 
+        private static byte[] GetMatchingEkCertificate(IHirsAcaTpm tpm, EndorsementKey ek) {
+            uint? nvIndex = KeyTemplateCatalog.GetEkCertificateNvIndex(ek.Template);
+            if (nvIndex is not uint index) {
+                return [];
+            }
+            byte[] certificate = tpm.GetCertificateFromNvIndex(index);
+            if (certificate is null or []) {
+                Log.Information("------> No Endorsement Key Certificate found at 0x{Index:X} for {Template}. " +
+                                "The ACA may have one uploaded for this TPM.", index, ek.Template);
+                return [];
+            }
+            if (!EkCertificateMatcher.Matches(certificate, ek.Public)) {
+                Log.Warning("The certificate at 0x{Index:X} does not certify the {Template} EK; it will not be sent.",
+                    index, ek.Template);
+                return [];
+            }
+            return certificate;
+        }
+
         public async Task<int> Provision(IHirsAcaTpm? tpm) {
+            // EKs regenerated into transient handles stay loaded for the whole provisioning run.
+            List<EndorsementKey> ekLeases = new();
+            try {
+                return await Provision(tpm, ekLeases);
+            } finally {
+                foreach (EndorsementKey ek in ekLeases) {
+                    ek.Dispose();
+                }
+            }
+        }
+
+        private async Task<int> Provision(IHirsAcaTpm? tpm, List<EndorsementKey> ekLeases) {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
-                Log.Information("----> Gathering Endorsement Key Certificate.");
-                byte[] ekc = tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex);
-                if (ekc is null or []) {
-                    Log.Information("------> No Endorsement Key Certificate found at the expected index. The ACA may have one uploaded for this TPM.");
-                }
+                // One key candidate per EK template this provisioner has. An EK is identified by its
+                // public area and the public key of its certificate, not by a handle. The certificate
+                // for each EK is read from the NV index defined for its template and is only sent when
+                // it certifies that EK.
+                List<KeyCandidate> keyCandidates = new();
+                EndorsementKey? l1Ek = null;
+                byte[] ekc = [];
+                Log.Information("----> Gathering Endorsement Keys and Certificates.");
+                foreach (EkTemplate template in KeyTemplateCatalog.SupportedEkTemplates) {
+                    EndorsementKey? ek = null;
+                    try {
+                        ek = tpm.AcquireEndorsementKey(template);
+                    } catch (Exception e) when (template != EkTemplate.EkL1) {
+                        // Only the L-1 EK is required (legacy protocol, AK parent).
+                        Log.Debug(e, "EK {Template} was not available; continuing without it.", template);
+                    }
+                    if (ek == null) {
+                        Log.Debug("No EK available for template {Template}.", template);
+                        continue;
+                    }
+                    ekLeases.Add(ek);
 
-                Log.Debug("Checking EK PUBLIC");
-                tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle); // Will not create key if obj already exists at handle
-                byte[] ekPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out byte[] _, out byte[] _);
+                    byte[] ekCertificate = GetMatchingEkCertificate(tpm, ek);
+                    keyCandidates.Add(KeyTemplateCatalog.BuildEkCandidate(ek.PublicArea, ek.Public,
+                        ek.IsPersistent ? (uint?)ek.Handle : null, ekCertificate));
+                    if (template == EkTemplate.EkL1) {
+                        l1Ek = ek;
+                        ekc = ekCertificate;
+                    }
+                }
+                if (l1Ek == null) {
+                    Log.Error("Could not obtain the L-1 Endorsement Key from the TPM.");
+                    return (int)ClientExitCodes.TPM_ERROR;
+                }
+                byte[] ekPublicArea = l1Ek.PublicArea;
 
                 Log.Information("----> " + (Cli.ReplaceAK ? "Creating new" : "Verifying existence of") + " Attestation Key.");
-                tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
+                tpm.CreateAttestationKey(l1Ek.Handle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
 
                 Log.Debug("Gathering AK PUBLIC.");
-                byte[] akPublicArea = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] _, out byte[] _);
+                Tpm2Lib.TpmPublic akPub = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] _, out byte[] _);
+                byte[] akPublicArea = akPub;
+                keyCandidates.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(akPublicArea, akPub,
+                    CommandTpm.DefaultAkHandle, KeyRole.Attestation, ProvisioningOrigin.Local));
 
                 Log.Debug("Checking SRK PUBLIC");
                 tpm.CreateStorageRootKey(CommandTpm
@@ -248,10 +308,15 @@ namespace hirs {
 
                 Log.Debug("Gathering LDevID PUBLIC.");
                 byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
+                if (CommandTpm.CanMarshal<Tpm2Lib.TpmPublic>(ldevidPublicArea)) {
+                    Tpm2Lib.TpmPublic ldevidPub = CommandTpm.Marshal<Tpm2Lib.TpmPublic>(ldevidPublicArea);
+                    keyCandidates.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(ldevidPublicArea, ldevidPub,
+                        0, KeyRole.DeviceIdentity, ProvisioningOrigin.Local));
+                }
 
                 Log.Debug("Create identity claim");
                 IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs,
-                    manifest, ldevidPublicArea);
+                    manifest, ldevidPublicArea, keyCandidates);
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);
@@ -296,7 +361,7 @@ namespace hirs {
                           BitConverter.ToString(encryptedSecret));
 
                 Log.Debug("Executing activateCredential.");
-                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
+                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
                     credentialBlob, encryptedSecret);
 
                 if (!recoveredSecret.Any()) {

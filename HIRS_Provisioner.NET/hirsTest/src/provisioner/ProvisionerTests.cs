@@ -42,9 +42,10 @@ namespace hirsTest.provisioner {
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
-            A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
             A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
@@ -113,8 +114,10 @@ namespace hirsTest.provisioner {
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
-            A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
             A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
@@ -165,9 +168,10 @@ namespace hirsTest.provisioner {
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
             A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
-            A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultL1EkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultL1EkHandle, out name, out qualifiedName)).Returns(ekPublic);
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
             A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(ekPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();

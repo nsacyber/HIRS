@@ -1,7 +1,8 @@
 syntax = "proto2";
 
 package hirs.pb;
-option java_package="hirs.attestationca.configuration.provisionerTpm2";
+
+option java_package = "hirs.attestationca.configuration.provisionerTpm2";
 
 message FirmwareInfo {
   required string biosVendor = 1;
@@ -14,6 +15,8 @@ message HardwareInfo {
   required string productName = 2;
   required string productVersion = 3;
   required string systemSerialNumber = 4;
+  optional bytes platformUuid = 12;
+
   repeated ComponentInfo chassisInfo = 5;
   repeated ComponentInfo baseboardInfo = 6;
   repeated ComponentInfo processorInfo = 7;
@@ -57,6 +60,7 @@ message DeviceInfo {
   required HardwareInfo hw = 2;
   required NetworkInfo nw = 3;
   required OsInfo os = 4;
+
   optional bytes pcrslist = 5;
   repeated bytes logfile = 6;
   repeated bytes swidfile = 7;
@@ -65,17 +69,19 @@ message DeviceInfo {
 
 message IdentityClaim {
   required DeviceInfo dv = 1;
-  required bytes ak_public_area = 2;
-  required bytes ek_public_area = 3;
-  optional bytes endorsement_credential = 4;
-  repeated bytes platform_credential = 5;
-  optional string client_version = 6;
-  optional string paccorOutput = 7; 
-  optional bytes ldevid_public_area = 8;
-}
-
-message TpmQuote {
-  required string success = 1;
+  /**
+   * Deprecated elements are still needed if protocol_version is LEGACY.
+   * The server will be migrated to expect KeyCandidates.
+   */
+  optional bytes ak_public_area = 2 [deprecated = true];
+  optional bytes ek_public_area = 3 [deprecated = true];
+  optional bytes endorsement_credential = 4 [deprecated = true];
+  repeated bytes platform_credential = 5; // any platform certificates collected.
+  optional string client_version = 6; // version of the provisioner that sent the claim
+  optional string paccorOutput = 7; // Fresh component data in paccor's HardwareManifest JSON format
+  optional bytes ldevid_public_area = 8 [deprecated = true];
+  optional ProtocolVersion protocol_version = 9 [default = PROTOCOL_VERSION_LEGACY];
+  repeated KeyCandidate key_candidates = 10;
 }
 
 enum ResponseStatus {
@@ -84,22 +90,300 @@ enum ResponseStatus {
 }
 
 message IdentityClaimResponse {
-  optional bytes credential_blob = 1;
-  optional string pcr_mask = 2;
+  optional bytes credential_blob = 1 [deprecated = true];
+  optional string pcr_mask = 2 [deprecated = true];
   optional ResponseStatus status = 3 [default = FAIL];
-  optional bytes encrypted_secret = 4;
+  optional bytes encrypted_secret = 4 [deprecated = true];
   optional string status_details = 5;
+  /**
+   * One or more entry per KeyCandidate. Multiple entries can share key_id. For example, an AK might have an
+   * ActivateCredential challenge and a Quote challenge.
+   */
+  repeated VerificationChallenge challenge = 6; // Each challenge gets a result.
 }
 
 message CertificateRequest {
-  required bytes nonce = 1;
-  optional bytes quote = 2;
+  optional bytes nonce = 1 [deprecated = true];
+  optional bytes quote = 2 [deprecated = true];
+  repeated VerificationResult verification_result = 3; // A result for each challenge.
 }
 
 message CertificateResponse {
-  optional string certificate = 1;
+  optional string certificate = 1 [deprecated = true];
   optional ResponseStatus status = 2 [default = FAIL];
-  optional string ldevidCertificate = 3;
+  optional string ldevidCertificate = 3 [deprecated = true];
   optional string status_details = 4;
+  repeated IssuedKeyCertificate issued_certificate = 5; // Any certificates issued per KeyCandidate.
 }
 
+enum AlgorithmRegistry {
+  ALGORITHM_REGISTRY_UNSPECIFIED = 0;
+  TPM_ALG_ID = 1;
+  COSE = 2;
+  TCG_DICE = 3;
+}
+
+message AlgorithmId {
+  required AlgorithmRegistry registry = 1 [default = ALGORITHM_REGISTRY_UNSPECIFIED];
+  required int32 value = 2;
+}
+
+enum KeyRole {
+  KEY_ROLE_UNSPECIFIED = 0;
+  KEY_ROLE_ENDORSEMENT = 1;
+  KEY_ROLE_ATTESTATION = 2;
+  KEY_ROLE_DEVICE_IDENTITY = 3;
+}
+
+/*
+ * Distinguishes who provisioned a key.
+ * DevID/IDevID/LDevID/AK don't each need their own template enum.
+ */
+enum ProvisioningOrigin {
+  PROVISIONING_ORIGIN_UNSPECIFIED = 0;
+  MANUFACTURER = 1;   // e.g. IDevID, factory-provisioned EK
+  LOCAL = 2;           // e.g. LDevID, today's locally generated AK
+  OEM_EXTERNAL = 3;    // e.g. non-TPM OEM root of trust
+}
+
+/**
+ * TCG EK Credential Profile endorsement key templates.
+ * High and low ranges.
+ */
+enum EkTemplate {
+  EK_TEMPLATE_UNSPECIFIED = 0;
+
+  // RSA Storage (5.4.6.1)
+  EK_H1  = 1;  // RSA 2048 Storage EK Certificate
+  EK_H6  = 6;  // RSA 3072 Storage EK Certificate
+  EK_H7  = 7;  // RSA 4096 Storage EK Certificate
+
+  // RSA Signing (5.4.6.2)
+  EK_H8  = 8;  // RSA-SSA 2048 Signing EK Certificate
+  EK_H9  = 9;  // RSA-PSS 2048 Signing EK Certificate
+  EK_H14 = 14; // RSA-SSA 3072 Signing EK Certificate
+  EK_H15 = 15; // RSA-PSS 3072 Signing EK Certificate
+  EK_H16 = 16; // RSA-SSA 4096 Signing EK Certificate
+  EK_H17 = 17; // RSA-PSS 4096 Signing EK Certificate
+
+  // ECC Storage (5.4.6.3)
+  EK_H2  = 2;  // ECC NIST P256 Storage EK Certificate
+  EK_H3  = 3;  // ECC NIST P384 Storage EK Certificate
+  EK_H4  = 4;  // ECC NIST P521 Storage EK Certificate
+  EK_H5  = 5;  // ECC SM2_P256 Storage EK Certificate
+  EK_H18 = 18; // ECC NIST P256 firmware-limited Storage EK Certificate
+  EK_H19 = 19; // ECC NIST P384 firmware-limited Storage EK Certificate
+  EK_H20 = 20; // ECC NIST P521 firmware-limited Storage EK Certificate
+  EK_H21 = 21; // ECC SM2_P256 firmware-limited Storage EK Certificate
+
+  // ECC Signing (5.4.6.4)
+  EK_H10 = 10; // ECC NIST P256 Signing EK Certificate
+  EK_H11 = 11; // ECC NIST P384 Signing EK Certificate
+  EK_H12 = 12; // ECC NIST P521 Signing EK Certificate
+  EK_H13 = 13; // ECC SM2_P256 Signing EK Certificate
+  EK_H22 = 22; // ECC NIST P256 firmware-limited Signing EK Certificate
+  EK_H23 = 23; // ECC NIST P384 firmware-limited Signing EK Certificate
+  EK_H24 = 24; // ECC NIST P521 firmware-limited Signing EK Certificate
+  EK_H25 = 25; // ECC SM2_P256 firmware-limited Signing EK Certificate
+
+  // ML-KEM Storage (5.4.6.5)
+  EK_H26 = 26; // ML-KEM-512 Storage EK Certificate
+  EK_H27 = 27; // ML-KEM-768 Storage EK Certificate
+  EK_H28 = 28; // ML-KEM-1024 Storage EK Certificate
+  EK_H29 = 29; // ML-KEM-512 firmware-limited Storage EK Certificate
+  EK_H30 = 30; // ML-KEM-768 firmware-limited Storage EK Certificate
+  EK_H31 = 31; // ML-KEM-1024 firmware-limited Storage EK Certificate
+
+  // ML-DSA Signing (5.4.6.6)
+  EK_H32 = 32; // ML-DSA-44 Signing EK Certificate
+  EK_H33 = 33; // ML-DSA-65 Signing EK Certificate
+  EK_H34 = 34; // ML-DSA-87 Signing EK Certificate
+  EK_H35 = 35; // ML-DSA-44 firmware-limited Signing EK Certificate
+  EK_H36 = 36; // ML-DSA-65 firmware-limited Signing EK Certificate
+  EK_H37 = 37; // ML-DSA-87 firmware-limited Signing EK Certificate
+
+  // Low Range (5.3)
+  EK_L1 = 1001; // RSA 2048 Storage EK (Low Range)
+  EK_L2 = 1002; // ECC NIST P256 Storage EK (Low Range)
+
+  reserved 1003 to 1999;
+}
+
+enum AsymmetricKeyTemplate {
+  ASYMMETRIC_KEY_TEMPLATE_UNSPECIFIED = 0;
+
+  // _QUOTE options have attributes: Restricted + Sign
+  // They are potentially eligible for TPM2_ActivateCredential and for TPM2_Quote
+  RSA2048_QUOTE   = 1; // matches LEGACY AK Template
+  RSA3072_QUOTE   = 2;
+  ECC_P256_QUOTE  = 3;
+  ECC_P384_QUOTE  = 4;
+  ECC_P521_QUOTE  = 5;
+
+  // _SIGN options have attribute: Sign
+  // Proof of possession via a plain SignatureChallenge
+  RSA2048_SIGN    = 6; // matches LEGACY LDevID Template
+  RSA3072_SIGN    = 7;
+  ECC_P256_SIGN   = 8;
+  ECC_P384_SIGN   = 9;
+  ECC_P521_SIGN   = 10;
+}
+
+message KeyCandidate {
+  /*
+   * Provisioning session key identifier. 
+   * Recommended derivation: SHA-256(role || provisioning_origin || public_area / public_key);
+   */
+  required bytes key_id = 1;
+  repeated KeyRole role = 2;
+
+  oneof key_material {
+    TpmKeyMaterial tpm = 3;
+    ExternalKeyMaterial external = 4;
+  }
+}
+
+message TpmKeyMaterial {
+  optional bytes public_area = 1; // TPM2B_PUBLIC
+
+  oneof profile {
+    EkTemplate ek_template = 2;
+    AsymmetricKeyTemplate asymmetric_template = 3;
+    KeyProfile custom_profile = 4;
+  }
+
+  optional ProvisioningOrigin provisioning_origin = 5; // Only really useful if profile is asymmetric_template.
+  optional uint32 persistent_handle = 6;
+  optional uint32 certificate_nv_index = 7;
+  optional bytes certificate = 8;
+  repeated bytes certificate_chain = 9;
+}
+
+enum EvidenceFormat {
+  EVIDENCE_FORMAT_UNSPECIFIED = 0;
+  DICE_TCG_EVIDENCE = 1;
+  SPDM_MEASUREMENT = 2;
+  COSE_SIGN1 = 3;
+  HP_EPSC_BOOTLOG = 4;
+}
+
+/**
+ * Attempts to cover external non-TPM key material.
+ */
+message ExternalKeyMaterial {
+  optional bytes public_key = 1;
+  repeated bytes certificate_chain = 2;
+  optional bytes cert_digest = 3;
+  optional AlgorithmId digest_algorithm = 4;
+  optional EvidenceFormat evidence_format = 5;
+  optional string evidence_version = 6; // Enable arbitrary evidence format versions
+}
+
+/**
+ * Allows the provisioner to provide details about how a generic key can be verified.
+ */
+enum VerificationMethod {
+  VERIFICATION_METHOD_UNSPECIFIED = 0;
+  TPM_ACTIVATE_CREDENTIAL = 1;
+  TPM_QUOTE = 2;
+  TPM_SIGNATURE = 3;
+  DICE_EVIDENCE = 4;
+  SPDM_EVIDENCE = 5;
+  EXTERNAL_SIGNATURE = 6;
+}
+
+/**
+ * For keys that don't have a defined Template.
+ */
+message KeyProfile {
+  optional string authority = 1;   // e.g. "VENDOR"
+  optional string name = 2;        // e.g. "Custom-EK-1"
+  optional string revision = 3;    // e.g. "1.0"
+  optional AlgorithmId algorithm = 4;
+  optional int32 key_size = 5;     // 2048, 256, 768
+  optional string curve = 6;       // free-form, for algorithms outside
+                                    // AlgorithmId's known registries
+  optional uint32 mandated_nv_index = 7;
+  optional VerificationMethod primary_verification = 8;
+}
+
+enum ProtocolVersion {
+  PROTOCOL_VERSION_LEGACY = 0;
+  PROTOCOL_VERSION_MULTI_KEY = 1;
+}
+
+message VerificationChallenge {
+  required bytes key_id = 1;
+
+  oneof challenge {
+    ActivateCredentialChallenge activate_credential = 2;
+    SignatureChallenge signature = 3;
+    QuoteChallenge quote = 4;
+    ExternalEvidenceChallenge external_evidence = 5;
+  }
+}
+
+message ActivateCredentialChallenge {
+  optional bytes credential_blob = 1;
+  optional bytes encrypted_secret = 2;
+  optional bytes endorsement_key_id = 3;
+  optional bytes attestation_key_id = 4;
+}
+
+message SignatureChallenge {
+  optional bytes nonce = 1;
+  optional bytes message = 2;
+  optional AlgorithmId signature_algorithm = 3;
+  optional AlgorithmId hash_algorithm = 4;
+}
+
+message QuoteChallenge {
+  optional bytes nonce = 1;
+  repeated uint32 pcr_index = 2;
+  optional AlgorithmId pcr_bank = 3;
+}
+
+message ExternalEvidenceChallenge {
+  optional bytes nonce = 1;
+  optional bytes request_context = 2;
+  optional EvidenceFormat evidence_format = 3;
+  optional string evidence_version = 4;
+}
+
+message VerificationResult {
+  required bytes key_id = 1;
+  
+  oneof result {
+    ActivateCredentialResult activate_credential = 2;
+    SignatureResult signature = 3;
+    QuoteResult quote = 4;
+    ExternalEvidenceResult external_evidence = 5;
+  }
+}
+
+message ActivateCredentialResult {
+  optional bytes cert_info = 1; // nonce
+}
+
+message SignatureResult {
+  optional bytes signature = 1;
+  optional bytes signed_data = 2;
+}
+
+message QuoteResult {
+  optional bytes attest = 1;
+  optional bytes attest_signature = 2;
+  optional bytes pcr_values = 3;
+}
+
+message ExternalEvidenceResult {
+  optional EvidenceFormat evidence_format = 1;
+  optional string evidence_version = 2;
+  optional bytes evidence = 3;
+  repeated bytes certificate_chain = 4;
+}
+
+message IssuedKeyCertificate {
+  optional bytes key_id = 1;
+  optional string certificate = 2;
+}
