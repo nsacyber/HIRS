@@ -552,7 +552,7 @@ namespace hirs {
                 // the connection has been established.
                 // 
                 if (simulator) {
-                    uint rc = 0;
+                    byte[] rc = Array.Empty<byte>();
                     try {
                         rc = tpm.GetRandom(16); // Startup sentinel
                     } catch (TpmException e) {
