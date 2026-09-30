@@ -1,0 +1,5 @@
+services:
+  aca:         { pull_policy: never }
+  provisioner: { pull_policy: never }
+volumes:
+  - ../../:/hirs

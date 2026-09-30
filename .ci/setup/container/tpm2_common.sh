@@ -27,10 +27,20 @@ function setTpmPcrValues {
 
 # Set startup variables
 function setStartupVariables {
+  local config_dir _sim_bin_bar _sim_args_var
+  config_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../docker" && pwd)" || return
+  source "$config_dir/.env" || return
+  case "$HIRS_CI_TPM_SIM" in
+    ibmswtpm2|wolftpm) ;;
+    *) echo "Unsupported TPM simulator: $HIRS_CI_TPM_SIM" >&2; return 1 ;;
+  esac
   _sim_bin_var="HIRS_CI_TPM_SIM_BIN_${HIRS_CI_TPM_SIM}"
   _sim_args_var="HIRS_CI_TPM_SIM_ARGS_${HIRS_CI_TPM_SIM}"
   HIRS_CI_TPM_SIM_BIN="${!_sim_bin_var}"
   HIRS_CI_TPM_SIM_ARGS="${!_sim_args_var}"
+  HIRS_CI_TPM_SIM_WORKDIR="$HIRS_CI_TPM_SIM_STATE_DIR/$HIRS_CI_TPM_SIM"
+  HIRS_CI_TPM_SIM_PIDFILE="$HIRS_CI_TPM_SIM_WORKDIR/server.pid"
+  HIRS_CI_TPM_SIM_LOGFILE="$HIRS_CI_TPM_SIM_WORKDIR/server.log"
 }
 
 # Set default values tcg_boot_properties
@@ -273,6 +283,8 @@ DEFAULT_APPSETTINGS_FILE
 # They assume tpm2-tools are installed.
 # They assume the HIRS repo is cloned to /hirs.
 function startFreshTpmServer {
+  setStartupVariables || return
+  local -a sim_args=()
   # Process parameters Argument handling 
   POSITIONAL_ARGS=()
   ORIGINAL_ARGS=("$@")
@@ -295,6 +307,8 @@ function startFreshTpmServer {
     esac
   done
 
+  mkdir -p "$HIRS_CI_TPM_SIM_WORKDIR" || return
+
   echo -n "[HIRS-CI] TPM sim: ${HIRS_CI_TPM_SIM} bin=${HIRS_CI_TPM_SIM_BIN} args='${HIRS_CI_TPM_SIM_ARGS}' tcti=${HIRS_CI_TPM_TCTI}"
 
   if isTpmServerRunning ; then
@@ -304,11 +318,16 @@ function startFreshTpmServer {
 
     # Remove NV file if wolftpm (no cmd option)
     if [ "$HIRS_CI_TPM_SIM" == "wolftpm" ]; then
-      export FWTPM_NV_FILE="${HIRS_CI_TPM_SIM_NVFILE_wolfTPM:-/tpm/fwtpm_nv.bin}"
+      export FWTPM_NV_FILE="${HIRS_CI_TPM_SIM_WORKDIR}/fwtpm_nv.bin"
       rm -f "$FWTPM_NV_FILE"
     fi
 
-    "$HIRS_CI_TPM_SIM_BIN" $HIRS_CI_TPM_SIM_ARGS &> /dev/null &
+    read -r -a sim_args <<< "$HIRS_CI_TPM_SIM_ARGS"
+    (
+      cd "$HIRS_CI_TPM_SIM_WORKDIR" || exit 1
+      exec "$HIRS_CI_TPM_SIM_BIN" "${sim_args[@]}"
+    ) >> "$HIRS_CI_TPM_SIM_LOGFILE" 2>&1 &
+
     sleep 2
     pid=$(findTpmServerPid)
     echo "...running with pid: $pid"

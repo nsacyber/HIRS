@@ -552,9 +552,8 @@ namespace hirs {
                 // the connection has been established.
                 // 
                 if (simulator) {
-                    byte[] rc = Array.Empty<byte>();
                     try {
-                        rc = tpm.GetRandom(16); // Startup sentinel
+                        _ = tpm.GetRandom(16); // Startup sentinel
                     } catch (TpmException e) {
                         if (e.RawResponse == TpmRc.Initialize) {
                             Log.Debug("TPM simulator not initialized. Running startup with clear.");
