@@ -767,7 +767,120 @@
     </th:block><!--Component RIM-->
 
     <th:block th:if="${initialData.get('rimType') == 'CoRIM'}">
-
+        <div class="rimrow">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">CoRIM Identity</span>
+            </div>
+            <div id="corimIdentity" class="col col-md-8">
+                <span th:text="${'CoRIM ID: ' + initialData.get('corimId')}"
+                      th:if="${not #strings.isEmpty(initialData.get('corimId'))}" />
+                <span th:text="${'Profile: ' + initialData.get('profile')}"
+                      th:if="${not #strings.isEmpty(initialData.get('profile'))}" />
+                <span th:text="${'Signed: ' + (initialData.get('corimSigned') ? 'Yes' : 'No')}" />
+            </div>
+        </div><!--corimIdentity row-->
+        <div class="rimrow"
+             th:if="${not #strings.isEmpty(initialData.get('notBefore')) or not #strings.isEmpty(initialData.get('notAfter'))}
+             ">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">Validity</span>
+            </div>
+            <div id="corimValidity" class="col col-md-8">
+                <span th:text="${'Not Before: ' + initialData.get('notBefore')}"
+                      th:if="${not #strings.isEmpty(initialData.get('notBefore'))}" />
+                <span th:text="${'Not After: ' + initialData.get('notAfter')}"
+                      th:if="${not #strings.isEmpty(initialData.get('notAfter'))}" />
+            </div>
+        </div><!--corimValidity row-->
+        <div class="rimrow" th:if="${not #strings.isEmpty(initialData.get('entityName'))}">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">Entity</span>
+            </div>
+            <div id="corimEntity" class="col col-md-8">
+                <span th:text="${'Entity Name: ' + initialData.get('entityName')}" />
+                <span th:text="${'Entity Reg ID: ' + initialData.get('entityRegId')}"
+                      th:if="${not #strings.isEmpty(initialData.get('entityRegId'))}" />
+                <span th:text="${'Entity Role: ' + initialData.get('entityRole')}"
+                      th:if="${not #strings.isEmpty(initialData.get('entityRole'))}" />
+            </div>
+        </div><!--corimEntity row-->
+        <div class="rimrow" th:if="${!#lists.isEmpty(initialData.get('dependentRims'))}">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">Dependent RIMs</span>
+            </div>
+            <div id="corimDependentRims" class="col col-md-8">
+                <th:block th:each="dep : ${initialData.get('dependentRims')}">
+                    <span>URI: <a th:href="${dep.get('uri')}" th:text="${dep.get('uri')}"></a></span>
+                    <span th:text="${'Digest (' + dep.get('digestAlg') + '): ' + dep.get('digestHex')}"
+                          th:if="${not #strings.isEmpty(dep.get('digestHex'))}" />
+                </th:block>
+            </div>
+        </div><!--corimDependentRims row-->
+        <div class="rimrow" th:if="${!#lists.isEmpty(initialData.get('dependentRims'))}">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">Nested Tags</span>
+            </div>
+            <div id="corimNestedTags" class="col col-md-8">
+                <span th:text="${'CoMID tags: ' + initialData.get('comidCount')}" />
+                <span th:text="${'CoSWID tags: ' + initialData.get('coswidCount')}" />
+                <th:block th:each="cs : ${initialData.get('nestedCoswids')}">
+                    <span th:text="${'CoSWID: ' + cs.get('softwareName') + ' ' + cs.get('softwareVersion')
+                                    + ' (tag-id ' + cs.get('tagId') + ')'}" />
+                </th:block>
+            </div>
+        </div><!--corimNestedTags row-->
+        <div class="rimrow">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">Reference Values</span>
+            </div>
+            <div id="corimMeasurements" class="col col-md-8">
+                <span th:if="${#lists.isEmpty(initialData.get('corimMeasurements'))}"> No reference values present.</span>
+                <table class="table table-striped table-condensed"
+                        th:if="${!#lists.isEmpty(initialData.get('corimMeasurements'))}">
+                    <thead><tr>
+                        <th>Vendor</th><th>Model</th><th>Index</th><th>Version</th><th>Alg</th><th>Digest</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr th:each="m : ${initialData.get('corimMeasurements')}">
+                            <td th:text="${m.get('manufacturer')}" />
+                            <td th:text="${m.get('model')}" />
+                            <td th:text="${m.get('index')}" />
+                            <td th:text="${m.get('revision')}" />
+                            <td th:text="${m.get('alg')}" />
+                            <td class="digest" th:text="${m.get('digestHex')}" />
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!--corimMeasurements row-->
+        <div class="rimrow" th:if="${initialData.get('corimSigned')}">
+            <div class="col-md-1 col-md-offset-1">
+                <span class="colHeader">COSE Signature</span>
+            </div>
+            <div id="corimCOSE" class="col col-md-8">
+                <span th:if="${not #strings.isEmpty(initialData.get('issuer'))}">Issuer:
+                    <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details?id={id}&type=certificateauthority(id=$
+                    {initialData.get('issuerID')})}"
+                        th:if="${not #strings.isEmpty(initialData.get('issuerID'))}">
+                        [[${initialData.get('issuer')}]]
+                    </a>
+                    <th:block th:if="${#strings.isEmpty(initialData.get('issuerID'))}">
+                        [[${initialData.get('issuer')}]]
+                    </th:block>
+                </span>
+                <span th:text="${'Authority Key Identifier: ' + initialData.get('authKeyId')}"
+                      th:if="${not #strings.isEmpty(initialData.get('authKeyId'))}" />
+                <span th:text="${'Algorithm: ' + initialData.get('coseAlgorithm')}" />
+                <span th:text="${'Content Type: ' + initialData.get('coseContentType')}"
+                      th:if="${not #strings.isEmpty(initialData.get('coseContentType'))}" />
+                <span>
+                    <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Signature valid."
+                         th:if="${initialData.get('signatureValid')}" />
+                    <img th:src="@{/icons/ic_error_red_24dp.png}" title="Signature not valid!"
+                         th:unless="${initialData.get('signatureValid')}" />
+                </span>
+            </div>
+        </div><!--corimCose row-->
     </th:block><!--CoRIM-->
 </div><!--content fragment-->
 </body>
