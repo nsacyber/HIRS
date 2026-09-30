@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            const passIcon = /*[[@{/icons/svg/check-circle-green-fill-24dp.svg}]]*/ '';
+            const failIcon = /*[[@{/icons/svg/exclamation-red-circle-fill-24dp.svg}]]*/ '';
+            const errorIcon = /*[[@{/icons/svg/exclamation-red-circle-fill-24dp.svg}]]*/ '';
+            const unknownIcon = /*[[@{/icons/svg/question-circle-red-fill-24dp.svg}]]*/ '';
+
+            const passText = "Validation Passed";
+            const failText = "Validation Failed";
+            const errorText = "Validation Error";
+            const unknownText = "Unknown Validation Status";
+
+            $(document).ready(function () {
+              const viewName = /*[[${ page.viewName }]]*/ '';
+              const url = viewName + "/list";
+              let columns = [
+                {
+                  data: null,
+                  orderable: false,
+                  searchable: false,
+                  render: DataTable.render.select()
+                },
+                {
+                  name: "overallValidationResult",
+                  data: "overallValidationResult",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    const result = full.overallValidationResult;
+                    const overallMessage = full.message;
+
+                    switch (result) {
+                      case "PASS":
+                        return `<img src="${passIcon}" title="${passText}" data-bs-toggle="tooltip" />`;
+                      case "FAIL":
+                        return `<img src="${failIcon}" title="${overallMessage}" data-bs-toggle="tooltip" />`;
+                      case "ERROR":
+                        return `<img src="${errorIcon}" title="${overallMessage}" data-bs-toggle="tooltip" />`;
+                      default:
+                        return `<img class="icon" src="${unknownIcon}" title="${unknownText}" data-bs-toggle="tooltip" />`;
+                    }
+                  }
+                },
+                {
+                  data: "createTime",
+                  name: "createTime",
+                  type: "date",
+                  searchable: true,
+                  orderable: true,
+                  columnControl: ["searchDropdown"],
+                  render: function (data, type, full, meta) {
+                    return formatCertificateDate(data);
+                  },
+                },
+                {
+                  // TODO render a link to a device details page,
+                  // passing the device.id
+                  name: "device.name",
+                  data: "device.name",
+                  searchable: true,
+                  orderable: true,
+                  columnControl: ["searchDropdown"],
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "ENDORSEMENT_CERTIFICATE");
+                  },
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "PLATFORM_CERTIFICATE");
+                  },
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "FIRMWARE");
+                  },
+                },
+              ];
+
+              //Set data tables
+              let dataTable = setDataTables(viewName, "#reportTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+<body>
+<h1 layout:fragment="pageHeaderTitle">Validation Reports</h1>
+
+<div layout:fragment="content">
+    <!-- Download Validation Reports button -->
+    <div class="download-upload-section">
+        <a th:href="@{/HIRS_AttestationCAPortal/portal/validation-reports/download}" class="btn btn-secondary"
+           title="Download CSV file of all the Validation Reports" data-bs-toggle="tooltip">
+            <img th:src="@{/icons/svg/download-white-24dp.svg}" alt="Download Icon" class="icon-text-spacing">
+            Validation Reports
+        </a>
+    </div>
+
+    <div class="aca-data-table">
+        <table class="table table-bordered table-striped table-hover" id="reportTable">
+            <thead>
+            <tr>
+                <th rowspan="2"></th>
+                <th rowspan="2">Result</th>
+                <th rowspan="2">Timestamp</th>
+                <th rowspan="2">Device</th>
+                <th class="text-center" colspan="3">Certificate Validations</th>
+            </tr>
+            <tr>
+                <th style="text-align: center">Endorsement</th>
+                <th style="text-align: center">Platform</th>
+                <th style="text-align: center">Firmware</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div id="reportAccordion" class="accordion">
+        <div class="accordion-item border rounded mb-2 overflow-hidden">
+            <h2 id="endorsementHeader" class="accordion-header">
+                <button class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#endorsementCollapse"
+                        aria-expanded="false"
+                        aria-controls="endorsementCollapse">
+                    Endorsement Certificate Validation
+                </button>
+            </h2>
+            <div id="endorsementCollapse"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="endorsementHeader"
+                 aria-expanded="false">
+                <div class="accordion-body">
+                    <a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}&provisionSessionId=${full.provisionSessionId}">
+                        <img class="action-icons" src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Pass Icon Link"/>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
