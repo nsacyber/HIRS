@@ -12,6 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.util.PredicateFactory;
+import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import jakarta.persistence.EntityManager;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -557,6 +559,9 @@ public class ReferenceManifestPageService {
         // pass in the updated support rims
         // and either update or add the events
         processTpmEvents(new ArrayList<>(updatedSupportRims.values()));
+
+        // extract CoMID reference-triple digests from newly-stored CoRIMs
+        processCorimMeasurements(corimRims);
     }
 
     /**
@@ -836,6 +841,58 @@ public class ReferenceManifestPageService {
             }
         }
         return null;
+    }
+
+    /**
+     * Extracts CoMID reference-triple digests from each uploaded CoRIM into
+     * {@link ReferenceDigestValue} rows so the supply-chain validator can match provisioned
+     * measurements against them (mirrors {@link #processTpmEvents} for Support RIMs).
+     *
+     * <p>The CoRIM has no separate base/support split, so the CoRIM's own id is used for both
+     * {@code baseRimId} and {@code supportRimId}. {@code pcrIndex} carries the CoMID
+     * environment-class {@code index} (not a TPM PCR); {@code eventType} carries the digest
+     * algorithm name - refinement of these semantics is a follow-up once
+     * {@code FirmwareScvValidator} is taught to match on CoMID environments.
+     *
+     * @param uploadedCorims CoRIMs from this upload batch (already persisted, so ids are set)
+     */
+    private void processCorimMeasurements(final List<CorimReferenceManifest> uploadedCorims) {
+        for (CorimReferenceManifest uploaded : uploadedCorims) {
+            // re-fetch by content hash so we have the persisted (id-bearing) entity even if this
+            //upload was a duplicate that storeRIMS() skipped saving
+            final ReferenceManifest stored = referenceManifestRepository
+                    .findByHexDecHashAndRimType(uploaded.getHexDecHash(), ReferenceManifest.CORIM_RIM);
+            if (!(stored instanceof CorimReferenceManifest corim) || corim.getId() == null) {
+                continue;
+            }
+            if (!referenceDigestValueRepository.findBySupportRimId(corim.getId()).isEmpty()) {
+                continue;   // already extracted for this CoRIM
+            }
+            try {
+                for (Measurement m : corim.parseCorim().getMeasurements()) {
+                    final byte[] digest = m.getMeasurementBytes();
+                    if (digest == null) {
+                        continue;
+                    }
+                    final String algName = m.getAlg() != null ? m.getAlg().getAlgName() : "unkown";
+                    final ReferenceDigestValue rdv = new ReferenceDigestValue(
+                            corim.getId(),                              // baseRimId
+                            corim.getId(),                              // supportRimId
+                            m.getManufacturer(),                        // manufacturer (CoMID class vendor)
+                            m.getModel(),                               // model (CoMID class model)
+                            m.getIndex(),                               // pcrInex (CoMID class index)
+                            HexFormat.of().formatHex(digest),           // digestValue
+                            corim.getHexDecHash(),                      // supportRimHash
+                            algName,                                    // eventType (digest alg)
+                            false, false, true,
+                            digest);                                    // contentBlob
+                    referenceDigestValueRepository.save(rdv);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to extract CoRIM measurements from {}: {}",
+                        corim.getFileName(), e.getMessage());
+            }
+        }
     }
 
     private void processTpmEvents(final List<SupportReferenceManifest> dbSupportRims) {
