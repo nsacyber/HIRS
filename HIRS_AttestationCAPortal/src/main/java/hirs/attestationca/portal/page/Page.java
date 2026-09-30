@@ -50,6 +50,11 @@ public enum Page {
     VALIDATION_REPORTS("Validation Reports", "ic_assignment_white_24dp.png", "first"),
 
     /**
+     * Non-menu page to display validation report details.
+     */
+    VALIDATION_DETAILS("Validation Report Details", "", null, true, false, null, ""),
+
+    /**
      * Non-menu page to display certificate.  Reachable from all certificate pages.
      */
     CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, ""),
