@@ -15,7 +15,7 @@
 # Examples:
 #    pki_chain_gen.sh "PC Manufacturer" rsa 2048 sha256 "password"
 #    pki_chain_gen.sh "DISK Manufacturer" ecc 256 sha512 "password"
-#    pki_chain_gen.sh "HIRS" mldsa 65 none "password"
+#    pki_chain_gen.sh "HIRS" mldsa 87 none "password"
 
 ACTOR=$1
 ACTOR_ALT=${ACTOR// /_}
@@ -54,9 +54,9 @@ fi
 
 if [ "$ASYM_ALG" == "mldsa" ]; then
     case "$ASYM_SIZE" in
-        65)
-            KSIZE=65
-            MLDSA_NAME="ML-DSA-65"
+        87)
+            KSIZE=87
+            MLDSA_NAME="ML-DSA-87"
             ;;
         *)
             echo "$ASYM_SIZE is an unsupported ML-DSA parameter set, exiting pki setup" | tee -a "$LOG_FILE"

@@ -220,8 +220,8 @@ elif [ "$TLS_ALG" == "ecc" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_ecc_512_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384_key" >> $SPRING_PROP_FILE
 elif [ "$TLS_ALG" == "mldsa" ]; then
-  echo "server.ssl.trust-alias=hirs_aca_tls_mldsa_65" >> $SPRING_PROP_FILE
-  echo "server.ssl.key-alias=hirs_aca_tls_mldsa_65_key" >> $SPRING_PROP_FILE
+  echo "server.ssl.trust-alias=hirs_aca_tls_mldsa_87" >> $SPRING_PROP_FILE
+  echo "server.ssl.key-alias=hirs_aca_tls_mldsa_87_key" >> $SPRING_PROP_FILE
 fi
 
  # remove default config file lines for aca aliases
@@ -245,9 +245,9 @@ elif [ "$ACA_ALG" == "ecc" ]; then
   } >> $SPRING_PROP_FILE
 elif [ "$ACA_ALG" == "mldsa" ]; then
   {
-  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_mldsa_65_key"
-  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_mldsa_65_key"
-  echo "aca.certificates.root-key-alias=HIRS_root_ca_mldsa_65_key"
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_mldsa_87_key"
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_mldsa_87_key"
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_mldsa_87_key"
   } >> $SPRING_PROP_FILE
 fi
 

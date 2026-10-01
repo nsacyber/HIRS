@@ -14,7 +14,7 @@ DB_ALG=$3
 UNATTENDED=$4
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
-MLDSA_PATH=mldsa_65_certs
+MLDSA_PATH=mldsa_87_certs
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
@@ -44,14 +44,14 @@ elif [ "$DB_ALG" == "ecc" ]; then
   SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.key";
 elif [ "$DB_ALG" == "mldsa" ]; then
   # Default Server Side Certificates
-  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_mldsa_65_Cert_Chain.pem";
-  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_db_srv_mldsa_65.pem";
-  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_db_srv_mldsa_65.key";
+  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_mldsa_87_Cert_Chain.pem";
+  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_db_srv_mldsa_87.pem";
+  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_db_srv_mldsa_87.key";
 
   # Default Client Side Certificates
-  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_mldsa_65_Cert_Chain.pem";
-  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_db_client_mldsa_65.pem";
-  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/mldsa_65_certs/HIRS_db_client_mldsa_65.key";
+  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_mldsa_87_Cert_Chain.pem";
+  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_db_client_mldsa_87.pem";
+  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/mldsa_87_certs/HIRS_db_client_mldsa_87.key";
 fi
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
@@ -241,9 +241,9 @@ create_hibernate_url () {
     ALIAS="hirs_aca_tls_rsa_3k_sha384"
   elif [ "$ALG" = "mldsa" ]; then
       CERT_PATH="/etc/hirs/certificates/HIRS/$MLDSA_PATH"
-      CERT_CHAIN="$CERT_PATH/HIRS_mldsa_65_Cert_Chain.pem"
-      CLIENT_DB_P12="$CERT_PATH/HIRS_db_client_mldsa_65.p12"
-      ALIAS="hirs_aca_tls_mldsa_65"
+      CERT_CHAIN="$CERT_PATH/HIRS_mldsa_87_Cert_Chain.pem"
+      CLIENT_DB_P12="$CERT_PATH/HIRS_db_client_mldsa_87.p12"
+      ALIAS="hirs_aca_tls_mldsa_87"
   else
     CERT_PATH="/etc/hirs/certificates/HIRS/$ECC_PATH"
     CERT_CHAIN="$CERT_PATH/HIRS_ecc_512_sha384_Cert_Chain.pem"

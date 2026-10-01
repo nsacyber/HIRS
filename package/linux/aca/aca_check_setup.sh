@@ -11,7 +11,7 @@ SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 CERT_PATH="/etc/hirs/certificates/HIRS/"
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
-MLDSA_PATH=mldsa_65_certs
+MLDSA_PATH=mldsa_87_certs
 
 RSA_HIRS_ROOT="HIRS_root_ca_rsa_3k_sha384.pem"
 RSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_rsa_3k_sha384.pem"
@@ -36,16 +36,16 @@ ECC_DB_CLIENT_CERT="HIRS_db_client_ecc_512_sha384.pem"
 ECC_DN_SRV_CERT="HIRS_db_srv_ecc_512_sha384.pem"
 ECC_WEB_TLS_CERT="HIRS_aca_tls_ecc_512_sha384.pem"
 
-MLDSA_HIRS_ROOT="HIRS_root_ca_mldsa_65.pem"
-MLDSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_mldsa_65.pem"
-MLDSA_HIRS_CA1="HIRS_leaf_ca1_mldsa_65.pem"
-MLDSA_HIRS_CA2="HIRS_leaf_ca2_mldsa_65.pem"
-MLDSA_HIRS_CA3="HIRS_leaf_ca3_mldsa_65.pem"
-MLDSA_TRUST_STORE="HIRS_mldsa_65_Cert_Chain.pem"
-MLDSA_RIM_SIGNER="HIRS_rim_signer_mldsa_65.pem"
-MLDSA_DB_CLIENT_CERT="HIRS_db_client_mldsa_65.pem"
-MLDSA_DB_SRV_CERT="HIRS_db_srv_mldsa_65.pem"
-MLDSA_WEB_TLS_CERT="HIRS_aca_tls_mldsa_65.pem"
+MLDSA_HIRS_ROOT="HIRS_root_ca_mldsa_87.pem"
+MLDSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_mldsa_87.pem"
+MLDSA_HIRS_CA1="HIRS_leaf_ca1_mldsa_87.pem"
+MLDSA_HIRS_CA2="HIRS_leaf_ca2_mldsa_87.pem"
+MLDSA_HIRS_CA3="HIRS_leaf_ca3_mldsa_87.pem"
+MLDSA_TRUST_STORE="HIRS_mldsa_87_Cert_Chain.pem"
+MLDSA_RIM_SIGNER="HIRS_rim_signer_mldsa_87.pem"
+MLDSA_DB_CLIENT_CERT="HIRS_db_client_mldsa_87.pem"
+MLDSA_DB_SRV_CERT="HIRS_db_srv_mldsa_87.pem"
+MLDSA_WEB_TLS_CERT="HIRS_aca_tls_mldsa_87.pem"
 
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
@@ -148,8 +148,8 @@ echo "Checking HIRS ACA pki configuration:"
       "hirs_aca_tls_ecc_512_sha384")
       echo "    ACA Portal is configured for TLS using ecc 512 key with SHA 384"
       ;;
-      "hirs_aca_tls_mldsa_65")
-      echo "    ACA Portal is configured for TLS using ML-DSA-65"
+      "hirs_aca_tls_mldsa_87")
+      echo "    ACA Portal is configured for TLS using ML-DSA-87"
       ;;
       *)
       echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
@@ -164,8 +164,8 @@ echo "Checking HIRS ACA pki configuration:"
         "HIRS_root_ca_ecc_512_sha384_key")
         echo "    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384"
         ;;
-        "HIRS_root_ca_mldsa_65_key")
-        echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-65"
+        "HIRS_root_ca_mldsa_87_key")
+        echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-87"
         ;;
         *)
         echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
