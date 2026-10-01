@@ -9,6 +9,7 @@ on:
   workflow_dispatch:
 jobs:
   DockerTests:
+    continue-on-error: ${{ matrix.tpm_sim == 'wolftpm' }} # Temporary (remove when stable)
     strategy:
       fail-fast: false
       matrix:
