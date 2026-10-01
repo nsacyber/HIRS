@@ -1,9 +1,11 @@
 #!/bin/bash
 ############################################################################################
-# Creates 3 Certificate Chains for the ACA:
+# Creates Certificate Chains for the ACA:
 # 1 RSA 3K SHA 384
 # 2 ECC 512 SHA 384
-# 3 ML-DSA-87
+# 3 ML-DSA-44
+# 4 ML-DSA-65
+# 5 ML-DSA-87
 ############################################################################################
 
 #PROP_FILE=/etc/hirs/aca/application.properties
@@ -64,9 +66,11 @@ if [ ! -d "/etc/hirs/certificates" ]; then
 
   pushd  /etc/hirs/certificates/ &> /dev/null
   cp $PKI_SETUP_DIR/ca.conf .
-    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE"
-    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE"
-    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "mldsa" "87" "none" "$PKI_PASS" "$LOG_FILE"
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "rsa" "3072" "sha384" "$PKI_PASS" "$LOG_FILE" || exit 1
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "ecc" "512" "sha384" "$PKI_PASS" "$LOG_FILE" || exit 1
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "mldsa" "44" "none" "$PKI_PASS" "$LOG_FILE" || exit 1
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "mldsa" "65" "none" "$PKI_PASS" "$LOG_FILE" || exit 1
+    $PKI_SETUP_DIR/pki_chain_gen.sh "HIRS" "mldsa" "87" "none" "$PKI_PASS" "$LOG_FILE" || exit 1
   popd &> /dev/null
 
 echo "Setting MYSQL permissions for DB TLS Certs..." | tee -a "$LOG_FILE"
@@ -78,12 +82,23 @@ echo "Setting MYSQL permissions for DB TLS Certs..." | tee -a "$LOG_FILE"
       $HIRS_CERT_DIR/HIRS \
       $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs \
       $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_44_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_65_certs \
       $HIRS_CERT_DIR/HIRS/mldsa_87_certs
-  chmod 750 $HIRS_CERT_DIR $HIRS_CERT_DIR/HIRS $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs
+  chmod 750 \
+      $HIRS_CERT_DIR \
+      $HIRS_CERT_DIR/HIRS \
+      $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs \
+      $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_44_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_65_certs \
+      $HIRS_CERT_DIR/HIRS/mldsa_87_certs
   chmod 755 $HIRS_DIR
   chmod 750 $HIRS_CONF_DIR
   chmod 755 $HIRS_CERT_DIR/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem
   chmod 755 $HIRS_CERT_DIR/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem
+  chmod 755 $HIRS_CERT_DIR/HIRS/mldsa_44_certs/HIRS_mldsa_44_Cert_Chain.pem
+  chmod 755 $HIRS_CERT_DIR/HIRS/mldsa_65_certs/HIRS_mldsa_65_Cert_Chain.pem
   chmod 755 $HIRS_CERT_DIR/HIRS/mldsa_87_certs/HIRS_mldsa_87_Cert_Chain.pem
   
   echo "hirs_pki_password="$PKI_PASS >>  $ACA_PROP

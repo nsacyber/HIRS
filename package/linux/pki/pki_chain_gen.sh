@@ -54,6 +54,14 @@ fi
 
 if [ "$ASYM_ALG" == "mldsa" ]; then
     case "$ASYM_SIZE" in
+        44)
+            KSIZE=44
+            MLDSA_NAME="ML-DSA-44"
+            ;;
+        65)
+            KSIZE=65
+            MLDSA_NAME="ML-DSA-65"
+            ;;
         87)
             KSIZE=87
             MLDSA_NAME="ML-DSA-87"

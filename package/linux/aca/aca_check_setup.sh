@@ -11,7 +11,6 @@ SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 CERT_PATH="/etc/hirs/certificates/HIRS/"
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
-MLDSA_PATH=mldsa_87_certs
 
 RSA_HIRS_ROOT="HIRS_root_ca_rsa_3k_sha384.pem"
 RSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_rsa_3k_sha384.pem"
@@ -35,17 +34,6 @@ ECC_RIM_SIGNER="HIRS_rim_signer_ecc_512_sha384.pem"
 ECC_DB_CLIENT_CERT="HIRS_db_client_ecc_512_sha384.pem"
 ECC_DN_SRV_CERT="HIRS_db_srv_ecc_512_sha384.pem"
 ECC_WEB_TLS_CERT="HIRS_aca_tls_ecc_512_sha384.pem"
-
-MLDSA_HIRS_ROOT="HIRS_root_ca_mldsa_87.pem"
-MLDSA_HIRS_INTERMEDIATE="HIRS_intermediate_ca_mldsa_87.pem"
-MLDSA_HIRS_CA1="HIRS_leaf_ca1_mldsa_87.pem"
-MLDSA_HIRS_CA2="HIRS_leaf_ca2_mldsa_87.pem"
-MLDSA_HIRS_CA3="HIRS_leaf_ca3_mldsa_87.pem"
-MLDSA_TRUST_STORE="HIRS_mldsa_87_Cert_Chain.pem"
-MLDSA_RIM_SIGNER="HIRS_rim_signer_mldsa_87.pem"
-MLDSA_DB_CLIENT_CERT="HIRS_db_client_mldsa_87.pem"
-MLDSA_DB_SRV_CERT="HIRS_db_srv_mldsa_87.pem"
-MLDSA_WEB_TLS_CERT="HIRS_aca_tls_mldsa_87.pem"
 
 DB_SRV_CONF="/etc/my.cnf.d/mariadb-server.cnf"
 DB_CLIENT_CONF="/etc/my.cnf.d/client.cnf"
@@ -148,9 +136,15 @@ echo "Checking HIRS ACA pki configuration:"
       "hirs_aca_tls_ecc_512_sha384")
       echo "    ACA Portal is configured for TLS using ecc 512 key with SHA 384"
       ;;
+      "hirs_aca_tls_mldsa_44")
+          echo "    ACA Portal is configured for TLS using ML-DSA-44"
+          ;;
+      "hirs_aca_tls_mldsa_65")
+          echo "    ACA Portal is configured for TLS using ML-DSA-65"
+          ;;
       "hirs_aca_tls_mldsa_87")
-      echo "    ACA Portal is configured for TLS using ML-DSA-87"
-      ;;
+          echo "    ACA Portal is configured for TLS using ML-DSA-87"
+          ;;
       *)
       echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
       ALL_CHECKS_PASSED=false
@@ -164,9 +158,15 @@ echo "Checking HIRS ACA pki configuration:"
         "HIRS_root_ca_ecc_512_sha384_key")
         echo "    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384"
         ;;
+        "HIRS_root_ca_mldsa_44_key")
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-44"
+            ;;
+        "HIRS_root_ca_mldsa_65_key")
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-65"
+            ;;
         "HIRS_root_ca_mldsa_87_key")
-        echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-87"
-        ;;
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-87"
+            ;;
         *)
         echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
         ALL_CHECKS_PASSED=false
@@ -278,17 +278,30 @@ check_pki () {
    check_cert $ECC_TRUST_STORE $ECC_WEB_TLS_CERT
   popd  > /dev/null || echo "Unable to pop the directory from the stack"
 
-  pushd $CERT_PATH$MLDSA_PATH > /dev/null || echo "Unable to push the directory to the stack"
-    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_ROOT
-    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_INTERMEDIATE
-    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA1
-    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA2
-    check_cert $MLDSA_TRUST_STORE $MLDSA_HIRS_CA3
-    check_cert $MLDSA_TRUST_STORE $MLDSA_RIM_SIGNER
-    check_cert $MLDSA_TRUST_STORE $MLDSA_DB_SRV_CERT
-    check_cert $MLDSA_TRUST_STORE $MLDSA_DB_CLIENT_CERT
-    check_cert $MLDSA_TRUST_STORE $MLDSA_WEB_TLS_CERT
-  popd > /dev/null || echo "Unable to pop the directory from the stack"
+  check_mldsa_pki () {
+      MLDSA_SIZE=$1
+      MLDSA_PATH="mldsa_${MLDSA_SIZE}_certs"
+      MLDSA_PREFIX="mldsa_${MLDSA_SIZE}"
+      pushd "$CERT_PATH$MLDSA_PATH" > /dev/null || {
+          echo "Unable to access $CERT_PATH$MLDSA_PATH"
+          ALL_CHECKS_PASSED=false
+          ALL_CERTS_PASSED=false
+          return
+      }
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_root_ca_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_intermediate_ca_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca1_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca2_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca3_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_rim_signer_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_db_srv_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_db_client_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_aca_tls_${MLDSA_PREFIX}.pem"
+      popd > /dev/null || echo "Unable to pop the directory from the stack"
+  }
+  check_mldsa_pki 44
+  check_mldsa_pki 65
+  check_mldsa_pki 87
 
   if [ -z "${ARG_VERBOSE}" ]; then
     if [ $ALL_CERTS_PASSED == true ]; then
