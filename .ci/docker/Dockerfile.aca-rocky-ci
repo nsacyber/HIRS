@@ -70,13 +70,18 @@ RUN make -f makefiletpmc
 ARG WOLFSSL_REF=v5.9.4-stable
 ARG WOLFTPM_REF=v4.2.0
 COPY .ci/docker/patches/wolftpm-v4.2.0-mssim-handshake.patch /tmp/wolftpm-mssim-handshake.patch
+COPY .ci/docker/patches/wolftpm-v4.2.0-credential-label.patch /tmp/wolftpm-credential-label.patch
+COPY .ci/docker/patches/wolftpm-v4.2.0-pc-client-pcr-init.patch /tmp/wolftpm-pc-client-pcr-init.patch
 RUN git clone --depth 1 -b ${WOLFSSL_REF} https://github.com/wolfSSL/wolfssl /wolfssl \
  && cd /wolfssl && ./autogen.sh \
  && ./configure --enable-wolftpm --enable-keygen --enable-pkcallbacks \
    --enable-mldsa --enable-mlkem CFLAGS="-DWC_RSA_NO_PADDING" \
  && make -j"$(nproc)" && make install && ldconfig
 RUN git clone --depth 1 -b ${WOLFTPM_REF} https://github.com/wolfSSL/wolfTPM /wolftpm \
- && cd /wolftpm && git apply /tmp/wolftpm-mssim-handshake.patch && ./autogen.sh \
+ && cd /wolftpm \
+ && git apply /tmp/wolftpm-mssim-handshake.patch /tmp/wolftpm-credential-label.patch \
+   /tmp/wolftpm-pc-client-pcr-init.patch \
+ && ./autogen.sh \
  && ./configure --enable-fwtpm --enable-swtpm --enable-pqc \
  && make -j"$(nproc)" && make install && ldconfig
 
