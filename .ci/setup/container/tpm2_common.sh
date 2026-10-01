@@ -25,6 +25,24 @@ function setTpmPcrValues {
   popd  > /dev/null
 }
 
+# Set startup variables
+function setStartupVariables {
+  local config_dir _sim_bin_var _sim_args_var
+  config_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../docker" && pwd)" || return
+  source "$config_dir/.env" || return
+  case "$HIRS_CI_TPM_SIM" in
+    ibmswtpm2|wolftpm) ;;
+    *) echo "Unsupported TPM simulator: $HIRS_CI_TPM_SIM" >&2; return 1 ;;
+  esac
+  _sim_bin_var="HIRS_CI_TPM_SIM_BIN_${HIRS_CI_TPM_SIM}"
+  _sim_args_var="HIRS_CI_TPM_SIM_ARGS_${HIRS_CI_TPM_SIM}"
+  HIRS_CI_TPM_SIM_BIN="${!_sim_bin_var}"
+  HIRS_CI_TPM_SIM_ARGS="${!_sim_args_var}"
+  HIRS_CI_TPM_SIM_WORKDIR="$HIRS_CI_TPM_SIM_STATE_DIR/$HIRS_CI_TPM_SIM"
+  HIRS_CI_TPM_SIM_PIDFILE="$HIRS_CI_TPM_SIM_WORKDIR/server.pid"
+  HIRS_CI_TPM_SIM_LOGFILE="$HIRS_CI_TPM_SIM_WORKDIR/server.log"
+}
+
 # Set default values tcg_boot_properties
 function setTcgProperties {
   propFile="/etc/hirs/tcg_boot.properties";
@@ -265,84 +283,107 @@ DEFAULT_APPSETTINGS_FILE
 # They assume tpm2-tools are installed.
 # They assume the HIRS repo is cloned to /hirs.
 function startFreshTpmServer {
-  # Process parameters Argument handling 
-  POSITIONAL_ARGS=()
-  ORIGINAL_ARGS=("$@")
-  while [[ $# -gt 0 ]]; do
-    case $1 in
-      -f|--force|--restart)
-	stopTpmServer
-	sleep 5
-	shift # past argument
-	;;
-    -*|--*)
-        echo "setCiHirsAppsettingsFile: Unknown option $1"
-        shift # past argument
-        ;;
-      *)
-       POSITIONAL_ARGS+=("$1") # save positional arg
-       # shift # past argument
-       break
-        ;;
-    esac
-  done
+  setStartupVariables || return
+  local -a sim_args=()
+  local pid
+  case "${1:-}" in
+    -f|--force|--restart) stopTpmServer || return ;;
+    "") ;;
+    *) echo "startFreshTpmServer: Unknown option $1" >&2; return 1 ;;
+  esac
+  if [ ! -x "$HIRS_CI_TPM_SIM_BIN" ]; then
+    echo "TPM simulator is not executable: $HIRS_CI_TPM_SIM_BIN. Rebuild the CI image." >&2
+    return 1
+  fi
+  mkdir -p "$HIRS_CI_TPM_SIM_WORKDIR" || return
+
+  echo "[HIRS-CI] TPM sim: ${HIRS_CI_TPM_SIM} bin=${HIRS_CI_TPM_SIM_BIN} args='${HIRS_CI_TPM_SIM_ARGS}' tcti=${HIRS_CI_TPM_TCTI}"
 
   if isTpmServerRunning ; then
     echo "TPM server already running."
   else
-    echo -n "Starting TPM server..."
-    /ibmswtpm2/src/tpm_server -rm &> /dev/null &
-    sleep 2
-    pid=$(findTpmServerPid)
-    echo "...running with pid: $pid"
+    echo "Starting TPM server..."
+    # --clear (wolfTPM) / -rm (IBM) clears NV state in this working directory.
+    read -r -a sim_args <<< "$HIRS_CI_TPM_SIM_ARGS"
+    (
+      cd "$HIRS_CI_TPM_SIM_WORKDIR" || exit 1
+      exec "$HIRS_CI_TPM_SIM_BIN" "${sim_args[@]}"
+    ) >> "$HIRS_CI_TPM_SIM_LOGFILE" 2>&1 &
+    pid=$!
+    echo "$pid" > "$HIRS_CI_TPM_SIM_PIDFILE" || return
+    sleep 1
+    if ! isTpmServerRunning; then
+      echo "TPM simulator failed to start; see $HIRS_CI_TPM_SIM_LOGFILE" >&2
+      tail -20 "$HIRS_CI_TPM_SIM_LOGFILE" >&2
+      return 1
+    fi
+    echo "TPM server running with pid: $pid"
   fi
 }
 
 function startupTpm {
   echo "Running tpm2_startup"
-  tpm2_startup -T mssim -c
-  sleep 2
+  # Retry while the new server opens its sockets, but never wait indefinitely.
+  local deadline=$((SECONDS + 30))
+  until timeout --kill-after=5s 5s tpm2_startup -T "$HIRS_CI_TPM_TCTI" -c; do
+    if ! isTpmServerRunning || [ "$SECONDS" -ge "$deadline" ]; then
+      echo "TPM startup failed; see $HIRS_CI_TPM_SIM_LOGFILE" >&2
+      return 1
+    fi
+    sleep 1
+  done
 }
 
 function installEkCert {
-  # Setting configurations
-  . /hirs/.ci/docker/.env
-  
+  local cert_size
+  cert_size=$(wc -c < "$HIRS_CI_TPM_EK_CERT_FILE") || return
   echo "Installing EK Cert $HIRS_CI_TPM_EK_CERT_FILE into TPM NVRAM at index $HIRS_CI_TPM_EK_CERT_NV_INDEX"
-  tpm2_nvdefine -T mssim -C o -a $HIRS_CI_TPM_EK_CERT_NV_ATTR -s $(cat $HIRS_CI_TPM_EK_CERT_FILE | wc -c) $HIRS_CI_TPM_EK_CERT_NV_INDEX
-  tpm2_nvwrite -T mssim -C o -i $HIRS_CI_TPM_EK_CERT_FILE $HIRS_CI_TPM_EK_CERT_NV_INDEX
+  timeout --kill-after=5s 20s tpm2_nvdefine -T "$HIRS_CI_TPM_TCTI" -C o \
+    -a "$HIRS_CI_TPM_EK_CERT_NV_ATTR" -s "$cert_size" "$HIRS_CI_TPM_EK_CERT_NV_INDEX" || return
+  timeout --kill-after=5s 20s tpm2_nvwrite -T "$HIRS_CI_TPM_TCTI" -C o \
+    -i "$HIRS_CI_TPM_EK_CERT_FILE" "$HIRS_CI_TPM_EK_CERT_NV_INDEX" || return
   echo "Finished installing EK cert."
 }
 
 function findTpmServerPid {
-  pid=$(pgrep -f /ibmswtpm2/src/tpm_server 2> /dev/null)
-  echo -n "$pid"
+  local pid
+  [ -r "$HIRS_CI_TPM_SIM_PIDFILE" ] || return 1
+  read -r pid < "$HIRS_CI_TPM_SIM_PIDFILE" || return 1
+  [[ "$pid" =~ ^[1-9][0-9]*$ ]] || return 1
+  kill -0 "$pid" 2>/dev/null || return 1
+  # Ignore stale/reused PIDs instead of killing a process matched by pgrep -f.
+  [ "$(readlink -f "/proc/$pid/exe")" = "$(readlink -f "$HIRS_CI_TPM_SIM_BIN")" ] || return 1
+  echo "$pid"
 }
 
 # ex usage: isTpmServerRunning && echo "up" || echo "down"
 function isTpmServerRunning {
-  tpmUp=$(findTpmServerPid)
-  if [ -n "$tpmUp" ]; then
-    return 0
-  else
-    return 1
-  fi
+  findTpmServerPid > /dev/null
 }
 
 function stopTpmServer {
-  tpmUp=$(findTpmServerPid)
-  if [ -n "$tpmUp" ]; then
-    echo "Stopping TPM server with pid: $tpmUp"
-    kill -9 $tpmUp
+  local pid
+  if pid=$(findTpmServerPid); then
+    echo "Stopping TPM server with pid: $pid"
+    kill -9 "$pid" || return
+    # The process may have been started by a previous docker exec.
+    wait "$pid" 2>/dev/null || true
+    sleep 1
   fi
+  rm -f "$HIRS_CI_TPM_SIM_PIDFILE"
 }
 
 # Wait for ACA to boot
 function waitForAca {
   echo "Waiting for ACA to spin up at address ${HIRS_ACA_PORTAL_IP} on port ${HIRS_ACA_PORTAL_PORT} ..."
-  until [ "`curl --silent -I -k https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal | grep 'HTTP/1.1 200'`" != "" ]; do
-    sleep 1;
+  local deadline=$((SECONDS + ${HIRS_CI_ACA_WAIT_SECONDS:-300}))
+  until [ "$(curl --silent --max-time 5 -I -k -o /dev/null -w '%{http_code}' \
+    "https://${HIRS_ACA_PORTAL_IP}:${HIRS_ACA_PORTAL_PORT}/HIRS_AttestationCAPortal")" = 200 ]; do
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      echo "Timed out waiting for ACA; see the ACA startup log." >&2
+      return 1
+    fi
+    sleep 1
   done
   echo "ACA is up!"
 }
-

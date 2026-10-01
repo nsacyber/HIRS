@@ -8,7 +8,9 @@ LABEL org.opencontainers.image.description Tools for testing the build and deplo
 # Date Modified: 2/20/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
-#           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+#           $ docker build -f .ci/docker/Dockerfile.tpm2provisioner-dotnet-ci -t tpm2provisioner-dotnet-ci:latest .
+#        Use with HIRS_CI_PROVISIONER_IMAGE=tpm2provisioner-dotnet-ci:latest and
+#        HIRS_CI_IMAGE_PULL_POLICY=never when running the local system tests.
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
@@ -49,6 +51,25 @@ RUN make
 RUN git clone https://github.com/kgoldman/ibmtss /ibmtss
 WORKDIR /ibmtss/utils
 RUN make -f makefiletpmc
+
+# Build wolfTPM software TPM (fwtpm_server) with v1.85
+ARG WOLFSSL_REF=v5.9.4-stable
+ARG WOLFTPM_REF=v4.2.0
+COPY .ci/docker/patches/wolftpm-v4.2.0-mssim-handshake.patch /tmp/wolftpm-mssim-handshake.patch
+COPY .ci/docker/patches/wolftpm-v4.2.0-credential-label.patch /tmp/wolftpm-credential-label.patch
+COPY .ci/docker/patches/wolftpm-v4.2.0-pc-client-pcr-init.patch /tmp/wolftpm-pc-client-pcr-init.patch
+RUN git clone --depth 1 -b ${WOLFSSL_REF} https://github.com/wolfSSL/wolfssl /wolfssl \
+ && cd /wolfssl && ./autogen.sh \
+ && ./configure --enable-wolftpm --enable-keygen --enable-pkcallbacks \
+   --enable-mldsa --enable-mlkem CFLAGS="-DWC_RSA_NO_PADDING" \
+ && make -j"$(nproc)" && make install && ldconfig
+RUN git clone --depth 1 -b ${WOLFTPM_REF} https://github.com/wolfSSL/wolfTPM /wolftpm \
+ && cd /wolftpm \
+ && git apply /tmp/wolftpm-mssim-handshake.patch /tmp/wolftpm-credential-label.patch \
+   /tmp/wolftpm-pc-client-pcr-init.patch \
+ && ./autogen.sh \
+ && ./configure --enable-fwtpm --enable-swtpm --enable-pqc \
+ && make -j"$(nproc)" && make install && ldconfig
 
 # The following script tests that the SW TPM and TSS were compiled in the docker image. And documents how to start the SW TPM after container launch using both IBM's tss and TPM2-TOOLS.
 RUN echo "#!/bin/bash" > /tmp/tpm_config && \
