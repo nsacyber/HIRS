@@ -283,6 +283,20 @@ function generateLogLevelChangeButton(
   return generatedLogLevelChangeButton;
 }
 
+function generateValidationDetailsLink() {
+  const href = `validation-details`;
+  const fullIconPath = `${iconPath}/ic_assignment_black_24dp.png`;
+  const title = "View Validation Report Details";
+
+  const generatedValidationDetailsLink = `
+  <a href="${href}">
+    <img src="${fullIconPath}" class="action-icons" alt="View Validations Details Link" title="${title}" data-bs-toggle="tooltip">
+  </a>
+`;
+
+  return generatedValidationDetailsLink;
+}
+
 /**
  * Generates an HTML string for a certificate detail link based on the
  * specified certificate type and certificate ID.
@@ -566,49 +580,19 @@ function getValidationDisplayHtml(full, validationType) {
 
       // display appropriate icon based on result
       if (currentResult) {
-        // if this validation is associated with a certificate, link to the certificate details page
-        if (currentValidation.certificatesUsed.length > 0) {
-          let certType = "";
-
-          if (
-            validationType === "PLATFORM_CERTIFICATE" ||
-            validationType === "PLATFORM_CERTIFICATE_ATTRIBUTES"
-          ) {
-            certType = "platform";
-          } else if (validationType === "ENDORSEMENT_CERTIFICATE") {
-            certType = "endorsement";
-          }
-
-          if (certType) {
-            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}&provisionSessionId=${full.provisionSessionId}">`;
-          }
-        }
-
-        if (currentValidation.rimId !== "" && validationType === "FIRMWARE") {
-          html += `<a href="rim-details?id=${currentValidation.rimId}">`;
-        }
-
         switch (currentResult) {
           case "PASS":
-            html += `<img class="action-icons" src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Pass Icon Link"/>`;
+            html += `<img src="${passIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Pass Icon Link"/>`;
             break;
           case "FAIL":
-            html += `<img class="action-icons" src="${failIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Fail Icon Link"/>`;
+            html += `<img src="${failIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Fail Icon Link"/>`;
             break;
           case "ERROR":
-            html += `<img class="action-icons" src="${errorIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Error Icon Link"/>`;
+            html += `<img src="${errorIcon}" title="${currentMessage}" data-bs-toggle="tooltip" alt="Error Icon Link"/>`;
             break;
           default:
             html += unknownStatus;
             break;
-        }
-
-        // add closing tag for href tag if needed.
-        if (
-          currentValidation.certificatesUsed.length > 0 ||
-          currentValidation.rimId !== ""
-        ) {
-          html += "</a>";
         }
       } else {
         html += unknownStatus;
