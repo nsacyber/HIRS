@@ -90,6 +90,14 @@
               return getValidationDisplayHtml(full, "FIRMWARE");
             },
           },
+          {
+            data: null,
+            searchable: false,
+            orderable: false,
+            render: function (data, type, full, meta) {
+              return generateValidationDetailsLink();
+            },
+          },
         ];
 
         //Set data tables
@@ -120,11 +128,12 @@
             <th rowspan="2"></th>
             <th rowspan="2">Result</th>
             <th rowspan="2">Timestamp</th>
-            <th rowspan="2">Device</th>
-            <th class="text-center" colspan="3">Certificate Validations</th>
+            <th rowspan="2">Device Name</th>
+            <th class="text-center" colspan="3">Device Integrity</th>
+            <th rowspan="2">Details</th>
           </tr>
           <tr>
-            <th style="text-align: center">Endorsement</th>
+            <th style="text-align: center">TPM</th>
             <th style="text-align: center">Platform</th>
             <th style="text-align: center">Firmware</th>
           </tr>

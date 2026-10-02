@@ -11,7 +11,7 @@ import org.springframework.web.servlet.ModelAndView;
 /*
 
 @Controller
-@RequestMapping("/HIRS_AttestationCAPortal/portal/report-details")
+@RequestMapping("/HIRS_AttestationCAPortal/portal/validation-details")
 @Log4j2
 public class ValidationDetailsPageController extends PageController<CertificateDetailsPageParams> {
     private final ValidationDetailsPageService validationDetailsPageService;

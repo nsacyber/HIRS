@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            const passIcon = /*[[@{/icons/svg/check-circle-green-fill-24dp.svg}]]*/ '';
+            const failIcon = /*[[@{/icons/svg/exclamation-red-circle-fill-24dp.svg}]]*/ '';
+            const errorIcon = /*[[@{/icons/svg/exclamation-red-circle-fill-24dp.svg}]]*/ '';
+            const unknownIcon = /*[[@{/icons/svg/question-circle-red-fill-24dp.svg}]]*/ '';
+
+            const passText = "Validation Passed";
+            const failText = "Validation Failed";
+            const errorText = "Validation Error";
+            const unknownText = "Unknown Validation Status";
+
+            $(document).ready(function () {
+              const viewName = /*[[${ page.viewName }]]*/ '';
+              const url = viewName + "/list";
+              let columns = [
+                {
+                  data: null,
+                  orderable: false,
+                  searchable: false,
+                  render: DataTable.render.select()
+                },
+                {
+                  name: "overallValidationResult",
+                  data: "overallValidationResult",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    const result = full.overallValidationResult;
+                    const overallMessage = full.message;
+
+                    switch (result) {
+                      case "PASS":
+                        return `<img src="${passIcon}" title="${passText}" data-bs-toggle="tooltip" />`;
+                      case "FAIL":
+                        return `<img src="${failIcon}" title="${overallMessage}" data-bs-toggle="tooltip" />`;
+                      case "ERROR":
+                        return `<img src="${errorIcon}" title="${overallMessage}" data-bs-toggle="tooltip" />`;
+                      default:
+                        return `<img class="icon" src="${unknownIcon}" title="${unknownText}" data-bs-toggle="tooltip" />`;
+                    }
+                  }
+                },
+                {
+                  data: "createTime",
+                  name: "createTime",
+                  type: "date",
+                  searchable: true,
+                  orderable: true,
+                  columnControl: ["searchDropdown"],
+                  render: function (data, type, full, meta) {
+                    return formatCertificateDate(data);
+                  },
+                },
+                {
+                  // TODO render a link to a device details page,
+                  // passing the device.id
+                  name: "device.name",
+                  data: "device.name",
+                  searchable: true,
+                  orderable: true,
+                  columnControl: ["searchDropdown"],
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "ENDORSEMENT_CERTIFICATE");
+                  },
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "PLATFORM_CERTIFICATE");
+                  },
+                },
+                {
+                  data: "id",
+                  searchable: false,
+                  orderable: false,
+                  render: function (data, type, full, meta) {
+                    return getValidationDisplayHtml(full, "FIRMWARE");
+                  },
+                },
+              ];
+
+              //Set data tables
+              let dataTable = setDataTables(viewName, "#reportTable", url, columns);
+            });
+        </script>
+    </section>
+</head>
+<body>
+<h1 layout:fragment="pageHeaderTitle">Verification Reports</h1>
+
+<div layout:fragment="content">
+    <div id="reportAccordion" class="accordion">
+        <div class="accordion-item border rounded mb-2 overflow-hidden">
+            <h2 id="endorsementHeader" class="accordion-header">
+                <button class="accordion-button collapsed success-color"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#endorsementCollapse"
+                        aria-expanded="false"
+                        aria-controls="endorsementCollapse">
+                    Endorsement Certificate Verification
+                </button>
+            </h2>
+            <div id="endorsementCollapse"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="endorsementHeader"
+                 aria-expanded="false">
+                <div class="accordion-body">
+                    <table class="table table-bordered table-striped table-hover">
+                        <tr>
+                            <th style="text-align: center">
+                                Endorsement Certificate
+                                <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Endorsement cert valid" />
+                            </th>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Endorsement cert details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download endorsement cert" />
+                            </td>
+                        </tr>
+                    </table>
+                </div><!--accordion body-->
+            </div><!--accordion collapse-->
+        </div><!--accordion item-->
+        <div class="accordion-item border rounded mb-2 overflow-hidden">
+            <h2 id="platformHeader" class="accordion-header">
+                <button class="accordion-button collapsed success-color"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#platformCollapse"
+                        aria-expanded="false"
+                        aria-controls="platformCollapse">
+                    Platform Certificate Verificiation
+                </button>
+            </h2>
+            <div id="platformCollapse"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="platformHeader"
+                 aria-expanded="false">
+                <div class="accordion-body">
+                    <table class="table table-bordered table-striped table-hover">
+                        <tr>
+                            <th style="text-align: center">
+                                Platform Certificate
+                                <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Platform cert valid" />
+                            </th>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Platform cert details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download platform cert" />
+                            </td>
+                        </tr>
+                    </table>
+                </div><!--accordion body-->
+            </div><!--accordion collapse-->
+        </div><!--accordion item-->
+        <div class="accordion-item border rounded mb-2 overflow-hidden">
+            <h2 id="firmwareHeader" class="accordion-header">
+                <button class="accordion-button collapsed error-color"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#firmwareCollapse"
+                        aria-expanded="false"
+                        aria-controls="firmwareCollapse">
+                    Firmware Verification
+                </button>
+            </h2>
+            <div id="firmwareCollapse"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="firmwareHeader"
+                 aria-expanded="false">
+                <div class="accordion-body">
+                    <table id="reference-data" class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center" colspan="3">Reference Data</th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center">
+                                Base RIM
+                                <img th:src="@{/icons/ic_checkbox_marked_circle_black_green_24dp.png}" title="Base RIM valid" />
+                            </th>
+                            <th style="text-align: center">
+                                Support RIM
+                                <img th:src="@{/icons/ic_error_red_24dp.png}" title="Support RIM not valid!" />
+                            </th>
+                            <th style="text-align: center">RIM digests</th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td style="text-align: center">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Base RIM details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download base RIM" />
+                            </td>
+                            <td style="text-align: center">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Support RIM details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download support RIM" />
+                            </td>
+                            <td style="text-align: center">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Reference digest values" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download digest values" />
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="device-data" class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center" colspan="3">Device Data</th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center">
+                                TPM Event Log
+                            </th>
+                            <th style="text-align: center">
+                                TPM Quote
+                                <img th:src="@{/icons/ic_error_red_24dp.png}" title="Support RIM not valid!" />
+                            </th>
+                            <th style="text-align: center">Device Info</th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="TPM event log details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download TPM event log" />
+                            </td>
+                            <td style="text-align: center">
+                                Expected:
+                                <br/>
+                                Actual:
+                            </td>
+                            <td style="text-align: center; vertical-align: middle;">
+                                <img th:src="@{/icons/ic_assignment_black_24dp.png}" title="Device info details" />
+                                <img th:src="@{/icons/svg/download-24dp.svg}" alt="Download device details" />
+                            </td>
+                        </tr>
+                    </table>
+                    <table id="verify-results" class="table table-bordered table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th style="text-align: center" colspan="4">Verification Results</th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: center">
+                                PC Firmware
+                            </th>
+                            <th style="text-align: center">
+                                EFI Variable
+                                <img th:src="@{/icons/ic_error_red_24dp.png}" title="EFI variable not valid!" />
+                            </th>
+                            <th style="text-align: center">EFI Apps</th>
+                            <th style="text-align: center">Kernel</th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td style="text-align: center">
+                            </td>
+                            <td style="text-align: center">
+                            </td>
+                            <td style="text-align: center">
+                            </td>
+                            <td style="text-align: center">
+                            </td>
+                        </tr>
+                    </table>
+                </div><!--accordion body-->
+            </div><!--accordion collapse-->
+        </div><!--accordion item-->
+        <div class="accordion-item border rounded mb-2 overflow-hidden">
+            <h2 id="policyHeader" class="accordion-header">
+                <button class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#policyCollapse"
+                        aria-expanded="false"
+                        aria-controls="policyCollapse">
+                    Policy Settings
+                </button>
+            </h2>
+            <div id="policyCollapse"
+                 class="accordion-collapse collapse"
+                 aria-labelledby="policyHeader"
+                 aria-expanded="false">
+                <div class="accordion-body">
+                    Policies enabled during this session:
+                    <ul>
+                        <li>Endorsement Certificate Verification</li>
+                        <li>Platform Certificate Verification</li>
+                        <li>Firmware Verification</li>
+                        <ul>
+                            <li>Ignore IMA PCR Entry</li>
+                            <li>Ignore GPT PCRs Entry</li>
+                            <li>Ignore OS Events for PXE Boot</li>
+                        </ul>
+                        <li>Generate Attestation Certificate</li>
+                        <li>Generate LDevID Certificate</li>
+                    </ul>
+                </div><!--accordion body-->
+            </div><!--accordion collapse-->
+        </div><!--accordion item-->
+    </div><!--accordion--></div>
+</body>
+</html>
