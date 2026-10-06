@@ -283,20 +283,6 @@ function generateLogLevelChangeButton(
   return generatedLogLevelChangeButton;
 }
 
-function generateValidationDetailsLink() {
-  const href = `validation-details`;
-  const fullIconPath = `${iconPath}/ic_assignment_black_24dp.png`;
-  const title = "View Validation Report Details";
-
-  const generatedValidationDetailsLink = `
-  <a href="${href}">
-    <img src="${fullIconPath}" class="action-icons" alt="View Validations Details Link" title="${title}" data-bs-toggle="tooltip">
-  </a>
-`;
-
-  return generatedValidationDetailsLink;
-}
-
 /**
  * Generates an HTML string for a certificate detail link based on the
  * specified certificate type and certificate ID.
@@ -600,6 +586,26 @@ function getValidationDisplayHtml(full, validationType) {
     }
   }
   return html;
+}
+
+/**
+ * Generates the HTML to display the link for more details of a validation report.
+ *
+ * @param {string} full - the entire validation report
+ * @returns html string to be displayed on the validation summary page
+**/
+function generateValidationDetailsLink(id) {
+  const href = `validation-details?id=${id}`;
+  const fullIconPath = `${iconPath}/ic_assignment_black_24dp.png`;
+  const title = "View Validation Report Details";
+
+  const generatedValidationDetailsLink = `
+  <a href="${href}">
+    <img src="${fullIconPath}" class="action-icons" alt="View Validations Details Link" title="${title}" data-bs-toggle="tooltip">
+  </a>
+`;
+
+  return generatedValidationDetailsLink;
 }
 
 /**
