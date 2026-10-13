@@ -1,0 +1,51 @@
+diff --git a/src/fwtpm/fwtpm_io.c b/src/fwtpm/fwtpm_io.c
+index d1c3e4e..593e599 100644
+--- a/src/fwtpm/fwtpm_io.c
++++ b/src/fwtpm/fwtpm_io.c
+@@ -509,6 +509,34 @@ static int HandleCommandConnection(FWTPM_CTX* ctx, int clientFd)
+     /* mssim protocol: firstWord is a protocol command code */
+     tssCmd = FwTpmSwapU32(firstWord);
+ 
++    /* Microsoft.TSS TcpTpmDevice negotiates the MSSIM transport before
++     * sending TPM commands. Version 1 returns version, endpoint flags,
++     * then the normal success acknowledgement. */
++    if (tssCmd == FWTPM_TCP_REMOTE_HANDSHAKE) {
++        UINT32 version;
++        UINT32 flags = 0x01u | 0x04u  | 0x40u;
++        /* PlatformAvailable | InRawMode | NoNvCtl (NV_ON is a no-op). */
++#ifndef FWTPM_NO_PP
++        flags |= 0x08u; /* SupportsPP */
++#endif
++        rc = SocketRecv(clientFd, &netVal, 4);
++        if (rc != TPM_RC_SUCCESS) {
++            return rc;
++        }
++        version = FwTpmSwapU32(netVal);
++        netVal = FwTpmSwapU32(version == 1 ? 1u : 0u);
++        rc = SocketSend(clientFd, &netVal, 4);
++        if (rc == TPM_RC_SUCCESS) {
++            netVal = FwTpmSwapU32(flags);
++            rc = SocketSend(clientFd, &netVal, 4);
++        }
++        if (rc == TPM_RC_SUCCESS) {
++            netVal = FwTpmSwapU32(0);
++            rc = SocketSend(clientFd, &netVal, 4);
++        }
++        return rc;
++    }
++
+     if (tssCmd == FWTPM_TCP_SESSION_END) {
+     #ifdef DEBUG_WOLFTPM
+         printf("fwTPM: Command SESSION_END\n");
+diff --git a/wolftpm/fwtpm/fwtpm_io.h b/wolftpm/fwtpm/fwtpm_io.h
+index 2bb39db..abbcf10 100644
+--- a/wolftpm/fwtpm/fwtpm_io.h
++++ b/wolftpm/fwtpm/fwtpm_io.h
+@@ -42,6 +42,7 @@
+ #define FWTPM_TCP_SIGNAL_NV_ON         11
+ #define FWTPM_TCP_SIGNAL_CANCEL_ON     13
+ #define FWTPM_TCP_SIGNAL_CANCEL_OFF    14
++#define FWTPM_TCP_REMOTE_HANDSHAKE     15
+ #define FWTPM_TCP_SIGNAL_RESET         17
+ #define FWTPM_TCP_SESSION_END          20
+ #define FWTPM_TCP_STOP                 21

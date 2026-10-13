@@ -1,56 +1,39 @@
 #!/bin/bash
 #########################################################################################
-#    Script to Locally run the System Tests for HIRS TPM 2.0 Provisoner
-#    *** INTENDED FOR LOCAL SYSTEM TESTING, NOT FOR WORKFLOW RUNS ***
-#    Notes for running manually/locally
-#    1. Uncomment the "cd ../.." line below to make working directory = /HIRS/
-#    2. Run with the desired HIRS branch as an argument (i.e. $./run_system_tests.sh main)
-##########################################################################################
+# Run from the HIRS repository root with the remote branch/ref to test:
+#   HIRS_CI_TPM_SIM=wolftpm .ci/system-tests/run_system_tests.sh <remote-ref>
+# To use a rebuilt provisioner image, set HIRS_CI_PROVISIONER_IMAGE to its tag
+# and HIRS_CI_IMAGE_PULL_POLICY=never.
+#########################################################################################
 
-# Setting variables
-aca_container=hirs-aca1
-tpm2_container=hirs-provisioner1-tpm2
+set -e
+: "${1:?Usage: $0 <remote-ref> [expected-commit]}"
+export HIRS_CI_TPM_SIM="${HIRS_CI_TPM_SIM:-ibmswtpm2}"
+case "$HIRS_CI_TPM_SIM" in
+  ibmswtpm2|wolftpm) ;;
+  *) echo "Unsupported TPM simulator: $HIRS_CI_TPM_SIM" >&2; exit 1 ;;
+esac
 
-# Start System Testing Docker Environment
-echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
-docker compose -f ./.ci/docker/docker-compose-system-test.yml up --pull "always" -d
+# Preserve failures, including setup failures, while still collecting diagnostics.
+# shellcheck disable=SC2317 # Invoked by the EXIT trap.
+cleanup() {
+  local status=$?
+  trap - EXIT
+  bash .ci/system-tests/copy_system_test_logs.sh || true
+  echo "*** Exiting and removing Docker containers and network ..."
+  docker compose -f .ci/docker/docker-compose-system-test.yml down -v || {
+    if [ "$status" -eq 0 ]; then status=1; fi
+  }
+  exit "$status"
+}
+trap 'cleanup' EXIT
 
-# Setting up and Starting ACA + Switching to current/desired branch in ACA Container
-docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
-                                  && echo 'ACA Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
-                                  && echo 'ACA Container Current Commit: ' && git rev-parse --short HEAD \
-                                  && /hirs/package/linux/aca/aca_setup.sh --unattended 1> /dev/null \
-                                  && /tmp/hirs_add_aca_tls_path_to_os.sh 1> /dev/null \
-                                  && /hirs/package/linux/aca/aca_bootRun.sh 1> /dev/null" &
+bash .ci/system-tests/setup_system_tests.sh "$@"
 
-# Switching to current/desired branch in Provisioner Container
-docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
-                                   && echo 'Provisioner Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
-                                   && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD \
-                                   && cd HIRS_Provisioner.NET/hirs \
-                                   && rm -rf bin/Release \
-                                   && dotnet deb -r linux-x64 -c Release \
-                                   && dotnet rpm -r linux-x64 -c Release"
-
-# Install HIRS Provisioner.Net and setup tpm2 simulator.
-# In doing so, tests a single provision between Provisioner.Net and ACA.
-echo "Launching provisioner setup"
-docker exec $tpm2_container sh /hirs/.ci/setup/container/setup_tpm2provisioner_dotnet.sh
-
-# Initiating System Tests
-echo "******** Setup Complete. Beginning HIRS System Tests. ******** "
-./.ci/system-tests/tests/aca_policy_tests.sh
-./.ci/system-tests/tests/platform_cert_tests.sh
-./.ci/system-tests/tests/rim_system_tests.sh
-
-echo "******** HIRS System Tests Complete ******** "
-
-# Collecting ACA and Provisioner.Net logs for workflow artifact
-echo "*** Extracting ACA and Provisioner.Net logs ..."
-docker exec $aca_container sh -c "mkdir -p /HIRS/logs/aca/ && cp -arp /var/log/hirs/* /HIRS/logs/aca/"
-docker exec $tpm2_container sh -c "mkdir -p /HIRS/logs/provisioner/ && cp -ap hirs*.log /HIRS/logs/provisioner/ && chmod -R 777 /HIRS/logs"
-
-# Clean up services and network
-echo "*** Exiting and removing Docker containers and network ..."
-docker compose -f ./.ci/docker/docker-compose-system-test.yml down -v
-
+# Run all suites, but report failure if any suite fails.
+status=0
+./.ci/system-tests/tests/aca_policy_tests.sh || status=1
+./.ci/system-tests/tests/platform_cert_tests.sh || status=1
+./.ci/system-tests/tests/rim_system_tests.sh || status=1
+echo "******** HIRS System Tests Complete (status: $status) ******** "
+exit "$status"

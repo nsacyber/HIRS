@@ -1,0 +1,25 @@
+wolfTPM v4.2.0 PC Client PCR startup values for HIRS system tests.
+
+PCRs 17-22 start at all ones on Startup(CLEAR), before a DRTM reset. wolfTPM
+v4.2.0 initializes every PCR to zero, so otherwise-valid firmware quotes fail
+against the PCR digest reconstructed from the event log. This changes only initialization on 
+Startup(CLEAR) and keeps the existing PCR_Reset behavior.
+Remove this patch once the pinned upstream release supports these defaults.
+
+See the following:
+https://trustedcomputinggroup.org/wp-content/uploads/PC-Client-Specific-Platform-TPM-Profile-for-TPM-2p0-v1p07_Pub.pdf
+
+--- a/src/fwtpm/fwtpm_command.c
++++ b/src/fwtpm/fwtpm_command.c
+@@ -830,7 +830,10 @@
+             }
+             for (b = 0; b < FWTPM_PCR_BANKS; b++) {
+                 for (i = 0; i < IMPLEMENTATION_PCR; i++) {
+-                    XMEMSET(ctx->pcrDigest[i][b], 0, TPM_MAX_DIGEST_SIZE);
++                    /* PC Client DRTM PCRs start at all ones until a
++                     * DRTM reset; the other PCRs start at zero. */
++                    XMEMSET(ctx->pcrDigest[i][b],
++                        (i >= 17 && i <= 22) ? 0xFF : 0, TPM_MAX_DIGEST_SIZE);
+                 }
+             }
+             ctx->globalNvWriteLock = 0;

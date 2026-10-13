@@ -91,20 +91,27 @@ uploadTrustedCerts() {
 # updates totalTests and failedTests counts
 # provision_tpm2 <expected_results>
 provisionTpm2() {
+   local provision_status=0
    expected_result=$1
    ((totalTests++))
-   provisionOutput=$(docker exec -i $tpm2_container /bin/bash -c "/usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim");
+   provisionOutput=$(docker exec "$tpm2_container" timeout --kill-after=5s 180s \
+     /usr/share/hirs/tpm_aca_provision --tcp --ip 127.0.0.1:2321 --sim) || provision_status=$?
     echo "==========="
     echo "$provisionOutput";
     echo "===========";
-  if [[ $provisionOutput == *"failed"* ]]; then
+  if [[ $provision_status == 124 || $provision_status == 137 ]]; then
+     ((failedTests++))
+     echo "!!! Provisioning timed out."
+  # Only an ACA validation rejection is an expected negative test result.
+  # See ClientExitCodes.PASS_1_STATUS_FAIL / PASS_2_STATUS_FAIL.
+  elif [[ $provision_status == 61 || $provision_status == 62 ]]; then
      if [[ $expected_result == "pass" ]]; then
         ((failedTests++))
         echo "!!! Provisioning failed, but was expected to pass"
      else
         echo "Provisioning failed as expected."
      fi
-  elif [[ $provisionOutput == *"Provisioning successful"* ]]; then
+  elif [[ $provision_status == 0 && $provisionOutput == *"Provisioning successful"* ]]; then
        if [[ $expected_result == "fail" ]]; then
           ((failedTests++))
          echo "!!! Provisioning passed, but was expected to fail."
@@ -113,12 +120,16 @@ provisionTpm2() {
        fi
   else   # Unexpected output
      ((failedTests++))
-       echo "Provisioning failed. Provisioner provided an unexpected output."
+       echo "Provisioning failed unexpectedly (status $provision_status)."
   fi
 }
 
 resetTpmForNewTest() {
-  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert"
+  docker exec "$tpm2_container" /bin/bash -ec \
+    'source /hirs/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert' || {
+      echo "TPM reset failed; aborting this test suite." >&2
+      exit 1
+    }
 }
 
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder

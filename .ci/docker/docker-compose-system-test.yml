@@ -16,8 +16,11 @@ services:
           - ${HIRS_ACA_HOSTNAME}
 
   tpmprovisioner:
-    image: ghcr.io/nsacyber/hirs/tpm2provisioner-dotnet-ci:latest
+    image: ${HIRS_CI_PROVISIONER_IMAGE:-ghcr.io/nsacyber/hirs/tpm2provisioner-dotnet-ci:latest}
     container_name: hirs-provisioner1-tpm2
+    environment:
+      HIRS_CI_TPM_SIM: ${HIRS_CI_TPM_SIM:-ibmswtpm2}
+      HIRS_CI_TPM_TCTI: ${HIRS_CI_TPM_TCTI:-mssim}
     depends_on:
       - aca
     volumes:
