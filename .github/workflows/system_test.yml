@@ -1,5 +1,5 @@
 # This workflow will build HIRS, run system tests, and create artifacts consisting of ACA and Provisioner logs.
-# Updated: 02/03/2026
+# Updated: 10/09/2026
 name: HIRS System Tests
 on:
   pull_request:
@@ -7,16 +7,23 @@ on:
       - 'development'
       - 'main'
   workflow_dispatch:
+    inputs:
+      tpm_sim:
+        description: 'TPM simulator to test'
+        required: true
+        type: choice
+        default: wolftpm
+        options:
+          - ibmswtpm2
+          - wolftpm
 jobs:
   DockerTests:
-    continue-on-error: ${{ matrix.tpm_sim == 'wolftpm' }} # Temporary (remove when stable)
-    strategy:
-      fail-fast: false
-      matrix:
-        tpm_sim: [ibmswtpm2, wolftpm]
+    name: DockerTests (${{ inputs.tpm_sim || 'ibmswtpm2' }})
     runs-on: ubuntu-latest
     env:
-      HIRS_CI_TPM_SIM: ${{ matrix.tpm_sim }}
+      # Automatic PR tests use IBM; manual runs select their simulator.
+      # Later, both IBM and wolfTPM can be run in parallel in a matrix.
+      HIRS_CI_TPM_SIM: ${{ inputs.tpm_sim || 'ibmswtpm2' }}
     permissions:
       contents: read
       packages: read
@@ -32,52 +39,42 @@ jobs:
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           .ci/system-tests/setup_system_tests.sh "$GITHUB_REF" "$GITHUB_SHA"
       - name: ACA POLICY TEST 1 - Test ACA default policy
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 1
       - name: ACA POLICY TEST 2 - Test EK cert Only Validation Policy without a EK Issuer Cert in the trust store
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 2
       - name: ACA POLICY TEST 3 - Test EK Only Validation Policy
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 3
       - name: ACA POLICY TEST 4 - Test PC Validation Policy with no PC
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 4
       - name: ACA POLICY TEST 5 - Test FW and PC Validation Policy with no PC
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 5
       - name: ACA POLICY TEST 6 - Test PC Validation Policy with valid PC with no Attribute Check
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 6
       - name: ACA POLICY TEST 7 - Test PC Validation Policy with valid PC with Attribute Check
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 7
       - name: ACA POLICY TEST 8 - Test PC with RIM Validation Policy with valid PC and RIM
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 8
       - name: ACA POLICY TEST 9 - Test valid PC and RIM with PC only uploaded
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 9
       - name: ACA POLICY TEST 10 - Test valid PC and RIM with RIM only uploaded
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/aca_policy_tests.sh 10
@@ -87,17 +84,14 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/aca_policy_tests.sh
       - name: ACA PLATFORM CERTIFICATE TEST 1 - Test a delta Platform Certificate that adds a new memory component
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 1
       - name: ACA PLATFORM CERTIFICATE TEST 2 - Test a Platform Certificate that is missing a memory component
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 2
       - name: ACA PLATFORM CERTIFICATE TEST 3 - Test a Delta Platform Certificate that has a wrong a memory component
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/platform_cert_tests.sh 3
@@ -107,17 +101,14 @@ jobs:
       #   run: |
       #     .ci/system-tests/tests/platform_cert_tests.sh
       - name: ACA RIM TEST 1 - Test a RIM from an OEM and a Supplemental RIM from a VAR
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 1
       - name: ACA RIM TEST 2 - Test a RIM from an OEM with a bad reference measurement and a Supplemental RIM from a VAR
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 2
       - name: ACA RIM TEST 3 - Test a RIM from an OEM and a Supplemental RIM from a VAR with a bad reference measurement
-        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: bash
         run: |
           .ci/system-tests/tests/rim_system_tests.sh 3
@@ -141,6 +132,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: System_Test_Log_Files_${{ matrix.tpm_sim }}
+          name: System_Test_Log_Files_${{ env.HIRS_CI_TPM_SIM }}
           path: logs/
           if-no-files-found: ignore

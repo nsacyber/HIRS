@@ -56,7 +56,7 @@ namespace pcrextend {
                             Console.WriteLine("TPM simulator not initialized. Running startup with clear.");
                             tpm.Startup(Su.Clear);
                         } else {
-                            Console.WriteLine("TPM readiness failed with {0}", e.RawResponse);
+                            Console.WriteLine("TPM readiness returned {0}; assuming already started.", e.RawResponse);
                         }
                     }
                 }

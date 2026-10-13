@@ -559,7 +559,7 @@ namespace hirs {
                             Log.Debug("TPM simulator not initialized. Running startup with clear.");
                             tpm.Startup(Su.Clear);
                         } else {
-                            Log.Debug("TPM readiness failed with {Rc}", e.RawResponse);
+                            Log.Debug("TPM readiness returned {Rc}; assuming already started.", e.RawResponse);
                         }
                     }
                 }
