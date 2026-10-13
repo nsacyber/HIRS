@@ -1,0 +1,25 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-bottom: 1px solid black;
+}
+
+.colHeader {
+  font-weight: bold;
+}
+
+.no-padding-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.no-padding-table th,
+.no-padding-table td {
+  padding: 0;
+}
