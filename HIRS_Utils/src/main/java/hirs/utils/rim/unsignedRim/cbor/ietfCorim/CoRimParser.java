@@ -92,9 +92,9 @@ public class CoRimParser extends CoRim {
             // process corim defined data
             setId((String) corimMap.get(CoRimItems.CORIM_ID_TYPE_CHOICE_INT));
             status = "Process CoRim dependent-rims";
-            final ArrayList dependantRims = (ArrayList) corimMap.get(CoRimItems.CORIM_LOCATOR_MAP_INT);
-            if (dependantRims != null) {
-                final Iterator corimLocators = dependantRims.iterator();
+            final ArrayList dependentRims = (ArrayList) corimMap.get(CoRimItems.CORIM_LOCATOR_MAP_INT);
+            if (dependentRims != null) {
+                final Iterator corimLocators = dependentRims.iterator();
                 if (corimLocators != null) {
                     while (corimLocators.hasNext()) {
                         status = "processing CoRim locators";

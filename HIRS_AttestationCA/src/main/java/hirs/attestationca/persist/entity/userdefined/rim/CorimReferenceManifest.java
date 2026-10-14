@@ -61,7 +61,7 @@ public class CorimReferenceManifest extends ReferenceManifest {
      * Main constructor for the CoRIM RIM object. Accepts either a signed CoRIM (COSE_Sign1, CBOR tag 18)
      * or an unsigned {@code tagged-unsigned-corim-map} (CBOR tag 501), parses the inner
      * {@code corim-map}, and populates the summary fields shown on the RIM list page. Signature
-     * verification is intentionally not performed here; the details page performs it lazily.
+     * verification is intentionally not performed here; the details page performs it.
      *
      * @param fileName string representation of the uploaded file
      * @param rimBytes raw uploaded bytes (COSE_Sign1-wrapped or bare tag-501 CoRIM)
