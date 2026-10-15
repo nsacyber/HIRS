@@ -128,7 +128,7 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             }
 
             // track event header length
-            int eventHeaderLength = rawIndex.length + rawType.length + rawEventSize.length;
+            int eventHeaderLength = rawIndex.length + rawType.length + algCountBytes.length + rawEventSize.length;
             for (TcgTpmtHa hash : hashList) {
                 eventHeaderLength += hash.getBuffer().length;
             }
@@ -147,12 +147,13 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             offset += rawIndex.length;
             System.arraycopy(rawType, 0, eventHeader, offset, rawType.length);
             offset += rawType.length;
-            System.arraycopy(rawEventSize, 0, eventHeader, offset, rawEventSize.length);
-            offset += rawEventSize.length;
+            System.arraycopy(algCountBytes, 0, eventHeader, offset, rawIndex.length);
+            offset += algCountBytes.length;
             for (TcgTpmtHa hash : hashList) {
                 System.arraycopy(hash.getBuffer(), 0, eventHeader, offset, hash.getBuffer().length);
                 offset += hash.getBuffer().length;
             }
+            System.arraycopy(rawEventSize, 0, eventHeader, offset, rawEventSize.length);
             setEventHeader(eventHeader);
 
             // if event content cannot be processed, this is not fatal; log error and continue with attestation
