@@ -3,6 +3,8 @@ package hirs.utils.tpm.eventlog;
 import hirs.utils.HexUtils;
 import hirs.utils.crypto.AlgorithmsIds;
 import hirs.utils.digest.AbstractDigest;
+import hirs.utils.specificationLookups.NistLookups;
+import hirs.utils.specificationLookups.TcgAlgReg;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
@@ -27,9 +29,6 @@ import java.util.Objects;
 import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
 import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
 import static hirs.utils.crypto.AlgorithmsIds.findAlgId;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA256_STR;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA384_STR;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -182,9 +181,9 @@ public final class TCGEventLog {
      * Default blank object constructor.
      */
     public TCGEventLog() {
-        this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
-        pcrLength = EvConstants.SHA1_LENGTH;
-        strongestEvLogHashAlgName = "TPM_ALG_SHA1";
+        this.pcrList = new byte[PCR_COUNT][NistLookups.ALG_SHA1_LEN];
+        pcrLength = NistLookups.ALG_SHA1_LEN;
+        strongestEvLogHashAlgName = TcgAlgReg.TcgHashAlg.ALG_SHA1.getAlgName();
         initPcrList();
     }
 
@@ -326,22 +325,23 @@ public final class TCGEventLog {
             strongestEvLogHashAlgName = "TPM_ALG_SHA256";
 
             // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
-            switch (strongestEvLogHashAlgName) {
-                case TPM_ALG_SHA256_STR:
-                    pcrLength = EvConstants.SHA256_LENGTH;
-                    break;
-                case TPM_ALG_SHA384_STR:
-                    pcrLength = EvConstants.SHA384_LENGTH;
-                    break;
-                case TPM_ALG_SHA512_STR:
-                    pcrLength = EvConstants.SHA512_LENGTH;
-                    break;
-                default:
-                    break;
-            }
+            pcrLength = TcgAlgReg.TcgHashAlg.fromAlgName(strongestEvLogHashAlgName).getAlgLen();
+//            switch (strongestEvLogHashAlgName) {
+//                case TPM_ALG_SHA256_STR:
+//                    pcrLength = EvConstants.SHA256_LENGTH;
+//                    break;
+//                case TPM_ALG_SHA384_STR:
+//                    pcrLength = EvConstants.SHA384_LENGTH;
+//                    break;
+//                case TPM_ALG_SHA512_STR:
+//                    pcrLength = EvConstants.SHA512_LENGTH;
+//                    break;
+//                default:
+//                    break;
+//            }
         } else {    // not crypto agile
-            strongestEvLogHashAlgName = "TPM_ALG_SHA1";
-            pcrLength = EvConstants.SHA1_LENGTH;
+            strongestEvLogHashAlgName = TcgAlgReg.TcgHashAlg.ALG_SHA1.getAlgName();
+            pcrLength = TcgAlgReg.TcgHashAlg.ALG_SHA1.getAlgLen();
 
             // startup locality event could be the first event in a non-crypto-agile log
             if (firstEvent.isStartupLocalityEvent()) {

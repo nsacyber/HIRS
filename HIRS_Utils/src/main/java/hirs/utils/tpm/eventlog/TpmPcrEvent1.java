@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
+import hirs.utils.specificationLookups.NistLookups;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.extern.log4j.Log4j2;
@@ -52,7 +53,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
         byte[] rawIndex = new byte[UefiConstants.SIZE_4];
         byte[] rawType = new byte[UefiConstants.SIZE_4];
         byte[] rawEventSize = new byte[UefiConstants.SIZE_4];
-        byte[] eventDigest = new byte[EvConstants.SHA1_LENGTH];
+        byte[] eventDigest = new byte[NistLookups.ALG_SHA1_LEN];
         byte[] eventContent;
 
         int eventSize = 0;
