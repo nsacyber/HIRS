@@ -1,5 +1,6 @@
 package hirs.utils.crypto;
 
+import hirs.utils.specLookups.AlgorithmsIds;
 import org.junit.jupiter.api.Test;
 
 import java.security.NoSuchAlgorithmException;

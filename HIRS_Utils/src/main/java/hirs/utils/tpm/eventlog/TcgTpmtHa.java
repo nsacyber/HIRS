@@ -1,7 +1,7 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.specificationLookups.TcgAlgReg;
+import hirs.utils.specLookups.TcgAlgRegLookups;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -124,7 +124,7 @@ public class TcgTpmtHa {
      */
     public static String tcgAlgIdToString(final int algId) {
 
-        return TcgAlgReg.TcgHashAlg.fromAlgId(algId).getAlgName();
+        return TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId).getAlgName();
 
 //        return switch (algId) {
 //            case TPM_ALG_SHA1 -> TPM_ALG_SHA1_STR;
@@ -146,7 +146,7 @@ public class TcgTpmtHa {
      */
     public static int tcgAlgStringToId(final String algName) {
 
-        return TcgAlgReg.TcgHashAlg.fromAlgName(algName).getAlgId();
+        return TcgAlgRegLookups.TcgHashAlg.fromAlgName(algName).getAlgId();
     }
 
     /**
@@ -157,7 +157,7 @@ public class TcgTpmtHa {
      */
     public static int tcgAlgLength(final int algId) {
 
-        return TcgAlgReg.TcgHashAlg.fromAlgId(algId).getAlgLen();
+        return TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId).getAlgLen();
 
 //        return switch (algId) {
 //            case TPM_ALG_SHA1 -> TPM_ALG_SHA1_LENGTH;

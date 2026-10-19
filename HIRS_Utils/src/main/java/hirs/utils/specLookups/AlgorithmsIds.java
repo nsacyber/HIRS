@@ -1,4 +1,4 @@
-package hirs.utils.crypto;
+package hirs.utils.specLookups;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.NoSuchElementException;
@@ -100,13 +100,13 @@ public final class AlgorithmsIds {
     private static final String[][] HASH_ALGORITHMS = {
             // Specification order: TCG, XML, CoSwid, COSE, X509 string
             // description
-            {"TPM_ALG_SHA1", "SHA-1", "", "SHA-1", "SHA1", "SHA1"},
-            {"TPM_ALG_SHA256", "SHA-256", "sha-256", "SHA-256", "SHA256", "SHA256"},
-            {"TPM_ALG_SHA384", "SHA-384", "sha-384", "SHA-384", "SHA384", "SHA384"},
-            {"TPM_ALG_SHA512", "SHA-512", "sha-512", "SHA-512", "SHA512", "SHA512"},
-            {"TPM_ALG_SHA3_256", "", "sha3-256", "", "SHA3-256", "SHA3256"},
-            {"TPM_ALG_SHA3_384", "", "sha3-384", "", "SHA3-384", "SHA384"},
-            {"TPM_ALG_SHA3_512", "", "sha3-512", "SHA3-512", "SHA512"}};
+            {TcgAlgRegLookups.SHA1_STR,     "SHA-1",    "",         "SHA-1",    "SHA1",     "SHA1"},
+            {TcgAlgRegLookups.SHA256_STR,   "SHA-256",  "sha-256",  "SHA-256",  "SHA256",   "SHA256"},
+            {TcgAlgRegLookups.SHA384_STR,   "SHA-384",  "sha-384",  "SHA-384",  "SHA384",   "SHA384"},
+            {TcgAlgRegLookups.SHA512_STR,   "SHA-512",  "sha-512",  "SHA-512",  "SHA512",   "SHA512"},
+            {TcgAlgRegLookups.SHA3_256_STR, "",         "sha3-256", "",         "SHA3-256", "SHA3256"},
+            {TcgAlgRegLookups.SHA3_384_STR, "",         "sha3-384", "",         "SHA3-384", "SHA384"},
+            {TcgAlgRegLookups.SHA3_512_STR, "",         "sha3-512", "SHA3-512", "SHA512"}};
 
     /**
      * Array that holds the signing alg names used in each of 4 specifications.
@@ -136,7 +136,7 @@ public final class AlgorithmsIds {
             // Note: TCG does not combine assymmetric & hash into one name for a signing algorithm,
             //       so table combines these 2 names with a * (in the first columnn)
             //       CoSwid empty column left in for column # alignment consistent with the other tables
-            {"TPM_ALG_ECDSA*TPM_ALG_SHA256", "ECDSA-SHA256", "", "ES256", "ECDSA and SHA256",
+            new String[]{"TPM_ALG_ECDSA*TPM_ALG_SHA256", "ECDSA-SHA256", "", "ES256", "ECDSA and SHA256",
                     "SHA256withECDSA", "ECC"},
             {"TPM_ALG_ECDSA*TPM_ALG_SHA384", "ECDSA-SHA384", "", "ES384", "ECDSA and SHA384",
                     "SHA384withECDSA", "ECC"},

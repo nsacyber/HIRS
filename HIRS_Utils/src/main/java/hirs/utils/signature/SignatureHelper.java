@@ -1,6 +1,6 @@
 package hirs.utils.signature;
 
-import hirs.utils.crypto.AlgorithmsIds;
+import hirs.utils.specLookups.AlgorithmsIds;
 import hirs.utils.signature.cose.CoseAlgorithm;
 
 import java.security.NoSuchAlgorithmException;

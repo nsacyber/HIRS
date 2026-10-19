@@ -23,6 +23,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
 
+import hirs.utils.specLookups.AlgorithmsIds;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;

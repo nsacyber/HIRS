@@ -1,4 +1,4 @@
-package hirs.utils.specificationLookups;
+package hirs.utils.specLookups;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

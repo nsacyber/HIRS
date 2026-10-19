@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
+import static hirs.utils.specLookups.PlatformClass.getPlatClassFromId;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
