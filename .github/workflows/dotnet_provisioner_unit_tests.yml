@@ -60,8 +60,8 @@ jobs:
       - name: Artifacts SHA256
         shell: bash
         run: |
-          sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-          ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+          sha256sum HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
+          ls -go --full-time HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
       - name: Artifacts
         uses: actions/upload-artifact@v5
         with:
