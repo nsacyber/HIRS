@@ -54,6 +54,13 @@ The directory the command should be run from is included in each section below.
 
     Both commands produce an RPM and DEB for `linux-x64`. The Windows command will additionally produce an MSI for `win-x64`.
 
+    To build the ACA and Provisioner packages together from the repository root, run:
+
+    ```shell
+    ./gradlew clean release
+    ```
+    On Windows, the same command will build the provisioner MSI.
+
 !!! info
 
     After building, you'll find package files under the provisioner project folder.

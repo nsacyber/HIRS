@@ -38,7 +38,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.2.0" />
     <PackageReference Include="paccor.HardwareManifestPluginManager" Version="2.1.0" />
-    <PackageReference Include="paccor.paccor_scripts" Version="2.7.0" />
+    <PackageReference Include="paccor.paccor_script
+    s" Version="2.7.0" />
     <PackageReference Include="paccor.pcie" Version="0.9.5" />
     <PackageReference Include="paccor.smbios" Version="0.9.5" />
     <PackageReference Include="paccor.storage" Version="0.9.5" />
