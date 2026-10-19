@@ -391,7 +391,8 @@ public class SupplyChainValidationService {
                 validations.add(quoteScv);
                 previous.archive();
                 supplyChainValidationSummaryRepository.save(previous);
-                summary = new SupplyChainValidationSummary(device, validations);
+                summary = new SupplyChainValidationSummary(device, validations,
+                        previous.getProvisionSessionId());
 
                 // try removing the supply chain validation as well and resaving that
                 try {

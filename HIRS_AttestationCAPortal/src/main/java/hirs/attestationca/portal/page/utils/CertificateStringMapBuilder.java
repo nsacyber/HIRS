@@ -615,9 +615,17 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
+            UUID sessionId = null;
             if (componentAttributeRepository != null && provisionSessionId != null
                     && !provisionSessionId.isBlank()) {
-                UUID sessionId = UUID.fromString(provisionSessionId);
+                try {
+                    sessionId = UUID.fromString(provisionSessionId);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Ignoring invalid provision session ID for {}: {}",
+                            uuid, provisionSessionId);
+                }
+            }
+            if (sessionId != null) {
                 List<ComponentAttributeResult> attributeResults = componentAttributeRepository
                         .findByProvisionSessionId(sessionId);
                 List<UUID> failedComponentIds = attributeResults.stream()
