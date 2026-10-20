@@ -88,11 +88,11 @@ public class TCGEventLogTest {
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.ALG_SHA256.getAlgName(), equalTo(algStr));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgName(), equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.ALG_SHA256.getAlgId(), equalTo(id));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgId(), equalTo(id));
 
             LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
         } catch (Throwable throwable) {
@@ -139,11 +139,11 @@ public class TCGEventLogTest {
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.ALG_SHA1.getAlgName(), equalTo(algStr));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName(), equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.ALG_SHA1.getAlgId(), equalTo(id));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgId(), equalTo(id));
 
             LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
         } catch (Throwable throwable) {

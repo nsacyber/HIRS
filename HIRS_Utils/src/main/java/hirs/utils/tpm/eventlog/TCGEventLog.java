@@ -1,9 +1,9 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.specLookups.AlgorithmsIds;
 import hirs.utils.digest.AbstractDigest;
 import hirs.utils.specLookups.NistLookups;
+import hirs.utils.specLookups.SpecTranslations;
 import hirs.utils.specLookups.TcgAlgRegLookups;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
@@ -24,10 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-
-import static hirs.utils.specLookups.AlgorithmsIds.ALG_TYPE_HASH;
-import static hirs.utils.specLookups.AlgorithmsIds.SPEC_TCG_ALG;
-import static hirs.utils.specLookups.AlgorithmsIds.findAlgId;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -182,7 +178,7 @@ public final class TCGEventLog {
     public TCGEventLog() {
         this.pcrList = new byte[PCR_COUNT][NistLookups.SHA1_LEN];
         pcrLength = NistLookups.SHA1_LEN;
-        strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.ALG_SHA1.getAlgName();
+        strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
         initPcrList();
     }
 
@@ -305,20 +301,23 @@ public final class TCGEventLog {
             List<String> algList = specEvent.getAlgList();
 
             // find the strongest algorithm used and select that for processing
-            String currentStrongestAlg = algList.get(0);
-            try {
-                int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
-                for (int i = 1; i < algList.size(); i++) {
-                    String newAlg = algList.get(i);
-                    int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
-                    if (newAlgRow > currentStrongestAlgRow) {
-                        currentStrongestAlg = newAlg;
-                    }
+            TcgAlgRegLookups.TcgHashAlg highestAlg = null;
+            for (String algStr : algList) {
+                TcgAlgRegLookups.TcgHashAlg current = TcgAlgRegLookups.TcgHashAlg.fromAlgName(algStr);
+
+                // Skip if the string doesn't match any enum constant
+                if (current == null) {
+                    continue;
                 }
-            } catch (IllegalArgumentException i) {
-                throw new IOException("Could not determine info about algorithm from first event", i);
+
+                // If it's our first valid item, or higher than our current maximum
+                if (highestAlg == null || current.ordinal() > highestAlg.ordinal()) {
+                    highestAlg = current;
+                }
             }
-            strongestEvLogHashAlgName = currentStrongestAlg;
+            if (highestAlg != null) {
+                strongestEvLogHashAlgName = highestAlg.getAlgName();
+            }
 
             //TEMPORARILY use SHA256 until updates on Provisioner are pushed
             strongestEvLogHashAlgName = "TPM_ALG_SHA256";
@@ -339,8 +338,8 @@ public final class TCGEventLog {
 //                    break;
 //            }
         } else {    // not crypto agile
-            strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.ALG_SHA1.getAlgName();
-            pcrLength = TcgAlgRegLookups.TcgHashAlg.ALG_SHA1.getAlgLen();
+            strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
+            pcrLength = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgLen();
 
             // startup locality event could be the first event in a non-crypto-agile log
             if (firstEvent.isStartupLocalityEvent()) {
@@ -412,8 +411,11 @@ public final class TCGEventLog {
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
 
-        String hashNistName = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_HASH,
-                AlgorithmsIds.SPEC_TCG_ALG, strongestEvLogHashAlgName, AlgorithmsIds.SPEC_COSE_ALG);
+        String hashNistName = SpecTranslations.translate(
+                SpecTranslations.HashAlg.class,
+                SpecTranslations.HashAlg.Format.TCG,
+                strongestEvLogHashAlgName,
+                SpecTranslations.HashAlg.Format.COSE);
         MessageDigest md = MessageDigest.getInstance(hashNistName);
         StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
         sb.append(Hex.encodeHexString(currentValue).toCharArray());

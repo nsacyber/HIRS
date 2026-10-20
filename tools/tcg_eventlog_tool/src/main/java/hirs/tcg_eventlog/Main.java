@@ -1,11 +1,6 @@
 package hirs.tcg_eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.specLookups.CoswidLookups;
-import hirs.utils.specLookups.SpecTranslations;
-import hirs.utils.specLookups.TcgAlgRegLookups;
-import hirs.utils.specLookups.X509Lookups;
-import hirs.utils.specLookups.XmlLookups;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 

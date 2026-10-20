@@ -1,6 +1,9 @@
 package hirs.utils.specLookups;
 
-public class NistLookups {
+/**
+ * Class for defining constants referenced in the NIST Specification.
+ */
+public final class NistLookups {
 
     /** Length for Null algorithm. */
     public static final int ALG_NULL_LEN = 0;
@@ -13,4 +16,9 @@ public class NistLookups {
     /** Length for SHA512. */
     public static final int SHA512_LEN = 64;
 
+    /**
+     * Default constructor.
+     */
+    private NistLookups() {
+    }
 }
