@@ -239,7 +239,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
             // All V1 components listed in the Platform Credential must have a manufacturer and model
             for (ComponentIdentifier pcComponent : allPcComponents) {
 
-                fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",
+                fieldValidation = !isRequiredASN1StringFieldNull("componentManufacturer",
                         pcComponent.getComponentManufacturer());
 
                 if (!fieldValidation) {
@@ -248,7 +248,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
                 passesValidation &= fieldValidation;
 
-                fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
+                fieldValidation = !isRequiredASN1StringFieldNull("componentModel",
                         pcComponent.getComponentModel());
 
                 if (!fieldValidation) {
@@ -265,7 +265,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
             // All V2 components listed in the Platform Credential must have a manufacturer and model
             for (ComponentIdentifierV2 pcComponent : allV2PcComponents) {
-                fieldValidation = !isRequiredASN1StringFieldBlank("componentManufacturer",
+                fieldValidation = !isRequiredASN1StringFieldNull("componentManufacturer",
                         pcComponent.getComponentManufacturer());
 
                 if (!fieldValidation) {
@@ -274,7 +274,7 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
 
                 passesValidation &= fieldValidation;
 
-                fieldValidation = !isRequiredASN1StringFieldBlank("componentModel",
+                fieldValidation = !isRequiredASN1StringFieldNull("componentModel",
                         pcComponent.getComponentModel());
 
                 if (!fieldValidation) {
@@ -787,10 +787,10 @@ public class CertificateAttributeScvValidator extends SupplyChainCredentialValid
      * @param fieldValue  value of the field
      * @return true if fieldValue is null or empty; false otherwise
      */
-    private static boolean isRequiredASN1StringFieldBlank(final String description,
-                                                          final ASN1UTF8String fieldValue) {
-        if (fieldValue == null || StringUtils.isBlank(fieldValue.getString().trim())) {
-            log.error("Required ASN1 string field was empty or null in Platform Credential: {}", description);
+    private static boolean isRequiredASN1StringFieldNull(final String description,
+                                                         final ASN1UTF8String fieldValue) {
+        if (fieldValue == null) {
+            log.error("Required ASN1 string field was null in Platform Credential: {}", description);
             return true;
         }
         return false;
