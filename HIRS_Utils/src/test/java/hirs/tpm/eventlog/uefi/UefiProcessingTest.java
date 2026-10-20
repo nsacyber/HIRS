@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Objects;
 
 /**
  * Class for testing TCG Event Log processing of UEFI defined Data.
@@ -86,8 +87,8 @@ public class UefiProcessingTest {
         Assertions.assertEquals("EFI_Global_Variable", guidStr);
         Assertions.assertEquals("BootOrder", varName);
 
-        uefiTxt = IOUtils.toString(this.getClass()
-                        .getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT),
+        uefiTxt = IOUtils.toString(
+                Objects.requireNonNull(this.getClass().getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT)),
                 StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
@@ -98,8 +99,10 @@ public class UefiProcessingTest {
         Assertions.assertEquals("EFI_Global_Variable", guidStr);
         Assertions.assertEquals("SecureBoot", varName);
 
-        uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(
-                UEFI_VARIABLE_BOOT_DRIVER_CONFIG_KEK), StandardCharsets.UTF_8);
+        uefiTxt = IOUtils.toString(
+                Objects.requireNonNull(
+                        this.getClass().getResourceAsStream(UEFI_VARIABLE_BOOT_DRIVER_CONFIG_KEK)),
+                StandardCharsets.UTF_8);
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
         varName = uefiVariable.getUnicodeName();

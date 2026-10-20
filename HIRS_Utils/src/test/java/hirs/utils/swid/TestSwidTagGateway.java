@@ -6,7 +6,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestSwidTagGateway {
 
-    @TempDir
     private static Path tempDir;
 
     private static final String ATTRIBUTES_FILE = Objects.requireNonNull(
@@ -56,6 +54,13 @@ public class TestSwidTagGateway {
      */
     @BeforeAll
     public static void setUp() {
+        tempDir = Path.of("test-dir");
+        try {
+            java.nio.file.Files.createDirectories(tempDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't create test-dir under build, stopping test.", e);
+        }
+
         gateway = new SwidTagGateway();
         gateway.setRimEventLog(SUPPORT_RIM_FILE);
         gateway.setAttributesFile(ATTRIBUTES_FILE);
