@@ -11,9 +11,11 @@ LOG_FILE=$1
 DB_LOG_FILE="/var/log/mariadb/mariadb.log"
 PKI_PASS=$2
 DB_ALG=$3
-UNATTENDED=$4
+DB_MLDSA_SIZE=$4
+UNATTENDED=$5
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
+MLDSA_PATH=mldsa_${DB_MLDSA_SIZE}_certs
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
@@ -41,6 +43,16 @@ elif [ "$DB_ALG" == "ecc" ]; then
   SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem";
   SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.pem";
   SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.key";
+elif [ "$DB_ALG" == "mldsa" ]; then
+  # Default Server Side Certificates
+  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem";
+  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_srv_mldsa_${DB_MLDSA_SIZE}.pem";
+  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_srv_mldsa_${DB_MLDSA_SIZE}.key";
+
+  # Default Client Side Certificates
+  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem";
+  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.pem";
+  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.key";
 fi
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
@@ -228,6 +240,11 @@ create_hibernate_url () {
     CERT_CHAIN="$CERT_PATH/HIRS_rsa_3k_sha384_Cert_Chain.pem"
     CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_rsa_3k_sha384.p12
     ALIAS="hirs_aca_tls_rsa_3k_sha384"
+  elif [ "$ALG" = "mldsa" ]; then
+      CERT_PATH="/etc/hirs/certificates/HIRS/$MLDSA_PATH"
+      CERT_CHAIN="$CERT_PATH/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem"
+      CLIENT_DB_P12="$CERT_PATH/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.p12"
+      ALIAS="hirs_aca_tls_mldsa_${DB_MLDSA_SIZE}"
   else
     CERT_PATH="/etc/hirs/certificates/HIRS/$ECC_PATH"
     CERT_CHAIN="$CERT_PATH/HIRS_ecc_512_sha384_Cert_Chain.pem"

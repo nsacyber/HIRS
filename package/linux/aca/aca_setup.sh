@@ -18,19 +18,24 @@ SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
 PROP_FILE='../../../HIRS_AttestationCAPortal/src/main/resources/application.properties'
 COMP_JSON='../../../HIRS_AttestationCA/src/main/resources/component-class.json'
 VENDOR_TABLE='../../../HIRS_Utils/src/main/resources/vendor-table.json'
+ACA_MLDSA_SIZE=87
+TLS_MLDSA_SIZE=87
+DB_MLDSA_SIZE=87
 
 help () {
-  echo "  Setup script for the HIRS ACA"
-  echo "  Syntax (short form): sh aca_setup.sh [-u|h|sp|sd|aa|ta|da]"
-  echo "  Syntax (long form): sh aca_setup.sh [--unattended|--help|--skip-db|--skip-pki|--aca-alg|--tls-alg|--db-alg]"
+  echo "  Syntax (short form): sh aca_setup.sh [-u|h|sp|sd|aa|ta|da|ams|tms|dms]"
+  echo "  Syntax (long form): sh aca_setup.sh [--unattended|--help|--skip-db|--skip-pki|--aca-alg|--tls-alg|--db-alg|--aca-mldsa-size|--tls-mldsa-size|--db-mldsa-size]"
   echo "  Flag options:"
-  echo "     [-u  | --unattended] Runs the script unattended"
-  echo "     [-h  | --help]   Prints this help message."
-  echo "     [-sp | --skip-pki] Skips the pki setup of the setup script."
-  echo "     [-sd | --skip-db] Skips the database setup of the setup script."
-  echo "     [-aa | --aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
-  echo "     [-ta | --tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
-  echo "     [-da | --db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
+  echo "     [-u   | --unattended] Runs the script unattended"
+  echo "     [-h   | --help] Prints this help message."
+  echo "     [-sp  | --skip-pki] Skips the pki setup of the setup script."
+  echo "     [-sd  | --skip-db] Skips the database setup of the setup script."
+  echo "     [-aa  | --aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates"
+  echo "     [-ta  | --tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal"
+  echo "     [-da  | --db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB"
+  echo "     [-ams | --aca-mldsa-size] Sets the ML-DSA parameter set (44, 65, or 87) for Attestation Certificates"
+  echo "     [-tms | --tls-mldsa-size] Sets the ML-DSA parameter set (44, 65, or 87) for ACA portal TLS"
+  echo "     [-dms | --db-mldsa-size] Sets the ML-DSA parameter set (44, 65, or 87) for MariaDB"
   echo
 }
 
@@ -59,12 +64,28 @@ while [[ $# -gt 0 ]]; do
       ARG_TLS_ALG=YES
       shift # past argument
       TLS_ALG=$1
+      shift # past parameter
       ;;
    -da|--db-alg)
       ARG_DB_ALG=YES
       shift # past argument
       DB_ALG=$1
       shift # past parameter
+      ;;
+    -ams|--aca-mldsa-size)
+      shift
+      ACA_MLDSA_SIZE=$1
+      shift
+      ;;
+    -tms|--tls-mldsa-size)
+      shift
+      TLS_MLDSA_SIZE=$1
+      shift
+      ;;
+    -dms|--db-mldsa-size)
+      shift
+      DB_MLDSA_SIZE=$1
+      shift
       ;;
     -h|--help)
       help     
@@ -101,18 +122,33 @@ if [ -z "$ARG_DB_ALG" ]; then
 fi
 
 # Check for valid algorithms
-if [ ! "$ACA_ALG" == "rsa" ] && [ ! "$ACA_ALG" == "ecc" ] ; then
-   echo  "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa or ecc."
+if [ ! "$ACA_ALG" == "rsa" ] && [ ! "$ACA_ALG" == "ecc" ] && [ ! "$ACA_ALG" == "mldsa" ]; then
+   echo "Invalid ACA algorithm $ACA_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
-if [ ! "$TLS_ALG" == "rsa" ] && [ ! "$TLS_ALG" == "ecc" ] ; then
-   echo  "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa or ecc."
+if [ ! "$TLS_ALG" == "rsa" ] && [ ! "$TLS_ALG" == "ecc" ] && [ ! "$TLS_ALG" == "mldsa" ]; then
+   echo "Invalid TLS algorithm $TLS_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
-if [ ! "$DB_ALG" == "rsa" ] && [ ! "$DB_ALG" == "ecc" ] ; then
-   echo  "Invalid DB algorithm $DB_ALG specified. Valid options are rsa or ecc."
+if [ ! "$DB_ALG" == "rsa" ] && [ ! "$DB_ALG" == "ecc" ] && [ ! "$DB_ALG" == "mldsa" ]; then
+   echo "Invalid DB algorithm $DB_ALG specified. Valid options are rsa, ecc, or mldsa."
    exit 1;
 fi
+
+# Validate MLDSA size
+validate_mldsa_size() {
+  case "$1" in
+    44|65|87)
+      ;;
+    *)
+      echo "Invalid ML-DSA parameter set $1 specified. Valid options are 44, 65, or 87."
+      exit 1
+      ;;
+  esac
+}
+validate_mldsa_size "$ACA_MLDSA_SIZE"
+validate_mldsa_size "$TLS_MLDSA_SIZE"
+validate_mldsa_size "$DB_MLDSA_SIZE"
 
 #echo  "ARG_ACA_ALG is $ARG_ACA_ALG"
 #echo  "ACA_ALG is $ACA_ALG"
@@ -129,7 +165,7 @@ fi
 #   else
 #   echo "Upgrade detected $1"
 #fi
- 
+
 # Check for existing installation folders and exist if found
 if [ -z "$ARG_UNATTEND" ]; then
   if [ -d "/etc/hirs" ]; then
@@ -194,7 +230,7 @@ if [ -z "${ARG_SKIP_PKI}" ]; then
 fi
 
 if [ -z "${ARG_SKIP_DB}" ]; then
-   ../db/db_create.sh "$LOG_FILE" "$PKI_PASS" "$DB_ALG" "$ARG_UNATTEND"
+   ../db/db_create.sh "$LOG_FILE" "$PKI_PASS" "$DB_ALG" "$DB_MLDSA_SIZE" "$ARG_UNATTEND"
    if [ $? -eq 0 ]; then
       echo "ACA database setup complete" | tee -a "$LOG_FILE"
     else
@@ -218,6 +254,9 @@ if [ "$TLS_ALG" == "rsa" ]; then
 elif [ "$TLS_ALG" == "ecc" ]; then
   echo "server.ssl.trust-alias=hirs_aca_tls_ecc_512_sha384" >> $SPRING_PROP_FILE
   echo "server.ssl.key-alias=hirs_aca_tls_ecc_512_sha384_key" >> $SPRING_PROP_FILE
+elif [ "$TLS_ALG" == "mldsa" ]; then
+  echo "server.ssl.trust-alias=hirs_aca_tls_mldsa_${TLS_MLDSA_SIZE}" >> $SPRING_PROP_FILE
+  echo "server.ssl.key-alias=hirs_aca_tls_mldsa_${TLS_MLDSA_SIZE}_key" >> $SPRING_PROP_FILE
 fi
 
  # remove default config file lines for aca aliases
@@ -238,6 +277,12 @@ elif [ "$ACA_ALG" == "ecc" ]; then
   echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_ecc_512_sha384_key"
   echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_ecc_512_sha384_key"
   echo "aca.certificates.root-key-alias=HIRS_root_ca_ecc_512_sha384_key"
+  } >> $SPRING_PROP_FILE
+elif [ "$ACA_ALG" == "mldsa" ]; then
+  {
+  echo "aca.certificates.leaf-three-key-alias=HIRS_leaf_ca3_mldsa_${ACA_MLDSA_SIZE}_key"
+  echo "aca.certificates.intermediate-key-alias=HIRS_intermediate_ca_mldsa_${ACA_MLDSA_SIZE}_key"
+  echo "aca.certificates.root-key-alias=HIRS_root_ca_mldsa_${ACA_MLDSA_SIZE}_key"
   } >> $SPRING_PROP_FILE
 fi
 

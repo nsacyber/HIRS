@@ -1,18 +1,21 @@
 #!/bin/bash
 # Script to generate a PKI Stack (Root, Intermediate, and LEAF CAs) and a Base RIM Signer
 # creates a folder based upon the actor name and places certs under an algoithm specific folder (e.g. rsa_certs)
-# PARAMS: 
-# 1. Actor name string (e.g. "Server Manufacturer") 
-# 2. Algorithm string (e.g. rsa or ecc)
-# 3. Key Bit Size string (e.g. 2048)
-# 4. Hash Algorithm string (e.g. sha256)
+# PARAMS:
+# 1. Actor name string (e.g. "Server Manufacturer")
+# 2. Algorithm string (rsa, ecc, or mldsa)
+# 3. Key size / parameter set
+#      RSA: 2048, 3072, 4096
+#      ECC: 256, 384, 512
+#      ML-DSA: 44, 65, 87
+# 4. Hash Algorithm string (e.g. sha384; use "none" for ML-DSA)
 # 5. PKI password used to protect PKI keys and certs
+# 6. Log file
 #
 # Examples:
-#    pki_chain_gen.sh "PC Manufacturer" rsa 2048 sha256 "password" 
+#    pki_chain_gen.sh "PC Manufacturer" rsa 2048 sha256 "password"
 #    pki_chain_gen.sh "DISK Manufacturer" ecc 256 sha512 "password"
-#
-# A KeyStore and Trust Store are created for by Java Applications. Both will use the supplied password. 
+#    pki_chain_gen.sh "HIRS" mldsa 87 none "password"
 
 ACTOR=$1
 ACTOR_ALT=${ACTOR// /_}
@@ -38,43 +41,79 @@ if [ -z "${ACTOR}" ] || [ -z "${ASYM_ALG}" ] || [ -z "${ASYM_SIZE}" ] || [ -z "$
    exit 1;
 fi
 
-if ! { [ $ASYM_ALG == "rsa" ] || [ $ASYM_ALG == "ecc" ]; }; then
-       echo "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup" | tee -a "$LOG_FILE"
-       exit 1;
+if ! { [ "$ASYM_ALG" == "rsa" ] || \
+       [ "$ASYM_ALG" == "ecc" ] || \
+       [ "$ASYM_ALG" == "mldsa" ]; }; then
+    echo "$ASYM_ALG is an unsupported asymmetric algorithm, exiting pki setup" | tee -a "$LOG_FILE"
+    exit 1
 fi
 
 if [ -z ${LOG_FILE} ]; then
        LOG_FILE="/dev/null"
 fi
 
-case $ASYM_SIZE in
-     256)  KSIZE=256
-           ECC_NAME="secp256k1";;   
-     384)  KSIZE=384
-           ECC_NAME="secp384r1";;    
-     512)  KSIZE=512
-           ECC_NAME="secp521r1";; 
-     2048) KSIZE=2k;;
-     3072) KSIZE=3k;;
-     4096) KSIZE=4k;;
-     *) 
-       echo "$ASYM_SIZE is an unsupported key size, exiting pki setup" | tee -a "$LOG_FILE"
-       exit 1;;
-esac
+if [ "$ASYM_ALG" == "mldsa" ]; then
+    case "$ASYM_SIZE" in
+        44)
+            KSIZE=44
+            MLDSA_NAME="ML-DSA-44"
+            ;;
+        65)
+            KSIZE=65
+            MLDSA_NAME="ML-DSA-65"
+            ;;
+        87)
+            KSIZE=87
+            MLDSA_NAME="ML-DSA-87"
+            ;;
+        *)
+            echo "$ASYM_SIZE is an unsupported ML-DSA parameter set, exiting pki setup" | tee -a "$LOG_FILE"
+            exit 1
+            ;;
+    esac
+else
+    case "$ASYM_SIZE" in
+        256)
+            KSIZE=256
+            ECC_NAME="secp256k1"
+            ;;
+        384)
+            KSIZE=384
+            ECC_NAME="secp384r1"
+            ;;
+        512)
+            KSIZE=512
+            ECC_NAME="secp521r1"
+            ;;
+        2048) KSIZE=2k;;
+        3072) KSIZE=3k;;
+        4096) KSIZE=4k;;
+        *)
+            echo "$ASYM_SIZE is an unsupported key size, exiting pki setup" | tee -a "$LOG_FILE"
+            exit 1
+            ;;
+    esac
+fi
 
 # Use algorithm and key size to create unique file paths and Distinguished names
-NAME="$ACTOR $ASYM_ALG $KSIZE $HASH_ALG"
-CERT_FOLDER="$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"_certs
-PKI_ROOT="$CERT_FOLDER"/"$ACTOR_ALT"_root_ca_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-PKI_INT="$CERT_FOLDER"/"$ACTOR_ALT"_intermediate_ca_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-PKI_CA1="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca1_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-PKI_CA2="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca2_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-PKI_CA3="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca3_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-RIM_SIGNER="$CERT_FOLDER"/"$ACTOR_ALT"_rim_signer_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-TLS_SERVER="$CERT_FOLDER"/"$ACTOR_ALT"_aca_tls_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-DB_SERVER="$CERT_FOLDER"/"$ACTOR_ALT"_db_srv_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-DB_CLIENT="$CERT_FOLDER"/"$ACTOR_ALT"_db_client_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
-TRUST_STORE_FILE="$CERT_FOLDER"/"$ACTOR_ALT"_"$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"_Cert_Chain.pem
+if [ "$ASYM_ALG" == "mldsa" ]; then
+    NAME="$ACTOR $ASYM_ALG $KSIZE"
+    CERT_PREFIX="$ASYM_ALG"_"$KSIZE"
+else
+    NAME="$ACTOR $ASYM_ALG $KSIZE $HASH_ALG"
+    CERT_PREFIX="$ASYM_ALG"_"$KSIZE"_"$HASH_ALG"
+fi
+CERT_FOLDER="$CERT_PREFIX"_certs
+PKI_ROOT="$CERT_FOLDER"/"$ACTOR_ALT"_root_ca_"$CERT_PREFIX"
+PKI_INT="$CERT_FOLDER"/"$ACTOR_ALT"_intermediate_ca_"$CERT_PREFIX"
+PKI_CA1="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca1_"$CERT_PREFIX"
+PKI_CA2="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca2_"$CERT_PREFIX"
+PKI_CA3="$CERT_FOLDER"/"$ACTOR_ALT"_leaf_ca3_"$CERT_PREFIX"
+RIM_SIGNER="$CERT_FOLDER"/"$ACTOR_ALT"_rim_signer_"$CERT_PREFIX"
+TLS_SERVER="$CERT_FOLDER"/"$ACTOR_ALT"_aca_tls_"$CERT_PREFIX"
+DB_SERVER="$CERT_FOLDER"/"$ACTOR_ALT"_db_srv_"$CERT_PREFIX"
+DB_CLIENT="$CERT_FOLDER"/"$ACTOR_ALT"_db_client_"$CERT_PREFIX"
+TRUST_STORE_FILE="$CERT_FOLDER"/"$ACTOR_ALT"_"$CERT_PREFIX"_Cert_Chain.pem
 
 ROOT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test root ca"
 INT_DN="/C=US/ST=MD/L=Columbia/O="$ACTOR"/CN="$NAME" test intermediate ca"
@@ -91,7 +130,11 @@ if [ -d "$ACTOR_ALT"/"$CERT_FOLDER" ]; then
 fi
 
 # Initialize sub folders
-echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | tee -a "$LOG_FILE"
+if [ "$ASYM_ALG" == "mldsa" ]; then
+    echo "Creating PKI for $ACTOR_ALT using $MLDSA_NAME..." | tee -a "$LOG_FILE"
+else
+    echo "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | tee -a "$LOG_FILE"
+fi
 
 mkdir -p "$ACTOR_ALT" "$ACTOR_ALT"/"$CERT_FOLDER" "$ACTOR_ALT"/ca/certs
 cp ca.conf "$ACTOR_ALT"/.
@@ -139,36 +182,88 @@ create_cert () {
 
    # Database doesnt support encypted key so create DB without passwords 
    if [[ "$SUBJ_DN" = *"DB"* ]]; then
-       if [ "$ASYM_ALG" == "rsa" ]; then 
-           openssl genrsa -out "$CERT_PATH".key "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
-           openssl req -new -key "$CERT_PATH".key \
-                -out "$CERT_PATH".csr  -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
-	   else
-	       openssl ecparam -genkey -name "$ECC_NAME" -out "$CERT_PATH".key  >> "$LOG_FILE" 2>&1
-	       openssl req -new -key "$CERT_PATH".key -out "$CERT_PATH".csr -$HASH_ALG  -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
-	   fi
-   else
-       if [ "$ASYM_ALG" == "rsa" ]; then 
-           openssl req -newkey rsa:"$ASYM_SIZE" \
-                -keyout "$CERT_PATH".key \
-                -out "$CERT_PATH".csr  -subj "$SUBJ_DN" \
-                -passout pass:"$PASS"  >> "$LOG_FILE" 2>&1
-	   else
-	       openssl genpkey -algorithm "EC" -pkeyopt ec_paramgen_curve:P-521 -aes256 --pass "pass:$PASS" -out "$CERT_PATH".key 
-	       openssl req -new -key "$CERT_PATH".key -passin "pass:$PASS" -out "$CERT_PATH".csr -$HASH_ALG  -subj "$SUBJ_DN" 
-	   fi
-	 
-   fi
-     openssl ca -config ca.conf \
+       if [ "$ASYM_ALG" == "rsa" ]; then
+           openssl genrsa \
+               -out "$CERT_PATH".key \
+               "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
+           openssl req -new \
+               -key "$CERT_PATH".key \
+               -out "$CERT_PATH".csr \
+               -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
+       elif [ "$ASYM_ALG" == "ecc" ]; then
+           openssl ecparam \
+               -genkey \
+               -name "$ECC_NAME" \
+               -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+           openssl req -new \
+               -key "$CERT_PATH".key \
+               -out "$CERT_PATH".csr \
+               -"$HASH_ALG" \
+               -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
+       elif [ "$ASYM_ALG" == "mldsa" ]; then
+           openssl genpkey \
+               -algorithm "$MLDSA_NAME" \
+               -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+           openssl req -new \
+               -key "$CERT_PATH".key \
+               -out "$CERT_PATH".csr \
+               -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
+       fi
+      else
+          if [ "$ASYM_ALG" == "rsa" ]; then
+              openssl req -newkey rsa:"$ASYM_SIZE" \
+                  -keyout "$CERT_PATH".key \
+                  -out "$CERT_PATH".csr \
+                  -subj "$SUBJ_DN" \
+                  -passout pass:"$PASS" >> "$LOG_FILE" 2>&1
+          elif [ "$ASYM_ALG" == "ecc" ]; then
+              openssl genpkey \
+                  -algorithm EC \
+                  -pkeyopt ec_paramgen_curve:P-521 \
+                  -aes256 \
+                  -pass "pass:$PASS" \
+                  -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+              openssl req -new \
+                  -key "$CERT_PATH".key \
+                  -passin "pass:$PASS" \
+                  -out "$CERT_PATH".csr \
+                  -"$HASH_ALG" \
+                  -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
+          elif [ "$ASYM_ALG" == "mldsa" ]; then
+              openssl genpkey \
+                  -algorithm "$MLDSA_NAME" \
+                  -aes256 \
+                  -pass "pass:$PASS" \
+                  -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+              openssl req -new \
+                  -key "$CERT_PATH".key \
+                  -passin "pass:$PASS" \
+                  -out "$CERT_PATH".csr \
+                  -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
+          fi
+      fi
+   if [ "$ASYM_ALG" == "mldsa" ]; then
+       openssl ca -config ca.conf \
            -keyfile "$ISSUER_KEY" \
-           -md $HASH_ALG \
            -cert "$ISSUER_CERT" \
            -extensions "$EXTENSION" \
            -out "$CERT_PATH".pem \
            -in "$CERT_PATH".csr \
            -passin pass:"$PASS" \
            -batch \
-           -notext       >> "$LOG_FILE" 2>&1       
+           -notext >> "$LOG_FILE" 2>&1
+   else
+       openssl ca -config ca.conf \
+           -keyfile "$ISSUER_KEY" \
+           -md "$HASH_ALG" \
+           -cert "$ISSUER_CERT" \
+           -extensions "$EXTENSION" \
+           -out "$CERT_PATH".pem \
+           -in "$CERT_PATH".csr \
+           -passin pass:"$PASS" \
+           -batch \
+           -notext >> "$LOG_FILE" 2>&1
+   fi
    # Increment the cert serial number
    SERIAL=$(awk -F',' '{printf("%s\t%d\n",$1,$2+1)}' ./ca/serial.txt)
    echo "Cert Serial Number = $SERIAL" >> "$LOG_FILE";
@@ -262,4 +357,31 @@ if [ "$ASYM_ALG" == "ecc" ]; then
     add_to_stores $PKI_ROOT
     # Create an intermediate CA, 2 Leaf CAs, and Signer Certs 
    create_cert_chain
+fi
+
+if [ "$ASYM_ALG" == "mldsa" ]; then
+    # Create Root CA key pair and self signed cert
+    echo "Generating ML-DSA Root CA ...." | tee -a "$LOG_FILE"
+    openssl genpkey \
+        -algorithm "$MLDSA_NAME" \
+        -aes256 \
+        -pass "pass:$PASS" \
+        -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
+
+    # Create a self signed CA certificate
+    openssl req \
+        -new \
+        -config ca.conf \
+        -x509 \
+        -days 3650 \
+        -key "$PKI_ROOT".key \
+        -subj "$ROOT_DN" \
+        -extensions ca_extensions \
+        -out "$PKI_ROOT".pem \
+        -passin pass:"$PASS" >> "$LOG_FILE" 2>&1
+
+    # Add the CA root cert to the Trust and Key stores
+    add_to_stores "$PKI_ROOT"
+    # Create an intermediate CA, 2 Leaf CAs, and Signer Certs
+    create_cert_chain
 fi
