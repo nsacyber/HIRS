@@ -144,9 +144,70 @@ namespace hirsTest.provisioner {
 
             int result = await provisioner.Provision(tpm);
 
-            Assert.That(result, Is.EqualTo((int)ClientExitCodes.MAKE_CREDENTIAL_ENCRYPTED_SECRET_MALFORMED));
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED));
             A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
                 A<byte[]>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<byte[]>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Test]
+        public async Task TestProvisionSplitsMainCombinedCredentialBlob() {
+            const string address = "https://127.0.0.1:8443/";
+            byte[] ekCert = [.. "EK CERTIFICATE"u8];
+            // Combined credential blob and its parts
+            byte[] integrityHmac = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
+            byte[] encIdentity = Convert.FromBase64String("6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
+            byte[] encryptedSecret = Convert.FromBase64String("NekvnOX8RPRdyd0/cxBI4FTCuNkiu0KAnS28yT7yYJUL5Lwfcv5ctEK6zQA0fq0IsX5TlAYSidGKxrAilOSwALJmJ+m7sMiXwMKrZn1cd4gzXObZEQimQoWgSEQbPO7rfpUn1UfI8K5SzmUFUTxc5X3D8zFonaEBp6QCjtdLegKGgioCDcQFdz20Y0PFAa1Itug7YbZdCFpfit570eQQinmqdVryiNyn6CLQdMgIejuBxoEpoTSWszB5eFKEdn5g/+8wcvhp6RpNBQ0hikF+6688TOVK/j8n3JDwKVltJ/WNHjVO+lxa2aLIMJRgs5ZRuzuz6OSMf10KqJjSWZE04w==");
+            byte[] combinedBlob = Convert.FromBase64String("OAAAIFQLXnXNUZTQNcNF367cJoRNCCwZSCz+tet07q+R0SKN6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATXpL5zl/ET0XcndP3MQSOBUwrjZIrtCgJ0tvMk+8mCVC+S8H3L+XLRCus0ANH6tCLF+U5QGEonRisawIpTksACyZifpu7DIl8DCq2Z9XHeIM1zm2REIpkKFoEhEGzzu636VJ9VHyPCuUs5lBVE8XOV9w/MxaJ2hAaekAo7XS3oChoIqAg3EBXc9tGNDxQGtSLboO2G2XQhaX4ree9HkEIp5qnVa8ojcp+gi0HTICHo7gcaBKaE0lrMweXhShHZ+YP/vMHL4aekaTQUNIYpBfuuvPEzlSv4/J9yQ8ClZbSf1jR41TvpcWtmiyDCUYLOWUbs7s+jkjH9dCqiY0lmRNOM=");
+            TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
+            TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
+            Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
+            Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
+            IdentityClaimResponse idClaimResp = new() {
+                Status = ResponseStatus.Pass,
+                CredentialBlob = Google.Protobuf.ByteString.CopyFrom(combinedBlob)
+            };
+
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            byte[] name = null!, qualifiedName = null!;
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
+            A.CallTo(() => tpm.ConvertLDevIDPublic(A<string>.Ignored)).Returns([.. "LDEVID PUBLIC"u8]);
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<byte[]>.Ignored)).Returns([]);
+
+            IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(new DeviceInfo());
+
+            IHirsAcaClient client = A.Fake<IHirsAcaClient>();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<List<byte[]>>.Ignored, A<string>.Ignored, A<byte[]>.Ignored))
+                .Returns(new IdentityClaim());
+            A.CallTo(() => client.PostIdentityClaim(A<IdentityClaim>.Ignored)).Returns(Task.FromResult(idClaimResp));
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+
+            IHirsProvisioner provisioner = new Provisioner(settings, A.Fake<CLI>());
+            provisioner.SetClient(client);
+            provisioner.SetDeviceInfoCollector(collector);
+
+            int result = await provisioner.Provision(tpm);
+
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
+                A<byte[]>.That.IsSameSequenceAs(integrityHmac), A<byte[]>.That.IsSameSequenceAs(encIdentity),
+                A<byte[]>.That.IsSameSequenceAs(encryptedSecret))).MustHaveHappenedOnceExactly();
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.PASS_1_STATUS_FAIL)); // the fake TPM recovers nothing
         }
 
         [Test]

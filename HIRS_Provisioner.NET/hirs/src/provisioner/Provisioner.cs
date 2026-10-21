@@ -154,7 +154,7 @@ namespace hirs {
         }
 
         public async Task<int> Provision(IHirsAcaTpm? tpm) {
-            // EKs regenerated into transient handles stay loaded for the whole provisioning run.
+            // EKs regenerated into transient handles stay loaded for the provisioning run.
             List<EndorsementKey> ekLeases = new();
             try {
                 return await Provision(tpm, ekLeases);
@@ -169,10 +169,6 @@ namespace hirs {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
-                // One key candidate per EK template this provisioner has. An EK is identified by its
-                // public area and the public key of its certificate, not by a handle. The certificate
-                // for each EK is read from the NV index defined for its template and is only sent when
-                // it certifies that EK.
                 List<KeyCandidate> keyCandidates = new();
                 EndorsementKey? l1Ek = null;
                 byte[] ekc = [];
@@ -348,21 +344,30 @@ namespace hirs {
                     return (int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
                 }
 
-                if (!icr.HasEncryptedSecret) {
-                    Log.Error("The response from the ACA did not contain a EncryptedSecret.");
-                    return (int)ClientExitCodes.MAKE_CREDENTIAL_ENCRYPTED_SECRET_MALFORMED;
-                }
-
-                byte[] credentialBlob = icr.CredentialBlob.ToByteArray(); // TPM2B_ID_OBJECT; look for the nonce
-                byte[] encryptedSecret = icr.EncryptedSecret.ToByteArray(); // TPM2B_ENCRYPTED_SECRET
+                byte[] credentialBlob = icr.CredentialBlob.ToByteArray();
                 Log.Debug("ACA delivered IdentityClaimResponse credentialBlob " +
                           BitConverter.ToString(credentialBlob));
-                Log.Debug("ACA delivered IdentityClaimResponse encryptedSecret " +
-                          BitConverter.ToString(encryptedSecret));
 
-                Log.Debug("Executing activateCredential.");
-                byte[] recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
-                    credentialBlob, encryptedSecret);
+                byte[] recoveredSecret;
+                if (icr.HasEncryptedSecret) {
+                    byte[] encryptedSecret = icr.EncryptedSecret.ToByteArray(); // TPM2B_ENCRYPTED_SECRET
+                    Log.Debug("ACA delivered IdentityClaimResponse encryptedSecret " +
+                              BitConverter.ToString(encryptedSecret));
+                    Log.Debug("Executing activateCredential.");
+                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
+                        credentialBlob, encryptedSecret); // credentialBlob is a TPM2B_ID_OBJECT
+                } else {
+                    // Attempt compatibility fallback
+                    Log.Debug("No separate encrypted secret; reading the combined credential blob for compatibility with legacy ACA data.");
+                    if (!LegacyCredentialBlob.TrySplit(credentialBlob, out byte[] integrityHmac, out byte[] encIdentity,
+                            out byte[] encryptedSecret, out string error)) {
+                        Log.Error(error);
+                        return (int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
+                    }
+                    Log.Debug("Executing activateCredential.");
+                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
+                        integrityHmac, encIdentity, encryptedSecret);
+                }
 
                 if (!recoveredSecret.Any()) {
                     Log.Debug("Nonce could not be decrypted. ActivateCredential failed.");

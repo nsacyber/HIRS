@@ -93,8 +93,8 @@ message IdentityClaimResponse {
   optional bytes credential_blob = 1 [deprecated = true];
   optional string pcr_mask = 2 [deprecated = true];
   optional ResponseStatus status = 3 [default = FAIL];
-  optional bytes encrypted_secret = 4 [deprecated = true];
-  optional string status_details = 5;
+  optional string status_details = 4;
+  optional bytes encrypted_secret = 5 [deprecated = true];
   /**
    * One or more entry per KeyCandidate. Multiple entries can share key_id. For example, an AK might have an
    * ActivateCredential challenge and a Quote challenge.
