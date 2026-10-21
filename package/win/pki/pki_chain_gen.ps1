@@ -1,18 +1,19 @@
-#!/bin/bash
 # Script to generate a PKI Stack (Root, Intermediate, and LEAF CAs) and a Base RIM Signer
 # creates a folder based upon the actor name and places certs under an algoithm specific folder (e.g. rsa_certs)
-# PARAMS: 
-# 1. Actor name string (e.g. "Server Manufacturer") 
-# 2. Algorithm string (e.g. rsa or ecc)
-# 3. Key Bit Size string (e.g. 2048)
-# 4. Hash Algorithm string (e.g. sha256)
+# PARAMS:
+# 1. Actor name string (e.g. "Server Manufacturer")
+# 2. Algorithm string (rsa, ecc, or mldsa)
+# 3. Key size / parameter set (RSA: 2048/3072/4096; ECC: 256/384/512; ML-DSA: 44/65/87)
+# 4. Hash Algorithm string (e.g. sha384; use "none" for ML-DSA)
 # 5. PKI password used to protect PKI keys and certs
+# 6. Log file
 #
 # Examples:
-#    pki_chain_gen.sh "PC Manufacturer" rsa 2048 sha256 "password" 
-#    pki_chain_gen.sh "DISK Manufacturer" ecc 256 sha512 "password"
+#    pki_chain_gen.sh "PC Manufacturer" rsa 2048 sha256 "password"
+#    pki_chain_gen.ps1 "DISK Manufacturer" ecc 256 sha512 "password" "install.log"
+#    pki_chain_gen.ps1 "HIRS" mldsa 87 none "password" "install.log"
 #
-# A KeyStore and Trust Store are created for by Java Applications. Both will use the supplied password. 
+# A KeyStore and Trust Store are created for by Java Applications. Both will use the supplied password.
 
 param (
     [Parameter(Mandatory = $true)]
@@ -38,9 +39,9 @@ $ACA_COMMON_SCRIPT = (Join-Path $ACA_SCRIPTS_HOME '..' 'aca' 'aca_common.ps1')
 # Read aca.properties
 read_aca_properties $global:HIRS_DATA_ACA_PROPERTIES_FILE
 
-# Parameter check 
+# Parameter check
 if (!$ACTOR -or !$ASYM_ALG -or !$ASYM_SIZE -or !$HASH_ALG -or ($ACTOR -eq "-h") -or ($ACTOR -eq "--help")) {
-    Write-Output "parameter missing to pki_chain_gen.sh, exiting pki setup" | WriteAndLog
+    Write-Output "parameter missing to pki_chain_gen.ps1, exiting pki setup" | WriteAndLog
     exit 1;
 }
 if ($LOG_FILE) {
@@ -59,58 +60,56 @@ $TRUSTSTORE = "$global:HIRS_DATA_CERTIFICATES_DIR\$ACTOR_ALT\TrustStore.jks"
 $TRUSTSTORE_P12 = "$global:HIRS_DATA_CERTIFICATES_DIR\$ACTOR_ALT\TrustStore.p12"
 $KEYSTORE = "$global:HIRS_DATA_CERTIFICATES_DIR\$ACTOR_ALT\KeyStore.jks"
 
-if (($ASYM_ALG -ne "rsa") -and ($ASYM_ALG -ne "ecc")) {
-    Write-Output "$ASYM_ALG is an unsupported assymetric algorithm, exiting pki setup" | WriteAndLog
+if ($ASYM_ALG -notin @("rsa", "ecc", "mldsa")) {
+    Write-Output "$ASYM_ALG is an unsupported asymmetric algorithm, exiting pki setup" | WriteAndLog
     exit 1;
 }
 
-switch ($ASYM_SIZE) {
-    256 {
-        $KSIZE = "256"
-        $ECC_NAME = "secp256k1"
-        Break
+if ($ASYM_ALG -eq "mldsa") {
+    switch ($ASYM_SIZE) {
+        "44" { $KSIZE = "44"; $MLDSA_NAME = "ML-DSA-44"; break }
+        "65" { $KSIZE = "65"; $MLDSA_NAME = "ML-DSA-65"; break }
+        "87" { $KSIZE = "87"; $MLDSA_NAME = "ML-DSA-87"; break }
+        default {
+            Write-Output "$ASYM_SIZE is an unsupported ML-DSA parameter set, exiting pki setup" | WriteAndLog
+            exit 1
+        }
     }
-    384 {
-        $KSIZE = "384"
-        $ECC_NAME = "secp384r1"
-        Break
-    }
-    512 {
-        $KSIZE = "512"
-        $ECC_NAME = "secp521r1"
-        Break
-    }
-    2048 {
-        $KSIZE = "2k"
-        Break
-    }
-    3072 {
-        $KSIZE = "3k"
-        Break
-    }
-    4096 {
-        $KSIZE = "4k"
-        Break
-    }
-    Default {
-        Write-Output "$ASYM_SIZE is an unsupported key size, exiting pki setup" | WriteAndLog
-        exit 1
+} else {
+    switch ($ASYM_SIZE) {
+        256  { $KSIZE = "256"; $ECC_NAME = "secp256k1"; break }
+        384  { $KSIZE = "384"; $ECC_NAME = "secp384r1"; break }
+        512  { $KSIZE = "512"; $ECC_NAME = "secp521r1"; break }
+        2048 { $KSIZE = "2k"; break }
+        3072 { $KSIZE = "3k"; break }
+        4096 { $KSIZE = "4k"; break }
+        default {
+            Write-Output "$ASYM_SIZE is an unsupported key size, exiting pki setup" | WriteAndLog
+            exit 1
+        }
     }
 }
 
 # Use algorithm and key size to create unique file paths and Distinguished names
-$NAME = "$ACTOR $ASYM_ALG $KSIZE $HASH_ALG"
-$CERT_FOLDER = "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG" + "_certs"
-$PKI_ROOT = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_" + "root_ca_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$PKI_INT = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_intermediate_ca_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$PKI_CA1 = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_leaf_ca1_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$PKI_CA2 = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_leaf_ca2_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$PKI_CA3 = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_leaf_ca3_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$RIM_SIGNER = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_rim_signer_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$TLS_SERVER = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_aca_tls_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$DB_SERVER = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_db_srv_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$DB_CLIENT = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_db_client" + "_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG"
-$TRUST_STORE_FILE = "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER\$ACTOR_ALT" + "_" + "$ASYM_ALG" + "_" + "$KSIZE" + "_" + "$HASH_ALG" + "_Cert_Chain.pem"
+if ($ASYM_ALG -eq "mldsa") {
+    $NAME = "$ACTOR $ASYM_ALG $KSIZE"
+    $CERT_PREFIX = "${ASYM_ALG}_${KSIZE}"
+} else {
+    $NAME = "$ACTOR $ASYM_ALG $KSIZE $HASH_ALG"
+    $CERT_PREFIX = "${ASYM_ALG}_${KSIZE}_${HASH_ALG}"
+}
+$CERT_FOLDER = "${CERT_PREFIX}_certs"
+$CERT_BASE = Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR $CERT_FOLDER
+$PKI_ROOT = Join-Path $CERT_BASE "${ACTOR_ALT}_root_ca_${CERT_PREFIX}"
+$PKI_INT = Join-Path $CERT_BASE "${ACTOR_ALT}_intermediate_ca_${CERT_PREFIX}"
+$PKI_CA1 = Join-Path $CERT_BASE "${ACTOR_ALT}_leaf_ca1_${CERT_PREFIX}"
+$PKI_CA2 = Join-Path $CERT_BASE "${ACTOR_ALT}_leaf_ca2_${CERT_PREFIX}"
+$PKI_CA3 = Join-Path $CERT_BASE "${ACTOR_ALT}_leaf_ca3_${CERT_PREFIX}"
+$RIM_SIGNER = Join-Path $CERT_BASE "${ACTOR_ALT}_rim_signer_${CERT_PREFIX}"
+$TLS_SERVER = Join-Path $CERT_BASE "${ACTOR_ALT}_aca_tls_${CERT_PREFIX}"
+$DB_SERVER = Join-Path $CERT_BASE "${ACTOR_ALT}_db_srv_${CERT_PREFIX}"
+$DB_CLIENT = Join-Path $CERT_BASE "${ACTOR_ALT}_db_client_${CERT_PREFIX}"
+$TRUST_STORE_FILE = Join-Path $CERT_BASE "${ACTOR_ALT}_${CERT_PREFIX}_Cert_Chain.pem"
 
 $ROOT_DN = "/C=US/ST=MD/L=Columbia/O=$ACTOR/CN=$NAME test root ca"
 $INT_DN = "/C=US/ST=MD/L=Columbia/O=$ACTOR/CN=$NAME test intermediate ca"
@@ -121,13 +120,17 @@ $DB_SRV_DN = "/C=US/ST=MD/L=Columbia/O=$ACTOR/CN=$NAME DB Server"
 $DB_CLIENT_DN = "/C=US/ST=MD/L=Columbia/O=$ACTOR/CN=$NAME DB Client"
 
 # Add check for existing folder and halt if it exists
-if ( [System.IO.Directory]::Exists("$ACTOR_ALT/$CERT_FOLDER")) {
+if (Test-Path -LiteralPath $CERT_BASE -PathType Container) {
     Write-Output "Folder for $CERT_FOLDER exists, exiting..." | WriteAndLog
     exit 1
 }
 
 # Intialize sub folders
-Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | WriteAndLog
+if ($ASYM_ALG -eq "mldsa") {
+    Write-Output "Creating PKI for $ACTOR_ALT using $MLDSA_NAME..." | WriteAndLog
+} else {
+    Write-Output "Creating PKI for $ACTOR_ALT using $KSIZE $ASYM_ALG and $HASH_ALG..." | WriteAndLog
+}
 
 New-Item -ItemType Directory -Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\$CERT_FOLDER" -Force | Out-Null
@@ -174,7 +177,7 @@ Function add_to_stores() {
 }
 
 # Function to create an Intermediate Key, CSR, and Certificate
-# PARMS: 
+# PARMS:
 # 1. Cert Type String
 # 2. Issuer Key File Name
 # 3. Subject Distinguished Name String
@@ -200,29 +203,41 @@ Function create_cert() {
     Write-Output "    Certificate will be issued by $ISSUER_CERT and its key $ISSUER_KEY." | WriteAndLog
     Write-Output "    Key objects will use the alias `"$ALIAS`" in trust stores." | WriteAndLog
 
-    # Database doesnt support encypted key so create DB without passwords 
-    if ("$SUBJ_DN" -match "DB") {
+    # Database doesn't support encrypted private keys; generate DB keys without passwords.
+    if ($SUBJ_DN -match "DB") {
         Write-Output "This key is intended for use with the database." | WriteAndLog
-        if ("$ASYM_ALG" -eq "rsa") {
+        if ($ASYM_ALG -eq "rsa") {
             openssl genrsa -out "$CERT_PATH.key" "$ASYM_SIZE" 2>&1 | WriteAndLog
             openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
-        } else {
+        } elseif ($ASYM_ALG -eq "ecc") {
             openssl ecparam -genkey -name "$ECC_NAME" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -$HASH_ALG  -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+        } elseif ($ASYM_ALG -eq "mldsa") {
+            openssl genpkey -algorithm "$MLDSA_NAME" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
+            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         }
     } else {
-        if ("$ASYM_ALG" -eq "rsa") {
-            openssl req -newkey rsa:"$ASYM_SIZE" -keyout "$CERT_PATH.key" -out "$CERT_PATH.csr"  -subj "$SUBJ_DN" -passout "pass:$PASS" 2>&1 | WriteAndLog
-        } else {
-            openssl genpkey -algorithm "EC" -pkeyopt ec_paramgen_curve:P-521 -aes256 --pass "pass:$PASS" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" -$HASH_ALG  -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+        if ($ASYM_ALG -eq "rsa") {
+            openssl req -newkey "rsa:$ASYM_SIZE" -keyout "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" -passout "pass:$PASS" 2>&1 | WriteAndLog
+        } elseif ($ASYM_ALG -eq "ecc") {
+            openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-521 -aes256 -pass "pass:$PASS" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
+            openssl req -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+        } elseif ($ASYM_ALG -eq "mldsa") {
+            openssl genpkey -algorithm "$MLDSA_NAME" -aes256 -pass "pass:$PASS" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
+            openssl req -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         }
     }
 
     Write-Output "Sending CSR to the CA." | WriteAndLog
-    Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR" | WriteAndLog
-    openssl ca -config ca.conf -keyfile "$ISSUER_KEY" -md $HASH_ALG -cert "$ISSUER_CERT" -extensions "$EXTENSION" -out "$CERT_PATH.pem" -in "$CERT_PATH.csr" -passin "pass:$PASS" -batch -notext 2>&1 | WriteAndLog
-    Pop-Location | WriteAndLog
+    Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR"
+    try {
+        $caArgs = @('ca', '-config', 'ca.conf', '-keyfile', $ISSUER_KEY)
+        if ($ASYM_ALG -ne 'mldsa') { $caArgs += @('-md', $HASH_ALG) }
+        $caArgs += @('-cert', $ISSUER_CERT, '-extensions', $EXTENSION, '-out', "$CERT_PATH.pem", '-in', "$CERT_PATH.csr", '-passin', "pass:$PASS", '-batch', '-notext')
+        & openssl @caArgs 2>&1 | WriteAndLog
+    } finally {
+        Pop-Location
+    }
     # Increment the cert serial number
     $SERIAL = (Get-Content "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca\serial.txt")
     Write-Output "Cert Serial Number = $SERIAL" | WriteAndLog
@@ -310,5 +325,19 @@ if ("$ASYM_ALG" -eq "ecc") {
     # Add the CA root cert to the Trust and Key stores
     add_to_stores "$PKI_ROOT"
     # Create an intermediate CA, 2 Leaf CAs, and Signer Certs
+    create_cert_chain
+}
+if ($ASYM_ALG -eq "mldsa") {
+    # Create ML-DSA root CA key and self-signed certificate (no digest flag).
+    Write-Output "Generating ML-DSA Root CA ...." | WriteAndLog
+    openssl genpkey -algorithm "$MLDSA_NAME" -aes256 -pass "pass:$PASS" -out "$PKI_ROOT.key" 2>&1 | WriteAndLog
+
+    Push-Location "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR"
+    try {
+        openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT.key" -subj "$ROOT_DN" -extensions ca_extensions -out "$PKI_ROOT.pem" -passin "pass:$PASS" 2>&1 | WriteAndLog
+    } finally {
+        Pop-Location
+    }
+    add_to_stores "$PKI_ROOT"
     create_cert_chain
 }
