@@ -1264,6 +1264,23 @@
                                                                         </div>
                                                                     </th:block>
                                                                     <div class="card-body">
+                                                                        <!-- Component proof of possession, when the component signed evidence over an ACA nonce -->
+                                                                        <th:block
+                                                                            th:with="evidence=${initialData.get('componentEvidence') == null ? null : initialData.get('componentEvidence').get(component.getId())}">
+                                                                            <div class="component-evidence" th:if="${evidence != null}">
+                                                                                <a th:href="@{/HIRS_AttestationCAPortal/portal/component-evidence(id=${evidence.getId()})}">
+                                                                                    <img th:if="${evidence.isPassed()}" alt="Passed"
+                                                                                        th:src="@{/icons/svg/check-circle-green-fill-24dp.svg}"
+                                                                                        data-bs-toggle="tooltip"
+                                                                                        title="The component proved possession of its key. Click for details." />
+                                                                                    <img th:unless="${evidence.isPassed()}" alt="Failed"
+                                                                                        th:src="@{/icons/svg/exclamation-red-circle-fill-24dp.svg}"
+                                                                                        data-bs-toggle="tooltip"
+                                                                                        title="The component did not prove possession of its key. Click for details." />
+                                                                                    [[${evidence.isPassed() ? 'Key possession verified' : 'Key possession not verified'}]]
+                                                                                </a>
+                                                                            </div>
+                                                                        </th:block>
                                                                         <span class="fieldHeader">Manufacturer:</span>
                                                                         <span
                                                                             class="fieldValue">[[${component.getManufacturer()}]]</span><br />

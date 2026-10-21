@@ -55,6 +55,12 @@ public enum Page {
     CERTIFICATE_DETAILS("Certificate Details", "", null, true, false, null, ""),
 
     /**
+     * Non-menu page to display what was verified when a component proved possession of its key.
+     * Reachable from the platform certificate details page.
+     */
+    COMPONENT_EVIDENCE("Component Evidence", "", null, true, false, null, ""),
+
+    /**
      * Page to display registered devices.
      */
     DEVICES("Devices", "ic_devices_white_24dp.png", "first"),

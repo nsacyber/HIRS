@@ -1,0 +1,12 @@
+# Build context for Dockerfile.aca-rocky-local is the HIRS repository root.
+# Keep .git: the gradle git-version plugin and aca_setup.sh read it.
+**/build
+**/.gradle
+**/bin
+**/obj
+**/out
+**/.idea
+**/.vs
+**/*.iml
+HIRS_Provisioner.NET/hirs/artifacts
+HIRS_Provisioner.NET/hirs/generated

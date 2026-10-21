@@ -264,8 +264,11 @@ namespace hirs {
 
                 Log.Debug("Gathering hardware component information:");
                 string manifest = "";
+                ComponentEvidenceKeys componentKeys = new();
                 if (Settings.HasHardwareManifestPlugins()) {
                     manifest = Settings.RunHardwareManifestCollectors();
+                    componentKeys = ComponentEvidenceKeys.FromPlugins(Settings.HardwareManifestPlugins);
+                    keyCandidates.AddRange(componentKeys.KeyCandidates);
                 } else if (Settings.HasPaccorOutputFromFile()) {
                     manifest = Settings.paccor_output;
                 } else {
@@ -388,6 +391,7 @@ namespace hirs {
                     out CommandTpmQuoteResponse ctqr, selectPcrs);
                 
                 CertificateRequest akCertReq = acaClient.CreateAkCertificateRequest(recoveredSecret, ctqr);
+                akCertReq.VerificationResult.AddRange(componentKeys.Answer(icr.Challenge));
                 string certificate;
                 Log.Debug("Communicate certificate request to the ACA.");
                 CertificateResponse cr = await acaClient.PostCertificateRequest(akCertReq);
@@ -399,6 +403,9 @@ namespace hirs {
                 if (cr.HasStatus) {
                     if (cr.Status == ResponseStatus.Pass) {
                         Log.Debug("ACA returned a positive response to the Certificate Request.");
+                        if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {
+                            Log.Information("----> {StatusDetails}", cr.StatusDetails);
+                        }
                     } else {
                         Log.Debug("The ACA did not return any certificates. See details on the ACA.");
                         if (cr.HasStatusDetails && !cr.StatusDetails.IsWhiteSpace()) {

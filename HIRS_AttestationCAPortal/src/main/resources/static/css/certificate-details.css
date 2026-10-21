@@ -70,3 +70,40 @@
   text-decoration-thickness: 1px;
   cursor: help;
 }
+
+.component-evidence {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.evidence-graph {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.evidence-node {
+  flex: 1 1 220px;
+  max-width: 340px;
+  overflow-wrap: anywhere;
+  font-size: smaller;
+}
+
+.evidence-edge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: small;
+  cursor: help;
+}
+
+.evidence-edge.unverified {
+  color: #b02a37;
+}
+
+.evidence-arrow {
+  font-size: x-large;
+  line-height: 1;
+}

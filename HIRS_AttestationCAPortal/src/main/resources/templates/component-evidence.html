@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layout}" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" th:href="@{/css/certificate-details.css}" />
+    <section layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function () {
+                $('[data-bs-toggle="tooltip"]').tooltip();
+            });
+        </script>
+    </section>
+</head>
+
+<body>
+    <h1 layout:fragment="pageHeaderTitle">
+        Component Evidence
+        <th:block th:if="${initialData.get('result') != null}">
+            <img th:if="${initialData.get('result').isPassed()}" alt="Passed"
+                th:src="@{/icons/svg/check-circle-green-fill-24dp.svg}" title="All checks passed"
+                data-bs-toggle="tooltip" />
+            <img th:unless="${initialData.get('result').isPassed()}" alt="Failed"
+                th:src="@{/icons/svg/exclamation-red-circle-fill-24dp.svg}" title="One or more checks failed"
+                data-bs-toggle="tooltip" />
+        </th:block>
+    </h1>
+
+    <section layout:fragment="content">
+        <div class="container-fluid" id="component-evidence-page"
+            th:with="result=${initialData.get('result')}" th:if="${initialData.get('result') != null}">
+            <div class="certrow">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Component</span></div>
+                <div class="col col-md-8">
+                    <div>Evidence format:&nbsp;<span>[[${result.getEvidenceFormat()}]]</span>
+                        <th:block th:if="${not #strings.isEmpty(result.getEvidenceVersion())}">
+                            (version [[${result.getEvidenceVersion()}]])</th:block>
+                    </div>
+                    <div>Device:&nbsp;<span>[[${result.getDeviceName()}]]</span></div>
+                    <div>Verified:&nbsp;<span>[[${result.getCreateTime()}]]</span></div>
+                    <div th:if="${initialData.get('platformCredentialId') != null}">Platform certificate:&nbsp;
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/certificate-details(id=${initialData.get('platformCredentialId')},type='platform')}">
+                            <img alt="Platform certificate" th:src="@{/icons/ic_important_devices_black_24dp.png}"
+                                title="Platform certificate that lists this component" data-bs-toggle="tooltip" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How the component's Device ID certificate links to the platform certificate and its issuer -->
+            <div class="certrow">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Trust links</span></div>
+                <div class="col col-md-8">
+                    <div class="text-muted">Each link is checked again when this page loads.</div>
+                    <div class="evidence-graph">
+                        <th:block th:each="step : ${initialData.get('linkGraph')}">
+                            <div class="card evidence-node">
+                                <div class="card-header">
+                                    <a th:if="${step.node().link() != null}" th:href="@{${step.node().link()}}">[[${step.node().title()}]]</a>
+                                    <th:block th:if="${step.node().link() == null}">[[${step.node().title()}]]</th:block>
+                                </div>
+                                <div class="card-body">
+                                    <div th:each="field : ${step.node().fields()}">
+                                        <span class="fieldHeader">[[${field.key}]]:</span>
+                                        <span class="fieldValue">[[${field.value}]]</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="evidence-edge" th:if="${step.next() != null}"
+                                th:classappend="${step.next().verified()} ? 'verified' : 'unverified'"
+                                data-bs-toggle="tooltip" th:title="${step.next().detail()}">
+                                <img th:if="${step.next().verified()}" alt="Verified"
+                                    th:src="@{/icons/svg/check-circle-green-fill-24dp.svg}" />
+                                <img th:unless="${step.next().verified()}" alt="Not verified"
+                                    th:src="@{/icons/svg/exclamation-red-circle-fill-24dp.svg}" />
+                                <span>[[${step.next().label()}]]</span>
+                                <span class="evidence-arrow">&rarr;</span>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+
+            <div class="certrow">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Checks</span></div>
+                <div class="col col-md-8">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th></th><th>Check</th><th>Detail</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="check : ${result.getChecks()}">
+                                <td>
+                                    <img th:if="${check.isPassed()}" alt="Passed"
+                                        th:src="@{/icons/svg/check-circle-green-fill-24dp.svg}" />
+                                    <img th:unless="${check.isPassed()}" alt="Failed"
+                                        th:src="@{/icons/svg/exclamation-red-circle-fill-24dp.svg}" />
+                                </td>
+                                <td>[[${check.getName()}]]</td>
+                                <td style="word-break: break-all;">[[${check.getDetail()}]]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="certrow">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Challenge</span></div>
+                <div class="col col-md-8" style="word-break: break-all;">
+                    <div>Nonce issued by the ACA:&nbsp;<span>[[${initialData.get('nonce')}]]</span></div>
+                    <div>Platform UUID reported by the provisioner:&nbsp;<span>[[${initialData.get('platformUuid')}]]</span></div>
+                    <div th:if="${initialData.get('evidenceUuid') != null}">UUID in the evidence:&nbsp;<span>[[${initialData.get('evidenceUuid')}]]</span></div>
+                </div>
+            </div>
+
+            <div class="certrow" th:if="${initialData.get('measurements') != null}">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Measurements</span></div>
+                <div class="col col-md-8" style="word-break: break-all;">
+                    <div class="text-muted">Reported by the component in ECR0 and ECR1. Not compared with reference values.</div>
+                    <div th:each="measurement : ${initialData.get('measurements')}">
+                        [[${measurement.key}]]:&nbsp;<span>[[${measurement.value}]]</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="certrow" th:each="certificate : ${initialData.get('certificates')}">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">[[${certificate.key}]]</span></div>
+                <div class="col col-md-8">
+                    <div th:each="field : ${certificate.value}">[[${field.key}]]:&nbsp;<span>[[${field.value}]]</span></div>
+                    <div th:if="${certificate.value.isEmpty()}">Not returned</div>
+                </div>
+            </div>
+
+            <div class="certrow">
+                <div class="col-md-1 col-md-offset-1"><span class="colHeader">Downloads</span></div>
+                <div class="col col-md-8">
+                    <div th:each="download : ${initialData.get('downloads')}">
+                        <a th:href="@{/HIRS_AttestationCAPortal/portal/component-evidence/download(id=${result.getId()},file=${download.key})}">
+                            <img alt="Download" class="action-icons" th:src="@{/icons/svg/download-24dp.svg}" />
+                            [[${download.value}]]
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

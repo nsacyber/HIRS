@@ -26,16 +26,18 @@ import hirs.utils.BouncyCastleUtils;
 import hirs.utils.PciIds;
 import jakarta.persistence.NonUniqueResultException;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +68,25 @@ public final class CertificateStringMapBuilder {
      * This private constructor was created to silence checkstyle error.
      */
     private CertificateStringMapBuilder() {
+    }
+
+    /**
+     * Describes the size of a public key: bits for RSA and EC keys, the parameter set for others such as ML-DSA.
+     *
+     * @param encodedPublicKey DER SubjectPublicKeyInfo
+     * @return the key size or parameter set
+     * @throws IOException if the key cannot be parsed
+     */
+    private static String describeKeySize(final byte[] encodedPublicKey) throws IOException {
+        PublicKey publicKey = new JcaPEMKeyConverter().setProvider(new BouncyCastleProvider())
+                .getPublicKey(SubjectPublicKeyInfo.getInstance(encodedPublicKey));
+        if (publicKey instanceof ECPublicKey ecKey) {
+            return Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
+        }
+        if (publicKey instanceof RSAPublicKey rsaKey) {
+            return Integer.toString(rsaKey.getModulus().bitLength());
+        }
+        return publicKey.getAlgorithm();
     }
 
     private static Map<String, String> getExtendedKeyUsageMap() {
@@ -131,33 +152,9 @@ public final class CertificateStringMapBuilder {
                 data.put("encodedPublicKey",
                         Arrays.toString(certificate.getEncodedPublicKey()));
                 data.put("publicKeyAlgorithm", certificate.getPublicKeyAlgorithm());
-                byte[] encodedPublicKey = certificate.getEncodedPublicKey();
                 try {
-                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedPublicKey);
-                    PublicKey publicKey = null;
-                    // Attempt EC
-                    try {
-                        KeyFactory ecFactory = KeyFactory.getInstance("EC");
-                        publicKey = ecFactory.generatePublic(keySpec);
-                    } catch (Exception ignore) {
-                    }
-                    // If no EC then RSA
-                    if (publicKey == null) {
-                        KeyFactory rsaFactory = KeyFactory.getInstance("RSA");
-                        publicKey = rsaFactory.generatePublic(keySpec);
-                    }
-                    // Get public key size
-                    if (publicKey != null) {
-                        String keySizeStr;
-                        if (publicKey instanceof ECPublicKey ecKey) {
-                            keySizeStr =
-                                    Integer.toString(ecKey.getParams().getCurve().getField().getFieldSize());
-                        } else {
-                            keySizeStr = String.valueOf(certificate.getPublicKeySize());
-                        }
-                        data.put("publicKeySize", keySizeStr);
-                    }
-                } catch (Exception e) {
+                    data.put("publicKeySize", describeKeySize(certificate.getEncodedPublicKey()));
+                } catch (IOException | IllegalArgumentException e) {
                     log.error("Failed to parse public key from certificate", e);
                 }
             }

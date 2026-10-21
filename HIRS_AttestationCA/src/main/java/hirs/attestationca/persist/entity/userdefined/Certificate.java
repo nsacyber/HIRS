@@ -39,10 +39,17 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.V2Form;
+import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -54,7 +61,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -171,7 +177,10 @@ public abstract class Certificate extends ArchivableEntity {
     @Column
     private final String subjectSorted;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES)
+    // BLOB columns are stored off-row. ML-DSA keys and signatures are too large for inline columns:
+    // as varbinary they push the Certificate row past MariaDB's 65,535 byte limit under utf8mb4.
+    @Lob
+    @Column(columnDefinition = "BLOB")
     private final byte[] encodedPublicKey;
 
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
@@ -180,7 +189,8 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH)
     private final String publicKeyModulusHexValue;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
+    @Lob
+    @Column(nullable = false, columnDefinition = "BLOB")
     private final byte[] signature;
 
     @Column(nullable = false)
@@ -422,6 +432,9 @@ public abstract class Certificate extends ArchivableEntity {
                         this.signatureAlgorithm = CertificateVariables.ECDSA_SHA224_STRING;
                         break;
                     default:
+                        // Other algorithms, such as ML-DSA, by their BC name, or the OID if BC has no name
+                        this.signatureAlgorithm = new DefaultAlgorithmNameFinder()
+                                .getAlgorithmName(attCert.getSignatureAlgorithm());
                         break;
                 }
 
@@ -707,18 +720,16 @@ public abstract class Certificate extends ArchivableEntity {
                     }
                     break;
                 case ATTRIBUTE_CERTIFICATE:
-                    AttributeCertificate attCert = getAttributeCertificate();
                     try {
-                        Signature sig = Signature.getInstance(this.getSignatureAlgorithm());
-                        sig.initVerify(issuerX509.getPublicKey());
-                        sig.update(attCert.getAcinfo().getEncoded());
-                        if (sig.verify(attCert.getSignatureValue().getBytes())) {
+                        // BC parses the encoded key itself, so any algorithm BC supports verifies, including ML-DSA
+                        ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder()
+                                .setProvider(new BouncyCastleProvider())
+                                .build(SubjectPublicKeyInfo.getInstance(issuerX509.getPublicKey().getEncoded()));
+                        if (getX509AttributeCertificateHolder().isSignatureValid(verifier)) {
                             isIssuer = "";
                         }
-                    } catch (NoSuchAlgorithmException
-                             | InvalidKeyException
-                             | SignatureException sigEx) {
-                        log.error(sigEx);
+                    } catch (OperatorCreationException | CertException e) {
+                        log.error(e);
                     }
                     break;
                 default:

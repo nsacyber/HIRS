@@ -38,6 +38,13 @@ public class TPM2ProvisionerState {
     private byte[] identityClaim;
 
     /**
+     * Challenges sent with the identity claim response, such as component evidence nonces.
+     */
+    @Lob
+    @Column(length = MAX_BLOB_SIZE)
+    private byte[] verificationChallenges;
+
+    /**
      * Constructor.
      *
      * @param nonce         the nonce
@@ -85,5 +92,23 @@ public class TPM2ProvisionerState {
      */
     public byte[] getIdentityClaim() {
         return Arrays.clone(identityClaim);
+    }
+
+    /**
+     * Get the challenges sent with the identity claim response.
+     *
+     * @return the serialized challenges, or null if none were sent
+     */
+    public byte[] getVerificationChallenges() {
+        return Arrays.clone(verificationChallenges);
+    }
+
+    /**
+     * Set the challenges sent with the identity claim response.
+     *
+     * @param verificationChallenges the serialized challenges
+     */
+    public void setVerificationChallenges(final byte[] verificationChallenges) {
+        this.verificationChallenges = Arrays.clone(verificationChallenges);
     }
 }

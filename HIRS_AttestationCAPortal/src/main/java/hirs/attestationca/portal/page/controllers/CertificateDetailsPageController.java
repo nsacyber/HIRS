@@ -2,9 +2,12 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.persist.entity.manager.CACredentialRepository;
 import hirs.attestationca.persist.entity.manager.CertificateRepository;
+import hirs.attestationca.persist.entity.manager.ComponentEvidenceResultRepository;
 import hirs.attestationca.persist.entity.manager.ComponentResultRepository;
 import hirs.attestationca.persist.entity.manager.ComponentAttributeRepository;
 import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentEvidenceResult;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.params.CertificateDetailsPageParams;
@@ -18,7 +21,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the Certificate Details page.
@@ -37,27 +44,33 @@ public class CertificateDetailsPageController extends PageController<Certificate
     private final ComponentResultRepository componentResultRepository;
     private final ComponentAttributeRepository componentAttributeRepository;
     private final ReferenceManifestRepository referenceManifestRepository;
+    private final ComponentEvidenceResultRepository componentEvidenceResultRepository;
 
     /**
      * Constructor providing the Page's display and routing specification.
      *
      * @param certificateRepository     the certificate repository
      * @param componentResultRepository the component result repository
+     * @param componentAttributeRepository the component attribute repository
      * @param caCredentialRepository    the ca credential manager
      * @param referenceManifestRepository the rim repository
+     * @param componentEvidenceResultRepository the component evidence result repository
      */
     @Autowired
     public CertificateDetailsPageController(final CertificateRepository certificateRepository,
                                             final ComponentResultRepository componentResultRepository,
                                             final ComponentAttributeRepository componentAttributeRepository,
                                             final CACredentialRepository caCredentialRepository,
-                                            final ReferenceManifestRepository referenceManifestRepository) {
+                                            final ReferenceManifestRepository referenceManifestRepository,
+                                            final ComponentEvidenceResultRepository
+                                                    componentEvidenceResultRepository) {
         super(Page.CERTIFICATE_DETAILS);
         this.certificateRepository = certificateRepository;
         this.componentResultRepository = componentResultRepository;
         this.componentAttributeRepository = componentAttributeRepository;
         this.caCredentialRepository = caCredentialRepository;
         this.referenceManifestRepository = referenceManifestRepository;
+        this.componentEvidenceResultRepository = componentEvidenceResultRepository;
     }
 
     /**
@@ -105,6 +118,10 @@ public class CertificateDetailsPageController extends PageController<Certificate
                         data.putAll(CertificateStringMapBuilder.getPlatformInformation(uuid,
                                 certificateRepository, componentResultRepository, componentAttributeRepository,
                                 caCredentialRepository, params.getProvisionSessionId()));
+                        if (!data.isEmpty()) {
+                            // Only for a certificate that was found, so a missing one reports "Unable to find"
+                            data.put("componentEvidence", latestComponentEvidence(data.get("componentResults")));
+                        }
                         break;
                     case "issued":
                         data.putAll(CertificateStringMapBuilder.getIssuedInformation(uuid,
@@ -142,5 +159,24 @@ public class CertificateDetailsPageController extends PageController<Certificate
 
         // return the model and view
         return mav;
+    }
+
+    /**
+     * Finds the most recent evidence each component returned when it proved possession of its key.
+     *
+     * @param componentResults the platform certificate's {@link ComponentResult}s
+     * @return component id to its latest evidence result
+     */
+    private Map<UUID, ComponentEvidenceResult> latestComponentEvidence(final Object componentResults) {
+        if (!(componentResults instanceof List<?> components)) {
+            return Map.of();
+        }
+        List<UUID> componentIds = components.stream()
+                .filter(ComponentResult.class::isInstance)
+                .map(component -> ((ComponentResult) component).getId())
+                .toList();
+        return componentEvidenceResultRepository.findByComponentIdInOrderByCreateTimeDesc(componentIds).stream()
+                .collect(Collectors.toMap(ComponentEvidenceResult::getComponentId, Function.identity(),
+                        (newer, older) -> newer));
     }
 }

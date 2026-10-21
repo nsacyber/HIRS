@@ -165,7 +165,8 @@ public class ComponentResult extends ArchivableEntity implements Cloneable {
         this.attributeStatus = componentIdentifierV2.getAttributeStatus();
         this.version2 = true;
         if (componentIdentifierV2.getComponentPlatformCert() != null) {
-            this.issuerDN = componentIdentifierV2.getComponentPlatformCert().getIssuerDN().toString();
+            // A hashed certificate identifier has no issuer.
+            this.issuerDN = Objects.toString(componentIdentifierV2.getComponentPlatformCert().getIssuerDN(), null);
             if (componentIdentifierV2.getComponentPlatformCertUri() != null) {
                 this.uniformResourceIdentifier = componentIdentifierV2.getComponentPlatformCertUri()
                         .getUniformResourceIdentifier().toString();

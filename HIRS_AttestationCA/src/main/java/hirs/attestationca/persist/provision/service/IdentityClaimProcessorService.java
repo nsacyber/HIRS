@@ -47,6 +47,7 @@ public class IdentityClaimProcessorService {
     private final CredentialManagementService credentialManagementService;
     private final DeviceInfoProcessorService deviceInfoProcessorService;
     private final Tpm2ProvisionerStateService tpm2ProvisionerStateService;
+    private final ComponentEvidenceService componentEvidenceService;
     private final PolicyRepository policyRepository;
 
     /**
@@ -56,6 +57,7 @@ public class IdentityClaimProcessorService {
      * @param credentialManagementService  certificate processor service
      * @param deviceInfoProcessorService   device info processor service
      * @param tpm2ProvisionerStateService  tpm2 provisioner state service
+     * @param componentEvidenceService     component evidence service
      * @param policyRepository             policy repository
      */
     @Autowired
@@ -64,11 +66,13 @@ public class IdentityClaimProcessorService {
             final CredentialManagementService credentialManagementService,
             final DeviceInfoProcessorService deviceInfoProcessorService,
             final Tpm2ProvisionerStateService tpm2ProvisionerStateService,
+            final ComponentEvidenceService componentEvidenceService,
             final PolicyRepository policyRepository) {
         this.supplyChainValidationService = supplyChainValidationService;
         this.credentialManagementService = credentialManagementService;
         this.deviceInfoProcessorService = deviceInfoProcessorService;
         this.tpm2ProvisionerStateService = tpm2ProvisionerStateService;
+        this.componentEvidenceService = componentEvidenceService;
         this.policyRepository = policyRepository;
     }
 
@@ -138,8 +142,12 @@ public class IdentityClaimProcessorService {
             log.info("Sending nonce: {}", strNonce);
             log.info("Persisting identity claim of length: {}", identityClaimByteArray.length);
 
-            tpm2ProvisionerStateService.saveTPM2ProvisionerState(
-                    new TPM2ProvisionerState(nonce, identityClaimByteArray));
+            List<ProvisionerTpm2.VerificationChallenge> componentChallenges =
+                    createComponentChallenges(identityClaim, ekPub.publicKey(), policySettings);
+            TPM2ProvisionerState provisionerState = new TPM2ProvisionerState(nonce, identityClaimByteArray);
+            provisionerState.setVerificationChallenges(
+                    ComponentEvidenceService.serializeChallenges(componentChallenges));
+            tpm2ProvisionerStateService.saveTPM2ProvisionerState(provisionerState);
 
             if (policySettings.isIgnoreImaEnabled()) {
                 pcrQuoteMask = PCR_QUOTE_MASK.replace("10,", "");
@@ -151,6 +159,7 @@ public class IdentityClaimProcessorService {
                     .setCredentialBlob(tpmCredential.credentialBlobTpm2b()).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
                     .setEncryptedSecret(tpmCredential.secretTpm2b())
+                    .addAllChallenge(componentChallenges)
                     .build();
 
             String identityClaimResponseJsonStringAfterSuccess = "";
@@ -220,6 +229,32 @@ public class IdentityClaimProcessorService {
 
             return identityClaimResponse.toByteArray();
         }
+    }
+
+    /**
+     * Issues nonces to components that the platform certificate identifies by key, when platform attribute
+     * validation is enabled. Components prove possession of their keys in the certificate request.
+     *
+     * @param identityClaim  the identity claim
+     * @param ekPublicKey    the public endorsement key
+     * @param policySettings the ACA policy
+     * @return challenges for the provisioner
+     */
+    private List<ProvisionerTpm2.VerificationChallenge> createComponentChallenges(
+            final ProvisionerTpm2.IdentityClaim identityClaim, final PublicKey ekPublicKey,
+            final PolicySettings policySettings) {
+        if (!policySettings.isPcAttributeValidationEnabled()) {
+            return List.of();
+        }
+        EndorsementCredential endorsementCredential =
+                credentialManagementService.parseEcFromIdentityClaim(identityClaim, ekPublicKey);
+        List<ProvisionerTpm2.VerificationChallenge> challenges = componentEvidenceService.createChallenges(
+                identityClaim, credentialManagementService.parsePcsFromIdentityClaim(identityClaim,
+                        endorsementCredential));
+        if (!challenges.isEmpty()) {
+            log.info("Sending {} component evidence challenge(s)", challenges.size());
+        }
+        return challenges;
     }
 
     /**

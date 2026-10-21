@@ -1,4 +1,5 @@
-﻿using Hirs.Pb;
+﻿using Google.Protobuf;
+using Hirs.Pb;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -16,6 +17,7 @@ namespace hirs {
         public static readonly string LINUX_DEFAULT_PRODUCT_NAME_PATH = "/sys/class/dmi/id/product_name";
         public static readonly string LINUX_DEFAULT_PRODUCT_VERSION_PATH = "/sys/class/dmi/id/product_version";
         public static readonly string LINUX_DEFAULT_PRODUCT_SERIAL_PATH = "/sys/class/dmi/id/product_serial";
+        public static readonly string LINUX_DEFAULT_PRODUCT_UUID_PATH = "/sys/class/dmi/id/product_uuid";
         private readonly Settings? settings;
 
         public ClassicDeviceInfoCollector() {
@@ -120,6 +122,7 @@ namespace hirs {
                     hw.ProductName = string.IsNullOrWhiteSpace(name) ? NOT_SPECIFIED : name;
                     hw.ProductVersion = string.IsNullOrWhiteSpace(version) ? NOT_SPECIFIED : version;
                     hw.SystemSerialNumber = string.IsNullOrWhiteSpace(identifyingnumber) ? NOT_SPECIFIED : identifyingnumber;
+                    SetPlatformUuid(hw, (string)o.GetPropertyValue("UUID"));
                     break;
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
@@ -149,6 +152,7 @@ namespace hirs {
                 if (string.IsNullOrEmpty(hw.SystemSerialNumber)) {
                     hw.SystemSerialNumber = FileToString(LINUX_DEFAULT_PRODUCT_SERIAL_PATH, NOT_SPECIFIED);
                 }
+                SetPlatformUuid(hw, FileToString(LINUX_DEFAULT_PRODUCT_UUID_PATH, ""));
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
                 // tbd
             } else {
@@ -161,6 +165,17 @@ namespace hirs {
             Log.Debug("System Serial Number: " + hw.SystemSerialNumber);
 
             return hw;
+        }
+
+        /**
+         * Sends the SMBIOS system UUID in SMBIOS byte order, which is how components such as the HP EpSC report it.
+         * The first three fields are little endian, as in Guid.ToByteArray.
+         */
+        private static void SetPlatformUuid(HardwareInfo hw, string? uuid) {
+            if (Guid.TryParse(uuid, out Guid parsed) && parsed != Guid.Empty) {
+                hw.PlatformUuid = ByteString.CopyFrom(parsed.ToByteArray());
+                Log.Debug("Platform UUID: " + parsed);
+            }
         }
 
         public NetworkInfo CollectNetworkInfo(string acaAddress) {

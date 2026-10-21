@@ -9,6 +9,7 @@ import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import hirs.attestationca.persist.entity.userdefined.SupplyChainValidationSummary;
+import hirs.attestationca.persist.entity.userdefined.certificate.ComponentEvidenceResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
@@ -62,6 +63,7 @@ public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
     private final Tpm2ProvisionerStateService tpm2ProvisionerStateService;
+    private final ComponentEvidenceService componentEvidenceService;
     private final DeviceRepository deviceRepository;
     private final PolicyRepository policyRepository;
     private final X509Certificate acaCertificate;
@@ -74,6 +76,7 @@ public class CertificateRequestProcessorService {
      * @param supplyChainValidationService object that is used to run provisioning
      * @param credentialManagementService  credential management service
      * @param tpm2ProvisionerStateService  tpm2 provisioner state service
+     * @param componentEvidenceService     component evidence service
      * @param deviceRepository             database connector for Devices.
      * @param policyRepository             db connector for policies.
      * @param privateKey                   private key used for communication authentication
@@ -84,6 +87,7 @@ public class CertificateRequestProcessorService {
     public CertificateRequestProcessorService(final SupplyChainValidationService supplyChainValidationService,
                                               final CredentialManagementService credentialManagementService,
                                               final Tpm2ProvisionerStateService tpm2ProvisionerStateService,
+                                              final ComponentEvidenceService componentEvidenceService,
                                               final DeviceRepository deviceRepository,
                                               final PolicyRepository policyRepository,
                                               final PrivateKey privateKey,
@@ -92,6 +96,7 @@ public class CertificateRequestProcessorService {
     ) {
         this.credentialManagementService = credentialManagementService;
         this.tpm2ProvisionerStateService = tpm2ProvisionerStateService;
+        this.componentEvidenceService = componentEvidenceService;
         this.certificateValidityInDays = certificateValidityInDays;
         this.supplyChainValidationService = supplyChainValidationService;
         this.deviceRepository = deviceRepository;
@@ -195,6 +200,19 @@ public class CertificateRequestProcessorService {
 
             AppraisalStatus.Status validationResult = doQuoteValidation(device);
 
+            List<ComponentEvidenceResult> componentEvidence = componentEvidenceService.verify(
+                    tpm2ProvisionerState.getVerificationChallenges(), identityClaim, certificateRequest,
+                    platformCredentials, device.getName());
+            if (validationResult == AppraisalStatus.Status.PASS
+                    && componentEvidence.stream().anyMatch(result -> !result.isPassed())) {
+                tpm2ProvisionerStateService.deleteTPM2ProvisionerState(tpm2ProvisionerState);
+                return ProvisionerTpm2.CertificateResponse.newBuilder()
+                        .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
+                        .setStatusDetails(ComponentEvidenceService.summarize(componentEvidence))
+                        .build()
+                        .toByteArray();
+            }
+
             if (validationResult == AppraisalStatus.Status.PASS) {
                 // Create signed, attestation certificate
                 X509Certificate attestationCertificate = generateCredential(akPub.publicKey(),
@@ -225,8 +243,7 @@ public class CertificateRequestProcessorService {
                                     endorsementCredential, platformCredentials, device, true);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
-                            ProvisionerTpm2.CertificateResponse.newBuilder()
-                                    .setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                            passResponseBuilder(componentEvidence);
 
                     if (generateAtt) {
                         certificateResponseBuilder =
@@ -280,8 +297,7 @@ public class CertificateRequestProcessorService {
                     tpm2ProvisionerStateService.deleteTPM2ProvisionerState(tpm2ProvisionerState);
 
                     ProvisionerTpm2.CertificateResponse.Builder certificateResponseBuilder =
-                            ProvisionerTpm2.CertificateResponse.
-                                    newBuilder().setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+                            passResponseBuilder(componentEvidence);
 
                     boolean generateAtt = credentialManagementService.saveAttestationCertificate(
                             derEncodedAttestationCertificate,
@@ -377,6 +393,20 @@ public class CertificateRequestProcessorService {
             }
             throw new CertificateProcessingException("Invalid nonce given in request by client.");
         }
+    }
+
+    /**
+     * Starts a passing certificate response, with any component evidence results in the status details.
+     *
+     * @param componentEvidence component evidence results
+     * @return response builder
+     */
+    private static ProvisionerTpm2.CertificateResponse.Builder passResponseBuilder(
+            final List<ComponentEvidenceResult> componentEvidence) {
+        ProvisionerTpm2.CertificateResponse.Builder builder = ProvisionerTpm2.CertificateResponse.newBuilder()
+                .setStatus(ProvisionerTpm2.ResponseStatus.PASS);
+        return componentEvidence.isEmpty() ? builder
+                : builder.setStatusDetails(ComponentEvidenceService.summarize(componentEvidence));
     }
 
     /**

@@ -584,6 +584,7 @@ namespace hirs {
         public bool HasHardwareManifestPlugins() {
             return hardwareManifests.Count > 0;
         }
+        public virtual IReadOnlyList<IHardwareManifestPlugin> HardwareManifestPlugins => hardwareManifests;
         public bool HasPaccorOutputFromFile() {
             return !string.IsNullOrEmpty(paccor_output);
         }

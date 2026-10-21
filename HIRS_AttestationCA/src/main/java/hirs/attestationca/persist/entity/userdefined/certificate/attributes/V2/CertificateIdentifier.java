@@ -1,11 +1,15 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 
@@ -36,6 +40,8 @@ public class CertificateIdentifier {
 
     private String hashAlgorithm;
     private String hashSigValue;
+    @Getter(AccessLevel.NONE)
+    private byte[] hashOverSignatureValue = new byte[0];
     private GeneralName issuerDN;
     private BigInteger certificateSerialNumber;
 
@@ -89,8 +95,18 @@ public class CertificateIdentifier {
                     + ".AttributeCertificateIdentifier does not have required values.");
         }
 
-        hashAlgorithm = attrCertSeq.getObjectAt(0).toString();
-        hashSigValue = attrCertSeq.getObjectAt(1).toString();
+        hashAlgorithm = AlgorithmIdentifier.getInstance(attrCertSeq.getObjectAt(0)).getAlgorithm().getId();
+        hashOverSignatureValue = ASN1OctetString.getInstance(attrCertSeq.getObjectAt(1)).getOctets();
+        hashSigValue = Hex.toHexString(hashOverSignatureValue);
+    }
+
+    /**
+     * Hash over the signature value of the identified certificate, from attributeCertIdentifier.
+     *
+     * @return the hash, or an empty array if the identifier is not a hashed identifier
+     */
+    public byte[] getHashOverSignatureValue() {
+        return hashOverSignatureValue.clone();
     }
 
     /**
