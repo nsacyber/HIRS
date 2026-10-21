@@ -23,7 +23,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import jakarta.persistence.NonUniqueResultException;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;

@@ -9,8 +9,8 @@ import org.bouncycastle.asn1.DERUTF8String;
 import java.util.ArrayList;
 import java.util.List;
 
-import static hirs.utils.PciIds.translateDevice;
-import static hirs.utils.PciIds.translateVendor;
+import static hirs.utils.specLookups.PciIds.translateDevice;
+import static hirs.utils.specLookups.PciIds.translateVendor;
 
 /**
  * Provide Java access to PCI IDs.
