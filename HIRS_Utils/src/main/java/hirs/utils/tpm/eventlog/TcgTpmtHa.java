@@ -51,7 +51,7 @@ public class TcgTpmtHa {
     /**
      * Constructor.
      *
-     * @param is ByteArrayInputStream holding the TcgTPMT_HA structured data
+     * @param is ByteArrayInputStream holding the TCG TPMT_HA structured data
      * @throws java.io.IOException if TPMT_HA structure cannot be parsed
      */
     public TcgTpmtHa(final ByteArrayInputStream is) throws IOException {
@@ -59,8 +59,12 @@ public class TcgTpmtHa {
         is.read(algID);
         byte[] rAlgID = HexUtils.leReverseByte(algID);
         hashAlgId = new BigInteger(rAlgID).intValue();
-        hashName = tcgAlgIdToString(algID[0]);
-        hashLength = tcgAlgLength(algID[0]);
+        hashName = tcgAlgIdToName(algID[0]);
+        hashLength = tcgAlgLength(algID[0]);            // as of 2026, TCG Alg Registry only uses the upper byte
+        if (hashLength == 0) {
+            throw new IOException("Digest length for algorithm " + hashName
+                    + " is 0, cannot read a digest with length 0");
+        }
         digest = new byte[hashLength];
         is.read(digest);
         buffer = new byte[algID.length + digest.length];
@@ -76,9 +80,13 @@ public class TcgTpmtHa {
      * @param algId int to convert to string
      * @return name of the algorithm
      */
-    public static String tcgAlgIdToString(final int algId) {
+    public static String tcgAlgIdToName(final int algId) {
 
-        return TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId).getAlgName();
+        TcgAlgRegLookups.TcgHashAlg alg = TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId);
+        if (alg != null) {
+            return alg.getAlgName();
+        }
+        return "";
     }
 
     /**
@@ -89,9 +97,13 @@ public class TcgTpmtHa {
      * @param algName String to convert to an id
      * @return id of hash algorithm
      */
-    public static int tcgAlgStringToId(final String algName) {
+    public static int tcgAlgNameToId(final String algName) {
 
-        return TcgAlgRegLookups.TcgHashAlg.fromAlgName(algName).getAlgId();
+        TcgAlgRegLookups.TcgHashAlg alg = TcgAlgRegLookups.TcgHashAlg.fromAlgName(algName);
+        if (alg != null) {
+            return alg.getAlgId();
+        }
+        return 0;
     }
 
     /**
@@ -102,7 +114,11 @@ public class TcgTpmtHa {
      */
     public static int tcgAlgLength(final int algId) {
 
-        return TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId).getAlgLen();
+        TcgAlgRegLookups.TcgHashAlg alg = TcgAlgRegLookups.TcgHashAlg.fromAlgId(algId);
+        if (alg != null) {
+            return alg.getAlgLen();
+        }
+        return 0;
     }
 
     /**

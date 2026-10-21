@@ -302,41 +302,28 @@ public final class TCGEventLog {
 
             // find the strongest algorithm used and select that for processing
             TcgAlgRegLookups.TcgHashAlg highestAlg = null;
+            TcgAlgRegLookups.TcgHashAlg currentAlg;
             for (String algStr : algList) {
-                TcgAlgRegLookups.TcgHashAlg current = TcgAlgRegLookups.TcgHashAlg.fromAlgName(algStr);
+                currentAlg = TcgAlgRegLookups.TcgHashAlg.fromAlgName(algStr);
 
                 // Skip if the string doesn't match any enum constant
-                if (current == null) {
+                if (currentAlg == null) {
                     continue;
                 }
 
                 // If it's our first valid item, or higher than our current maximum
-                if (highestAlg == null || current.ordinal() > highestAlg.ordinal()) {
-                    highestAlg = current;
+                if (highestAlg == null || currentAlg.ordinal() > highestAlg.ordinal()) {
+                    highestAlg = currentAlg;
                 }
             }
+            // use the strongest algorithm to perform validation
             if (highestAlg != null) {
                 strongestEvLogHashAlgName = highestAlg.getAlgName();
+                pcrLength = highestAlg.getAlgLen();
             }
 
             //TEMPORARILY use SHA256 until updates on Provisioner are pushed
             strongestEvLogHashAlgName = "TPM_ALG_SHA256";
-
-            // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
-            pcrLength = TcgAlgRegLookups.TcgHashAlg.fromAlgName(strongestEvLogHashAlgName).getAlgLen();
-//            switch (strongestEvLogHashAlgName) {
-//                case TPM_ALG_SHA256_STR:
-//                    pcrLength = EvConstants.SHA256_LENGTH;
-//                    break;
-//                case TPM_ALG_SHA384_STR:
-//                    pcrLength = EvConstants.SHA384_LENGTH;
-//                    break;
-//                case TPM_ALG_SHA512_STR:
-//                    pcrLength = EvConstants.SHA512_LENGTH;
-//                    break;
-//                default:
-//                    break;
-//            }
         } else {    // not crypto agile
             strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
             pcrLength = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgLen();
@@ -511,6 +498,6 @@ public final class TCGEventLog {
      * @return TCG Defined Algorithm ID
      */
     public int getStrongestEvLogHashAlgId() {
-        return TcgTpmtHa.tcgAlgStringToId(strongestEvLogHashAlgName);
+        return TcgTpmtHa.tcgAlgNameToId(strongestEvLogHashAlgName);
     }
 }

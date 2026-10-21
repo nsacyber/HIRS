@@ -96,7 +96,7 @@ public final class TcgAlgRegLookups {
          * Returns TcgHashAlg given a hash alg ID.
          *
          * @param id the hash alg ID
-         * @return TcgHashAlg corresponding to hash alg ID
+         * @return TcgHashAlg corresponding to hash alg ID, null if ID is not found
          */
         public static TcgHashAlg fromAlgId(final int id) {
             return ID_MAP.get(id); }
@@ -105,7 +105,7 @@ public final class TcgAlgRegLookups {
          * Returns TcgHashAlg given a hash alg name.
          *
          * @param name the hash alg name
-         * @return TcgHashAlg corresponding to hash alg name
+         * @return TcgHashAlg corresponding to hash alg name, null if name is not found
          */
         public static TcgHashAlg fromAlgName(final String name) {
             return NAME_MAP.get(name); }
