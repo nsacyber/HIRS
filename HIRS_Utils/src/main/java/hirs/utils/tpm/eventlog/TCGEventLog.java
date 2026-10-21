@@ -200,7 +200,8 @@ public final class TCGEventLog {
      * @param bEventFlag        if true provides human-readable event descriptions.
      * @param bHexContentFlag   if true provides hex output for Content in the description.
      * @param bHexEventFlag     if true provides hex event structure in the description.
-     * @throws java.io.IOException                     IO Stream if event cannot be parsed.
+     * @throws java.io.IOException  IO Stream if event digests cannot be parsed
+     *                              (non-parsable event content will not throw error).
      */
     public TCGEventLog(final byte[] rawlog, final boolean bEventFlag,
                        final boolean bHexContentFlag, final boolean bHexEventFlag)
@@ -322,8 +323,21 @@ public final class TCGEventLog {
                 pcrLength = highestAlg.getAlgLen();
             }
 
-            //TEMPORARILY use SHA256 until updates on Provisioner are pushed
-            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
+            // ----------------------------------------------------------------------------------------
+            //TEMPORARILY use SHA256 for crypto agile logs until updates on Provisioner are pushed
+            boolean sha256found = false;
+            for (String algStr : algList) {
+                if (algStr.equals(TcgAlgRegLookups.SHA256_STR)) {
+                    sha256found = true;
+                    strongestEvLogHashAlgName = TcgAlgRegLookups.SHA256_STR;
+                    pcrLength = TcgAlgRegLookups.TcgHashAlg.fromAlgName(strongestEvLogHashAlgName).getAlgLen();
+                }
+            }
+            if (!sha256found) {
+                throw new IOException("Currently can only process crypto agile logs with SHA256 digests");
+            }
+            // ----------------------------------------------------------------------------------------
+
         } else {    // not crypto agile
             strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
             pcrLength = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgLen();
