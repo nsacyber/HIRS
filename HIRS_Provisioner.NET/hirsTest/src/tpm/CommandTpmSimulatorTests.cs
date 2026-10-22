@@ -12,8 +12,11 @@ namespace hirsTest.tpm {
         private CommandTpm tpm;
         private string tempDir;
 
-        [SetUp]
-        public void SetUp() {
+        // One connection for all tests:
+        //   the simulator serves one client
+        //   CommandTpm only closes it when finalized
+        [OneTimeSetUp]
+        public void ConnectSimulator() {
             string[] hostPort = CommandTpm.DefaultSimulatorNamePort.Split(':');
             string host = hostPort[0];
             int port = int.Parse(hostPort[1]);
@@ -36,7 +39,10 @@ namespace hirsTest.tpm {
                 Assert.Ignore("Could not complete the TPM simulator handshake at " +
                     CommandTpm.DefaultSimulatorNamePort + ": " + e.Message);
             }
+        }
 
+        [SetUp]
+        public void SetUp() {
             tempDir = Path.Combine(Path.GetTempPath(), "hirsTest-" + Guid.NewGuid());
             Directory.CreateDirectory(tempDir);
         }
@@ -80,6 +86,24 @@ namespace hirsTest.tpm {
             byte[] digest = SHA256.HashData([.. "should not be signable"u8]);
 
             Assert.Throws<TpmException>(() => tpm.Sign(CommandTpm.DefaultAkHandle, digest, TpmAlgId.Sha256));
+        }
+
+        [TestCase(Hirs.Pb.EkTemplate.EkL1)]
+        [TestCase(Hirs.Pb.EkTemplate.EkL2)]
+        public void TestActivateCredentialRecoversSecret(Hirs.Pb.EkTemplate template) {
+            using EndorsementKey akParent = tpm.AcquireEndorsementKey(Hirs.Pb.EkTemplate.EkL1)!;
+            tpm.CreateAttestationKey(akParent.Handle, CommandTpm.DefaultAkHandle, replace: true);
+            tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] akName, out byte[] _);
+
+            using EndorsementKey ek = tpm.AcquireEndorsementKey(template)!;
+            byte[] secret = RandomNumberGenerator.GetBytes(32);
+            IdObject idObject = ek.Public.CreateActivationCredentials(secret, akName, out byte[] encryptedSecret);
+            byte[] credentialBlob = new Tpm2bIdObject(idObject).GetTpmRepresentation();
+            byte[] encryptedSecretBlob = new Tpm2bEncryptedSecret(encryptedSecret).GetTpmRepresentation();
+
+            byte[] recovered = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, ek.Handle, credentialBlob, encryptedSecretBlob);
+
+            Assert.That(recovered, Is.EqualTo(secret));
         }
 
         [Test]

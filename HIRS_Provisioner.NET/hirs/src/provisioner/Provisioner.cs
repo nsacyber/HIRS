@@ -169,7 +169,7 @@ namespace hirs {
             ClientExitCodes result = ClientExitCodes.SUCCESS;
             if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
-                List<KeyCandidate> keyCandidates = new();
+                ProvisioningKeys keys = new();
                 EndorsementKey? l1Ek = null;
                 byte[] ekc = [];
                 Log.Information("----> Gathering Endorsement Keys and Certificates.");
@@ -188,8 +188,8 @@ namespace hirs {
                     ekLeases.Add(ek);
 
                     byte[] ekCertificate = GetMatchingEkCertificate(tpm, ek);
-                    keyCandidates.Add(KeyTemplateCatalog.BuildEkCandidate(ek.PublicArea, ek.Public,
-                        ek.IsPersistent ? (uint?)ek.Handle : null, ekCertificate));
+                    keys.Add(KeyTemplateCatalog.BuildEkCandidate(ek.PublicArea, ek.Public,
+                        ek.IsPersistent ? (uint?)ek.Handle : null, ekCertificate), ek.Handle, ek);
                     if (template == EkTemplate.EkL1) {
                         l1Ek = ek;
                         ekc = ekCertificate;
@@ -207,8 +207,8 @@ namespace hirs {
                 Log.Debug("Gathering AK PUBLIC.");
                 Tpm2Lib.TpmPublic akPub = tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] _, out byte[] _);
                 byte[] akPublicArea = akPub;
-                keyCandidates.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(akPublicArea, akPub,
-                    CommandTpm.DefaultAkHandle, KeyRole.Attestation, ProvisioningOrigin.Local));
+                keys.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(akPublicArea, akPub,
+                    CommandTpm.DefaultAkHandle, KeyRole.Attestation, ProvisioningOrigin.Local), CommandTpm.DefaultAkHandle);
 
                 Log.Debug("Checking SRK PUBLIC");
                 tpm.CreateStorageRootKey(CommandTpm
@@ -306,13 +306,14 @@ namespace hirs {
                 byte[] ldevidPublicArea = tpm.ConvertLDevIDPublic(ldevidPubPath);
                 if (CommandTpm.CanMarshal<Tpm2Lib.TpmPublic>(ldevidPublicArea)) {
                     Tpm2Lib.TpmPublic ldevidPub = CommandTpm.Marshal<Tpm2Lib.TpmPublic>(ldevidPublicArea);
-                    keyCandidates.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(ldevidPublicArea, ldevidPub,
-                        0, KeyRole.DeviceIdentity, ProvisioningOrigin.Local));
+                    // Not loaded: the LDevID is loaded from its key files when it is used
+                    keys.Add(KeyTemplateCatalog.BuildAsymmetricCandidate(ldevidPublicArea, ldevidPub,
+                        0, KeyRole.DeviceIdentity, ProvisioningOrigin.Local), null);
                 }
 
                 Log.Debug("Create identity claim");
                 IdentityClaim idClaim = acaClient.CreateIdentityClaim(dv, akPublicArea, ekPublicArea, ekc, pcs,
-                    manifest, ldevidPublicArea, keyCandidates);
+                    manifest, ldevidPublicArea, keys.Candidates.ToList());
 
                 Log.Information("----> Sending identity claim to Attestation CA");
                 IdentityClaimResponse icr = await acaClient.PostIdentityClaim(idClaim);

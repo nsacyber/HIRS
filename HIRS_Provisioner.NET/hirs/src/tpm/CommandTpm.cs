@@ -399,6 +399,7 @@ namespace hirs {
             tpm.EvictControl(TpmRh.Owner, hAK, akHandle);
             Log.Debug("Created and persisted new AK at handle 0x" + akHandle.handle.ToString("X") + ".");
 
+            tpm.FlushContext(hAK);
             tpm.FlushContext(sessEK);
         }
 
@@ -532,14 +533,8 @@ namespace hirs {
             }
         }
 
-        /*
-         * Raw TPM2_Sign proof-of-possession signature. Only valid for a
-         * non-restricted signing key (e.g. LDevID) — a restricted key (e.g. AK)
-         * cannot sign an externally-supplied digest without a same-TPM hash
-         * validation ticket (TPM2_Hash), which this method does not attempt.
-         * Callers pass an unrestricted key's handle; a restricted key will
-         * fail with TPM_RC_TICKET/TPM_RC_ATTRIBUTES from the TPM itself.
-         */
+        // For non-restricted signing keys
+        // Will need to create a (not null) ticket for restricted keys
         public byte[] Sign(uint keyHandleInt, byte[] digest, TpmAlgId hashAlg) {
             TpmHandle keyHandle = new(keyHandleInt);
 
