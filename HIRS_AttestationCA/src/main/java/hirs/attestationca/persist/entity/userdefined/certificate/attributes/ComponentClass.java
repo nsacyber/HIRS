@@ -3,7 +3,7 @@ package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonObject.Member;
 import hirs.utils.JsonUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import lombok.Getter;
 
 import java.nio.file.FileSystems;
