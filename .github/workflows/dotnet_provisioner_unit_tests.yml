@@ -1,12 +1,10 @@
-# Updated: 02/03/2026
+# Updated: 10/19/2026
 name: Dotnet Provisioner Unit Tests and Packages
 
 on:
   push:
 env:
   DOTNET_VERSION: 10.0.x
-  DOTNET_MSI_TARGETFRAMEWORK: net10.0
-  DOTNET_ROLL_FORWARD: LatestMajor
 jobs:
   test:
     name: Run Unit Tests
@@ -23,19 +21,12 @@ jobs:
           git config --global core.eol lf
       - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
-      - name: Remove problem matcher for now
-        run: |
-          echo "::remove-matcher owner=csc::"
-          echo "::remove-matcher owner=dotnet::"
       - name: Restore dependencies
         working-directory: HIRS_Provisioner.NET
         run: dotnet restore
-      - name: Restore Tools
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet tool restore
       - name: Build
         working-directory: HIRS_Provisioner.NET
         run: dotnet build
@@ -54,48 +45,30 @@ jobs:
           git config --global core.eol lf
       - uses: actions/checkout@v6
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
-      - name: Remove problem matcher for now
-        run: |
-          echo "::remove-matcher owner=csc::"
-          echo "::remove-matcher owner=dotnet::"
-      - name: Restore dependencies
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet restore
-      - name: Restore Tools
-        working-directory: HIRS_Provisioner.NET
-        run: dotnet tool restore
-      - name: Install Package Tools
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet tool install --global dotnet-deb --allow-roll-forward
-          dotnet tool install --global dotnet-rpm --allow-roll-forward
-      - name: Linux Packages
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet deb install
-          dotnet rpm install
-          dotnet deb -r linux-x64 -c Release
-          dotnet rpm -r linux-x64 -c Release
-      - name: Windows Packages
-        working-directory: HIRS_Provisioner.NET/hirs
-        run: |
-          dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=${{env.DOTNET_MSI_TARGETFRAMEWORK}} /p:RuntimeIdentifier=win-x64 /p:Configuration=Release
+      - name: Set up JDK for Gradle
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build packages
+        run: .\gradlew.bat -p HIRS_Provisioner.NET clean release
       - name: Artifacts SHA256
         shell: bash
         run: |
-          sha256sum HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
-          ls -go --full-time HIRS_Provisioner.NET/hirs/bin/Release/**/**/*.{deb,rpm,msi} 2> /dev/null
+          sha256sum HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
+          ls -go --full-time HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
       - name: Artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: dists
+          name: HIRS_Provisioner.NET-packages
           retention-days: 5
           if-no-files-found: error
           path: |
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.deb
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.msi
-            HIRS_Provisioner.NET/hirs/bin/Release/**/*.rpm
-
+            HIRS_Provisioner.NET/build/distributions/*.deb
+            HIRS_Provisioner.NET/build/distributions/*.msi
+            HIRS_Provisioner.NET/build/distributions/*.rpm

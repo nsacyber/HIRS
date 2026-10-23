@@ -22,7 +22,7 @@ version 10 or later. Please follow the instructions from Microsoft for installin
     After installing the .NET SDK, you must restart your terminal for the 
     environment variables to get updated.
 
-## Build the Provisioner Package
+## Build the Provisioner Packages
 
 Most of the build commands for HIRS .NET Provisioner work the same way whether
 they are run from Windows or Linux. Location of where these commands are run matters.
@@ -41,60 +41,31 @@ The directory the command should be run from is included in each section below.
    ```shell
    dotnet test 
    ```
-4. Install a packaging library.
-   Depending on your choice below, you might need to install a packaging library. This step is not
-   needed to build an MSI installer.
+4. Packaging uses the HIRS repository's Gradle wrapper from the repository root.
 
-    === "RHEL/Rocky"
+    === "Linux"
         ```shell
-        dotnet tool install --global dotnet-rpm --allow-roll-forward
-        ```
-    === "Ubuntu"
-        ```shell
-        dotnet tool install --global dotnet-deb --allow-roll-forward
-        ```
-    === "Windows ZIP"
-        ```shell
-        dotnet tool install --global dotnet-zip --allow-roll-forward
-        ```
-
-5. `cd` to the directory
-   ```shell
-   cd <HIRS repository>/HIRS_Provisioner.NET/hirs 
-   ```
-6. Create installation package(s)
-
-    === "RHEL/Rocky"
-        ```shell
-        dotnet rpm install
-        dotnet rpm -r linux-x64 -c Release  
-        ```
-    === "Ubuntu"
-        ```shell
-        dotnet deb install
-        dotnet deb -r linux-x64 -c Release   
-        ```
-    === "Linux ZIP"
-        ```shell
-        dotnet zip install
-        dotnet zip -r linux-x64 -c Release   
+        ./gradlew -p HIRS_Provisioner.NET release
         ```
     === "Windows"
-        ```shell
-        dotnet msbuild HIRS_Provisioner.NET.csproj /t:Msi /P:TargetFramework=net10.0 /p:RuntimeIdentifier=win-x64 /p:Configuration=Release 
+        ```powershell
+        .\gradlew.bat -p HIRS_Provisioner.NET release
         ```
-    === "Windows ZIP"
-        ```shell
-        dotnet zip install
-        dotnet zip -r win-x64 -c Release  
-        ```
+
+    Both commands produce an RPM and DEB for `linux-x64`. The Windows command will additionally produce an MSI for `win-x64`.
+
+    To build the ACA and Provisioner packages together from the repository root, run:
+
+    ```shell
+    ./gradlew clean release
+    ```
+    On Windows, the same command will build the provisioner MSI.
 
 !!! info
 
-    After building, you can find the generated file(s) in the relative path (from above):
-    <br> 
-    ```
-    /bin/Release/net10.0/<platform>/HIRS_Provisioner.NET.*
+    After building, you'll find package files under the provisioner project folder.
+    ```shell
+    cd HIRS_Provisioner.NET/build/distributions/
     ```
 
 ## Install the Provisioner Package
@@ -110,4 +81,3 @@ The Provisioner is installed to the following directory:
     /usr/share/hirs
 === "Windows"
     C:\Program Files\(x86)\HIRS_Provisioner.NET
-
