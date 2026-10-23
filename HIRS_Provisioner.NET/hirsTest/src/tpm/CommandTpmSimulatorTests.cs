@@ -107,6 +107,25 @@ namespace hirsTest.tpm {
         }
 
         [Test]
+        public void TestFailedActivateCredentialReleasesSessions() {
+            using EndorsementKey ek = tpm.AcquireEndorsementKey(Hirs.Pb.EkTemplate.EkL1)!;
+            tpm.CreateAttestationKey(ek.Handle, CommandTpm.DefaultAkHandle, replace: true);
+            tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out byte[] akName, out byte[] _);
+            byte[] secret = RandomNumberGenerator.GetBytes(32);
+            IdObject idObject = ek.Public.CreateActivationCredentials(secret, akName, out byte[] encryptedSecret);
+            byte[] wrongSecret = (byte[])encryptedSecret.Clone();
+            wrongSecret[0] ^= 0xFF;
+
+            for (int i = 0; i < 3; i++) {
+                Assert.Throws<TpmException>(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, ek.Handle,
+                    idObject.integrityHMAC, idObject.encIdentity, wrongSecret));
+            }
+
+            Assert.That(tpm.ActivateCredential(CommandTpm.DefaultAkHandle, ek.Handle, idObject.integrityHMAC,
+                idObject.encIdentity, encryptedSecret), Is.EqualTo(secret));
+        }
+
+        [Test]
         public void TestEvictLegacyAttestationKeyRemovesOldAk() {
             using EndorsementKey l1Ek = tpm.AcquireEndorsementKey(Hirs.Pb.EkTemplate.EkL1)!;
             tpm.CreateAttestationKey(l1Ek.Handle, CommandTpm.LegacyAkHandle, replace: true);

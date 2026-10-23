@@ -402,31 +402,55 @@ namespace hirs {
             SensitiveCreate inSens = new();
             TpmPublic inPublic = GenerateAKTemplate(nameAlg);
 
-            var policyEK = new PolicyTree(nameAlg);
-            policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
-
-            AuthSession sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
-
-            TpmPrivate kAK = tpm[sessEK].Create(ekHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
-                                            out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
+            TpmPrivate kAK;
+            TpmPublic outPublic;
+            AuthSession sessEK = StartEndorsementPolicySession(nameAlg);
+            try {
+                kAK = tpm[sessEK].Create(ekHandle, inSens, inPublic, null, null, out outPublic,
+                                         out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
+            } finally {
+                FlushQuietly(sessEK);
+            }
 
             Log.Debug("New AK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
             Log.Debug("New AK PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
             Log.Debug("New AK PUB unique: " + BitConverter.ToString((Tpm2bPublicKeyRsa)(outPublic.unique)));
 
-            tpm.FlushContext(sessEK);
+            TpmHandle hAK;
+            sessEK = StartEndorsementPolicySession(nameAlg);
+            try {
+                hAK = tpm[sessEK].Load(ekHandle, kAK, outPublic);
+            } finally {
+                FlushQuietly(sessEK);
+            }
 
-            sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
+            try {
+                tpm.EvictControl(TpmRh.Owner, hAK, akHandle);
+                Log.Debug("Created and persisted new AK at handle 0x" + akHandle.handle.ToString("X") + ".");
+            } finally {
+                FlushQuietly(hAK);
+            }
+        }
 
-            TpmHandle hAK = tpm[sessEK].Load(ekHandle, kAK, outPublic);
+        /**
+         * A policy session satisfying the EK policy, PolicySecret(TPM_RH_ENDORSEMENT). The caller should clear it.
+         */
+        private AuthSession StartEndorsementPolicySession(TpmAlgId nameAlg) {
+            PolicyTree policyEK = new(nameAlg);
+            policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
 
-            tpm.EvictControl(TpmRh.Owner, hAK, akHandle);
-            Log.Debug("Created and persisted new AK at handle 0x" + akHandle.handle.ToString("X") + ".");
+            AuthSession session = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
+            try {
+                session.RunPolicy(tpm, policyEK);
+            } catch {
+                FlushQuietly(session);
+                throw;
+            }
+            return session;
+        }
 
-            tpm.FlushContext(hAK);
-            tpm.FlushContext(sessEK);
+        private void FlushQuietly(TpmHandle handle) {
+            tpm.CancelSafeFlushContext(handle);
         }
 
         public void CreateStorageRootKey(uint srkHandleInt) {
@@ -640,18 +664,18 @@ namespace hirs {
             IdObject credentialBlob = new(integrityHMAC, encIdentity);
 
             TpmAlgId nameAlg = TpmAlgId.Sha256;
-            var policyEK = new PolicyTree(nameAlg);
-            policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
-
-            AuthSession sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
-
-            AuthSession sessAK = tpm.StartAuthSessionEx(TpmSe.None, nameAlg);
-            recoveredSecret = tpm[sessAK, sessEK].ActivateCredential(akHandle, ekHandle, credentialBlob, encryptedSecret);
-            Log.Debug("encryptedSecret: " + BitConverter.ToString(encryptedSecret));
-
-            tpm.FlushContext(sessEK);
-            tpm.FlushContext(sessAK);
+            AuthSession sessEK = StartEndorsementPolicySession(nameAlg);
+            AuthSession? sessAK = null;
+            try {
+                sessAK = tpm.StartAuthSessionEx(TpmSe.None, nameAlg);
+                recoveredSecret = tpm[sessAK, sessEK].ActivateCredential(akHandle, ekHandle, credentialBlob, encryptedSecret);
+                Log.Debug("encryptedSecret: " + BitConverter.ToString(encryptedSecret));
+            } finally {
+                FlushQuietly(sessEK);
+                if (sessAK != null) {
+                    FlushQuietly(sessAK);
+                }
+            }
 
             return recoveredSecret;
         }
