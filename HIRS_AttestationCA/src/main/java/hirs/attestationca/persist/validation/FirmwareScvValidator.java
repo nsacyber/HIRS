@@ -21,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,8 +41,7 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 @Log4j2
 public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
-    private static PcrValidator pcrValidator;
-    private static ReferenceManifest supportReferenceManifest;
+    private ReferenceManifest supportReferenceManifest;
 
     /**
      * Validates the firmware and returns an {@link AppraisalStatus}.
@@ -108,14 +108,24 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         if (measurement == null) {
             failedString += "Bios measurement not found for " + hostName;
             passed = false;
+            fwStatus = new AppraisalStatus(ERROR, failedString);
+        }
+
+        // Reject another device's log before updating its validation result.
+        if (passed && (measurement.getDeviceName() == null || !measurement.getDeviceName().equals(hostName))) {
+            return new AppraisalStatus(FAIL,
+                    "Firmware validation failed: measurement log is not associated with " + hostName,
+                    ReferenceManifest.MEASUREMENT_RIM);
         }
 
         if (passed) {
-            AppraisalStatus rimSignatureStatus = validateRimSignature(baseReferenceManifest,
+            // Keep resolved RIM state isolated to this validation.
+            FirmwareScvValidator validator = new FirmwareScvValidator();
+            AppraisalStatus rimSignatureStatus = validator.validateRimSignature(baseReferenceManifest,
                     caCredentialRepository, referenceManifestRepository);
             fwStatus = rimSignatureStatus;
             if (rimSignatureStatus.getAppStatus() == PASS) {
-                AppraisalStatus pcrStatus = validatePcrValues(device, hostName, baseReferenceManifest,
+                AppraisalStatus pcrStatus = validator.validatePcrValues(device, hostName,
                         measurement, referenceDigestValueRepository, policySettings);
                 fwStatus = pcrStatus;
                 if (pcrStatus.getAppStatus() == PASS) {
@@ -143,14 +153,12 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         return fwStatus;
     }
 
-    private static AppraisalStatus validateRimSignature(
+    private AppraisalStatus validateRimSignature(
             final BaseReferenceManifest baseReferenceManifest,
             final CACredentialRepository caCredentialRepository,
             final ReferenceManifestRepository referenceManifestRepository) {
         List<SwidResource> resources =
                 baseReferenceManifest.getFileResources();
-        AppraisalStatus rimSignatureStatus = new AppraisalStatus(PASS, "RIM signature valid.");
-        boolean passed = true;
         log.info("Validating RIM signature...");
 
         // verify signatures
@@ -159,57 +167,61 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
         try {
             referenceManifestValidator.setRim(baseReferenceManifest.getRimBytes());
         } catch (IOException e) {
-            rimSignatureStatus = new AppraisalStatus(FAIL,
+            return new AppraisalStatus(FAIL,
                     "RIM signature validation failed: can't set base RIM.");
         }
 
         //Validate signing cert
         List<CertificateAuthorityCredential> allCerts = caCredentialRepository.findAll();
-        CertificateAuthorityCredential signingCert = null;
+        boolean trustedSignatureFound = false;
         for (CertificateAuthorityCredential cert : allCerts) {
-            signingCert = cert;
-            KeyStore keyStore = null;
-            Set<CertificateAuthorityCredential> set = ValidationService.getCaChainRec(signingCert,
+            KeyStore keyStore;
+            Set<CertificateAuthorityCredential> set = ValidationService.getCaChainRec(cert,
                     Collections.emptySet(),
                     caCredentialRepository);
             try {
                 keyStore = ValidationService.caCertSetToKeystore(set);
-            } catch (Exception e) {
+            } catch (IOException | KeyStoreException e) {
                 log.error("Error building CA chain for "
-                        + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
+                        + Arrays.toString(cert.getSubjectKeyIdentifier()) + ": "
                         + e.getMessage());
+                continue;
             }
 
             ArrayList<X509Certificate> certs = new ArrayList<>(set.size());
+            boolean chainReadable = true;
             for (CertificateAuthorityCredential cac : set) {
                 try {
                     certs.add(cac.getX509Certificate());
                 } catch (IOException e) {
                     log.error(
                             "Error building CA chain for "
-                                    + Arrays.toString(signingCert.getSubjectKeyIdentifier()) + ": "
+                                    + Arrays.toString(cert.getSubjectKeyIdentifier()) + ": "
                                     + e.getMessage());
+                    chainReadable = false;
+                    break;
                 }
+            }
+            if (!chainReadable) {
+                continue;
             }
             referenceManifestValidator.setTrustStore(certs);
             try {
+                X509Certificate candidateCertificate = cert.getX509Certificate();
                 if (referenceManifestValidator.validateXmlSignature(
-                        signingCert.getX509Certificate().getPublicKey(),
-                        signingCert.getSubjectKeyIdString())) {
+                        candidateCertificate.getPublicKey(), cert.getSubjectKeyIdString())) {
                     try {
                         if (!SupplyChainCredentialValidator.verifyCertificate(
-                                signingCert.getX509Certificate(), keyStore)) {
-                            passed = false;
-                            rimSignatureStatus = new AppraisalStatus(FAIL,
+                                candidateCertificate, keyStore)) {
+                            return new AppraisalStatus(FAIL,
                                     "RIM signature validation failed: invalid certificate path.");
                         }
-                    } catch (IOException ioEx) {
-                        log.error("Error getting X509 cert from manager: " + ioEx.getMessage());
                     } catch (SupplyChainValidatorException scvEx) {
                         log.error("Error validating cert against keystore: " + scvEx.getMessage());
-                        rimSignatureStatus = new AppraisalStatus(FAIL,
+                        return new AppraisalStatus(FAIL,
                                 "RIM signature validation failed: invalid certificate path.");
                     }
+                    trustedSignatureFound = true;
                     break;
                 }
             } catch (IOException ioEx) {
@@ -217,64 +229,55 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
             }
         }
 
-        for (SwidResource swidRes : resources) {
-            supportReferenceManifest = referenceManifestRepository.findByHexDecHashAndRimType(
-                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
-            if (supportReferenceManifest != null) {
-                // Removed the filename check from this if statement
-                referenceManifestValidator.validateSupportRimHash(
-                        supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
-            }
-        }
-
-        if (passed && signingCert == null) {
-            passed = false;
-            rimSignatureStatus = new AppraisalStatus(FAIL,
+        if (!trustedSignatureFound) {
+            return new AppraisalStatus(FAIL,
                     "RIM signature validation failed: signing cert not found.");
         }
 
-        if (passed && supportReferenceManifest == null) {
-            rimSignatureStatus = new AppraisalStatus(FAIL,
+        for (SwidResource swidRes : resources) {
+            supportReferenceManifest = referenceManifestRepository.findByHexDecHashAndRimType(
+                    swidRes.getHashValue(), ReferenceManifest.SUPPORT_RIM);
+            if (supportReferenceManifest == null) {
+                return new AppraisalStatus(FAIL,
+                        "Support Reference Integrity Manifest can not be found: " + swidRes.getHashValue());
+            }
+            referenceManifestValidator.validateSupportRimHash(
+                    supportReferenceManifest.getRimBytes(), swidRes.getHashValue());
+            if (!referenceManifestValidator.isSupportRimValid()) {
+                return new AppraisalStatus(FAIL,
+                        "RIM signature validation failed: Hash validation failed for Support RIM.");
+            }
+        }
+
+        if (supportReferenceManifest == null) {
+            return new AppraisalStatus(FAIL,
                     "Support Reference Integrity Manifest can not be found");
-            passed = false;
         }
 
-        if (passed && !referenceManifestValidator.isSignatureValid()) {
-            passed = false;
-            rimSignatureStatus = new AppraisalStatus(FAIL, "Base RIM signature invalid.");
-        }
-
-        if (passed && !referenceManifestValidator.isSupportRimValid()) {
-            rimSignatureStatus = new AppraisalStatus(FAIL,
-                    "RIM signature validation failed: Hash validation "
-                            + "failed for Support RIM.");
-        }
-
-        return rimSignatureStatus;
+        return new AppraisalStatus(PASS, "RIM signature valid.");
     }
 
-    private static AppraisalStatus validatePcrValues(
+    private AppraisalStatus validatePcrValues(
             final Device device,
             final String hostName,
-            final ReferenceManifest baseReferenceManifest,
             final EventLogMeasurements measurement,
             final ReferenceDigestValueRepository referenceDigestValueRepository,
             final PolicySettings policySettings) {
 
-        String[] baseline = new String[Integer.SIZE];
+        String[] baseline;
         TCGEventLog logProcessor;
-        AppraisalStatus pcrAppraisalStatus = new AppraisalStatus(PASS, "PCR values validated.");
+        AppraisalStatus pcrAppraisalStatus = new AppraisalStatus(PASS, "Firmware event digests validated.");
         log.info("Validating PCR values...");
 
         try {
             logProcessor = new TCGEventLog(supportReferenceManifest.getRimBytes());
             baseline = logProcessor.getExpectedPCRValues();
-        } catch (IOException ioEx) {
-            log.error(ioEx);
+        } catch (IOException | RuntimeException e) {
+            log.error("Unable to parse support RIM event log for " + hostName, e);
+            return new AppraisalStatus(ERROR, "Firmware validation failed: support RIM event log could not be parsed.");
         }
 
-        // part 1 of firmware validation check: PCR baseline match
-        pcrValidator = new PcrValidator(baseline);
+        PcrValidator pcrValidator = new PcrValidator(baseline);
 
         if (baseline.length > 0) {
             String pcrContent = "";
@@ -289,34 +292,28 @@ public class FirmwareScvValidator extends SupplyChainCredentialValidator {
                         "Firmware validation failed: Client (%s) did not "
                                 + "provide pcr values.", device.getName()));
             } else {
-                // we have a full set of PCR values
-                //int algorithmLength = baseline[0].length();
-                //String[] storedPcrs = buildStoredPcrs(pcrContent, algorithmLength);
-                //pcrPolicy.validatePcrs(storedPcrs);
-
-                // part 2 of firmware validation check: bios measurements
-                // vs baseline tcg event log
-                // find the measurement
+                // Check measured event digests against the RIM database.
                 TCGEventLog tcgMeasurementLog;
                 LinkedList<TpmPcrEvent> tpmPcrEvents = new LinkedList<>();
                 List<ReferenceDigestValue> eventValue;
                 HashMap<String, ReferenceDigestValue> eventValueMap = new HashMap<>();
                 try {
-                    if (measurement.getDeviceName().equals(hostName)) {
-                        tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
-                        eventValue = referenceDigestValueRepository.findByManufacturerAndModel(
-                                device.getDeviceInfo().getHardwareInfo().getManufacturer(),
-                                device.getDeviceInfo().getHardwareInfo().getProductName());
-                        for (ReferenceDigestValue rdv : eventValue) {
-                            eventValueMap.put(rdv.getDigestValue(), rdv);
-                        }
-
-                        tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
-                                tcgMeasurementLog, eventValueMap, policySettings));
-                    }
-                } catch (IOException e) {
-                    log.error(e);
+                    tcgMeasurementLog = new TCGEventLog(measurement.getRimBytes());
+                } catch (IOException | RuntimeException e) {
+                    log.error("Unable to parse measurement event log for " + hostName, e);
+                    return new AppraisalStatus(ERROR,
+                            "Firmware validation failed: measurement event log could not be parsed.",
+                            ReferenceManifest.MEASUREMENT_RIM);
                 }
+                eventValue = referenceDigestValueRepository.findByManufacturerAndModel(
+                        device.getDeviceInfo().getHardwareInfo().getManufacturer(),
+                        device.getDeviceInfo().getHardwareInfo().getProductName());
+                for (ReferenceDigestValue rdv : eventValue) {
+                    eventValueMap.put(rdv.getDigestValue(), rdv);
+                }
+
+                tpmPcrEvents.addAll(pcrValidator.validateTpmEvents(
+                        tcgMeasurementLog, eventValueMap, policySettings));
 
                 if (!tpmPcrEvents.isEmpty()) {
                     StringBuilder sb = new StringBuilder();

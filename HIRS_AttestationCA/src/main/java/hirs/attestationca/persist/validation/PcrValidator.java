@@ -131,7 +131,7 @@ public class PcrValidator {
         StringBuilder sb = new StringBuilder();
         String failureMsg = "PCR %d does not match%n";
         if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
-            sb.append("failureMsg");
+            sb.append(failureMsg);
         } else {
             for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                 if (policySettings.isIgnoreImaEnabled() && i == IMA_PCR) {
@@ -190,17 +190,19 @@ public class PcrValidator {
         // not configured to be ignored), add it to a list of not-expected events
         List<TpmPcrEvent> tpmPcrEventsNotExpected = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-            if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
+            int pcrIndex = tpe.getPcrIndex();
+            boolean isFirmwarePcr = pcrIndex >= 0 && pcrIndex <= FIRMWARE_PCR_END;
+            if (policySettings.isIgnoreImaEnabled() && pcrIndex == IMA_PCR) {
                 log.debug(String.format("IMA Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
-                    && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
+            } else if (policySettings.isIgnoretBootEnabled() && (pcrIndex >= TBOOT_PCR_START
+                    && pcrIndex <= TBOOT_PCR_END)) {
                 log.debug(String.format("TBOOT Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() > FIRMWARE_PCR_END)) {
+            } else if (policySettings.isIgnoreOsEvtEnabled() && (pcrIndex > FIRMWARE_PCR_END)) {
                 log.debug(String.format("OS Evt Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                 log.debug(String.format("GPT Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()) {
-                if (tpe.getPcrIndex() > FIRMWARE_PCR_END) {
+                if (pcrIndex > FIRMWARE_PCR_END) {
                     log.debug(String.format("OS Evt Ignored -> %s", tpe));
                 } else if (tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
                         && tpe.getEventContentStr().contains("PIWG Firmware Volume Path")) {
@@ -211,14 +213,15 @@ public class PcrValidator {
                     }
                 }
             } else if (policySettings.isIgnoreOsEvtEnabled()
-                    && firmwareBootFinished[tpe.getPcrIndex()]) {
+                    && isFirmwarePcr
+                    && firmwareBootFinished[pcrIndex]) {
                 log.debug(String.format("Firmware boot finished -> %s", tpe));
             } else {
                 if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
                     tpmPcrEventsNotExpected.add(tpe);
                 }
-                if (tpe.getEventType() == EvConstants.EV_SEPARATOR) {
-                    firmwareBootFinished[tpe.getPcrIndex()] = true;
+                if (tpe.getEventType() == EvConstants.EV_SEPARATOR && isFirmwarePcr) {
+                    firmwareBootFinished[pcrIndex] = true;
                 }
             }
         }

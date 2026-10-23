@@ -1,6 +1,7 @@
 package hirs.utils.tpm.eventlog;
 
 
+import hirs.utils.specLookups.TcgAlgRegLookups;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,11 +88,11 @@ public class TCGEventLogTest {
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat("TPM_ALG_SHA256", equalTo(algStr));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgName(), equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgTpmtHa.TPM_ALG_SHA256, equalTo(id));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgId(), equalTo(id));
 
             LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
         } catch (Throwable throwable) {
@@ -138,11 +139,11 @@ public class TCGEventLogTest {
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat("TPM_ALG_SHA1", equalTo(algStr));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName(), equalTo(algStr));
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgTpmtHa.TPM_ALG_SHA1, equalTo(id));
+            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgId(), equalTo(id));
 
             LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
         } catch (Throwable throwable) {

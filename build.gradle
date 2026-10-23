@@ -24,10 +24,6 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "org.owasp.dependencycheck"
 
-    repositories {
-        mavenCentral()
-    }
-
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(25)

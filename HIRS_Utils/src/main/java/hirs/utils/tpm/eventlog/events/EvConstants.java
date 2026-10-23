@@ -7,34 +7,6 @@ package hirs.utils.tpm.eventlog.events;
 public final class EvConstants {
 
     /**
-     * Type length = 4 bytes.
-     */
-    public static final int EV_TYPE_SIZE = 4;
-    /**
-     * Event Log spec version.
-     */
-    public static final int MIN_SIZE = 32;
-    /**
-     * Event Type (byte array).
-     */
-    public static final int INT_LENGTH = 4;
-    /**
-     * Event Type (byte array).
-     */
-    public static final int SHA1_LENGTH = 20;
-    /**
-     * Event Type (byte array).
-     */
-    public static final int SHA256_LENGTH = 32;
-    /**
-     * Event Type (byte array).
-     */
-    public static final int SHA384_LENGTH = 48;
-    /**
-     * Event Type (byte array).
-     */
-    public static final int SHA512_LENGTH = 64;
-    /**
      * Each PCR bank holds 24 registers.
      */
     public static final int PCR_COUNT = 24;

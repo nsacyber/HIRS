@@ -23,7 +23,7 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import jakarta.persistence.NonUniqueResultException;
 import lombok.extern.log4j.Log4j2;
 import org.bouncycastle.util.encoders.Hex;
@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
+import static hirs.utils.specLookups.TcgPlatClassLookups.getPlatClassFromId;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
@@ -615,9 +615,17 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
+            UUID sessionId = null;
             if (componentAttributeRepository != null && provisionSessionId != null
                     && !provisionSessionId.isBlank()) {
-                UUID sessionId = UUID.fromString(provisionSessionId);
+                try {
+                    sessionId = UUID.fromString(provisionSessionId);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Ignoring invalid provision session ID for {}: {}",
+                            uuid, provisionSessionId);
+                }
+            }
+            if (sessionId != null) {
                 List<ComponentAttributeResult> attributeResults = componentAttributeRepository
                         .findByProvisionSessionId(sessionId);
                 List<UUID> failedComponentIds = attributeResults.stream()

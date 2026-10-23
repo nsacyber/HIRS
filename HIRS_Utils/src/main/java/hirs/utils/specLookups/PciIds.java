@@ -1,4 +1,4 @@
-package hirs.utils;
+package hirs.utils.specLookups;
 
 import com.github.marandus.pciid.model.Device;
 import com.github.marandus.pciid.model.DeviceClass;
