@@ -35,6 +35,37 @@ namespace hirsTest {
         }
 
         [Test]
+        public void TestCreateIdentityClaimWithKeyCandidates() {
+            IHirsAcaClient client = new Client(ClientTests.localhost);
+
+            DeviceInfo dv = new DeviceInfo();
+            TpmPublic ekPub = CommandTpm.GenerateEKTemplateL1();
+            TpmPublic akPub = new(TpmAlgId.Sha256, ObjectAttr.Restricted | ObjectAttr.Sign,
+                null, new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null),
+                    new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            byte[] akPubBytes = akPub;
+            byte[] ekPubBytes = ekPub;
+
+            List<KeyCandidate> candidates = new() {
+                KeyTemplateCatalog.BuildEkCandidate(ekPubBytes, ekPub, CommandTpm.DefaultL1EkHandle),
+                KeyTemplateCatalog.BuildAsymmetricCandidate(akPubBytes, akPub, CommandTpm.DefaultAkHandle,
+                    KeyRole.Attestation, ProvisioningOrigin.Local),
+            };
+
+            IdentityClaim obj = client.CreateIdentityClaim(dv, akPubBytes, ekPubBytes, new byte[] { },
+                new List<byte[]>(), "", null, candidates);
+
+            Assert.Multiple(() => {
+                Assert.That(obj.KeyCandidates, Has.Count.EqualTo(2));
+                Assert.That(obj.KeyCandidates[0].Role, Does.Contain(KeyRole.Endorsement));
+                Assert.That(obj.KeyCandidates[0].Tpm.EkTemplate, Is.EqualTo(EkTemplate.EkL1));
+                Assert.That(obj.KeyCandidates[1].Role, Does.Contain(KeyRole.Attestation));
+                Assert.That(obj.KeyCandidates[1].Tpm.AsymmetricTemplate, Is.EqualTo(AsymmetricKeyTemplate.Rsa2048Quote));
+                Assert.That(obj.KeyCandidates[0].KeyId, Is.Not.EqualTo(obj.KeyCandidates[1].KeyId));
+            });
+        }
+
+        [Test]
         public void TestCreateAkCertificateRequest() {
             IHirsAcaClient client = new Client(ClientTests.localhost);
 

@@ -1,11 +1,8 @@
 ﻿using CommandLine;
 using Serilog;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Tpm2Lib;
 
 namespace hirs {
@@ -28,7 +25,7 @@ namespace hirs {
                 CLI cli = new();
                 Log.Debug("Parsing CLI args.");
                 ParserResult<CLI> cliParseResult =
-                    CommandLine.Parser.Default.ParseArguments<CLI>(args)
+                    Parser.Default.ParseArguments<CLI>(args)
                         .WithParsed(parsed => cli = parsed)
                         .WithNotParsed(HandleParseError);
 
@@ -88,7 +85,10 @@ namespace hirs {
                 } else {
                     isAdmin = Mono.Unix.Native.Syscall.geteuid() == 0;
                 }
-            } catch { }
+            } catch {
+                // ignored
+            }
+
             return isAdmin;
         }
     }

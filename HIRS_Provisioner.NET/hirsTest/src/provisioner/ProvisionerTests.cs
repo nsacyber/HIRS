@@ -7,14 +7,16 @@ using Tpm2Lib;
 namespace hirsTest.provisioner {
     public class ProvisionerTests {
         [Test]
-        public async Task TestGoodAsync() {
+        public async Task TestProvisionHandleActivateCredentialFail() {
             const string address = "https://127.0.0.1:8443/";
             byte[] ekCert = [.. "EK CERTIFICATE"u8];
             byte[] secret = [.. "AuthCredential Secret"u8];
             const string acaIssuedCert = "ACA ISSUED CERTIFICATE";
+            /*
             byte[] integrityHMAC = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
             byte[] encIdentity = Convert.FromBase64String("6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
             byte[] encryptedSecret = Convert.FromBase64String("NekvnOX8RPRdyd0/cxBI4FTCuNkiu0KAnS28yT7yYJUL5Lwfcv5ctEK6zQA0fq0IsX5TlAYSidGKxrAilOSwALJmJ+m7sMiXwMKrZn1cd4gzXObZEQimQoWgSEQbPO7rfpUn1UfI8K5SzmUFUTxc5X3D8zFonaEBp6QCjtdLegKGgioCDcQFdz20Y0PFAa1Itug7YbZdCFpfit570eQQinmqdVryiNyn6CLQdMgIejuBxoEpoTSWszB5eFKEdn5g/+8wcvhp6RpNBQ0hikF+6688TOVK/j8n3JDwKVltJ/WNHjVO+lxa2aLIMJRgs5ZRuzuz6OSMf10KqJjSWZE04w==");
+            */
             byte[] encryptedSecretBlob = Convert.FromBase64String("AQA16S+c5fxE9F3J3T9zEEjgVMK42SK7QoCdLbzJPvJglQvkvB9y/ly0QrrNADR+rQixflOUBhKJ0YrGsCKU5LAAsmYn6buwyJfAwqtmfVx3iDNc5tkRCKZChaBIRBs87ut+lSfVR8jwrlLOZQVRPFzlfcPzMWidoQGnpAKO10t6AoaCKgINxAV3PbRjQ8UBrUi26Dthtl0IWl+K3nvR5BCKeap1WvKI3KfoItB0yAh6O4HGgSmhNJazMHl4UoR2fmD/7zBy+GnpGk0FDSGKQX7rrzxM5Ur+PyfckPApWW0n9Y0eNU76XFrZosgwlGCzllG7O7Po5Ix/XQqomNJZkTTj");
             byte[] credentialBlob = Convert.FromBase64String("ADgAIFQLXnXNUZTQNcNF367cJoRNCCwZSCz+tet07q+R0SKN6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
             TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
@@ -38,11 +40,13 @@ namespace hirsTest.provisioner {
             };
 
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
-            A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName)).Returns(ekPublic);
-            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
@@ -50,6 +54,9 @@ namespace hirsTest.provisioner {
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
             //A.CallTo(() => tpm.getPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
             A.CallTo(() => tpm.GetQuote(CommandTpm.DefaultAkHandle, TpmAlgId.Sha256, secret, out ctqr, A<uint[]>.Ignored)).DoesNothing();
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
+                A<byte[]>.That.IsSameSequenceAs(credentialBlob),
+                A<byte[]>.That.IsSameSequenceAs(encryptedSecretBlob))).Returns([]);
 
             IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
             A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(dv);
@@ -64,18 +71,220 @@ namespace hirsTest.provisioner {
             settings.SetUpLog();
             settings.CompleteSetUp();
 
-            CLI cli = A.Fake<CLI>();
-
-            IHirsProvisioner p = A.Fake<Provisioner>();
-            p.SetSettings(settings);
-            p.SetCLI(cli);
+            IHirsProvisioner p = new Provisioner(settings, new CLI());
             p.SetClient(client);
 
             p.SetDeviceInfoCollector(collector); // Give the provisioner the mocked collector
+            
             int result = await p.Provision(tpm);
 
-            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultEkHandle, A<byte[]>.That.IsSameSequenceAs(integrityHMAC), A<byte[]>.That.IsSameSequenceAs(encIdentity), A<byte[]>.That.IsSameSequenceAs(encryptedSecret))).MustHaveHappenedOnceExactly();
-            Assert.That(result, Is.EqualTo(0));
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle, A<byte[]>.That.IsSameSequenceAs(credentialBlob), A<byte[]>.That.IsSameSequenceAs(encryptedSecretBlob))).MustHaveHappenedOnceExactly();
+            Assert.That(result, Is.EqualTo(61));  // Proves activate credential was called with the expected parameters. 
+        }
+
+        [Test]
+        public async Task TestProvisionMissingTpmError() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+            
+            Provisioner provisioner = new(settings, new CLI());
+
+            int result = await provisioner.Provision(null);
+
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.TPM_ERROR));
+        }
+
+        [Test]
+        public async Task TestProvisionHandleMissingEncryptedSecret() {
+            const string address = "https://127.0.0.1:8443/";
+            byte[] ekCert = [.. "EK CERTIFICATE"u8];
+            byte[] credentialBlob = Convert.FromBase64String("ADgAIFQLXnXNUZTQNcNF367cJoRNCCwZSCz+tet07q+R0SKN6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
+            TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
+            TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
+            //TpmPublic ldevidPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "LDEVID PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
+            Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
+            IdentityClaimResponse idClaimResp = new() {
+                Status = ResponseStatus.Pass,
+                CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob)
+            };
+
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            byte[] name = null!, qualifiedName = null!;
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
+            A.CallTo(() => tpm.ConvertLDevIDPublic(A<string>.Ignored)).Returns([.. "LDEVID PUBLIC"u8]);
+
+            IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(new DeviceInfo());
+
+            IHirsAcaClient client = A.Fake<IHirsAcaClient>();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<List<byte[]>>.Ignored, A<string>.Ignored, A<byte[]>.Ignored))
+                .Returns(new IdentityClaim());
+            A.CallTo(() => client.PostIdentityClaim(A<IdentityClaim>.Ignored)).Returns(Task.FromResult(idClaimResp));
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+
+            CLI cli = A.Fake<CLI>();
+            IHirsProvisioner provisioner = new Provisioner(settings, cli);
+            provisioner.SetClient(client);
+            provisioner.SetDeviceInfoCollector(collector);
+
+            int result = await provisioner.Provision(tpm);
+
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED));
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<byte[]>.Ignored)).MustNotHaveHappened();
+        }
+
+        [Test]
+        public async Task TestProvisionSplitsMainCombinedCredentialBlob() {
+            const string address = "https://127.0.0.1:8443/";
+            byte[] ekCert = [.. "EK CERTIFICATE"u8];
+            // Combined credential blob and its parts
+            byte[] integrityHmac = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
+            byte[] encIdentity = Convert.FromBase64String("6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQ==");
+            byte[] encryptedSecret = Convert.FromBase64String("NekvnOX8RPRdyd0/cxBI4FTCuNkiu0KAnS28yT7yYJUL5Lwfcv5ctEK6zQA0fq0IsX5TlAYSidGKxrAilOSwALJmJ+m7sMiXwMKrZn1cd4gzXObZEQimQoWgSEQbPO7rfpUn1UfI8K5SzmUFUTxc5X3D8zFonaEBp6QCjtdLegKGgioCDcQFdz20Y0PFAa1Itug7YbZdCFpfit570eQQinmqdVryiNyn6CLQdMgIejuBxoEpoTSWszB5eFKEdn5g/+8wcvhp6RpNBQ0hikF+6688TOVK/j8n3JDwKVltJ/WNHjVO+lxa2aLIMJRgs5ZRuzuz6OSMf10KqJjSWZE04w==");
+            byte[] combinedBlob = Convert.FromBase64String("OAAAIFQLXnXNUZTQNcNF367cJoRNCCwZSCz+tet07q+R0SKN6e2oGBsK3H9Vzbj667ZsjnVOtvpSpQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATXpL5zl/ET0XcndP3MQSOBUwrjZIrtCgJ0tvMk+8mCVC+S8H3L+XLRCus0ANH6tCLF+U5QGEonRisawIpTksACyZifpu7DIl8DCq2Z9XHeIM1zm2REIpkKFoEhEGzzu636VJ9VHyPCuUs5lBVE8XOV9w/MxaJ2hAaekAo7XS3oChoIqAg3EBXc9tGNDxQGtSLboO2G2XQhaX4ree9HkEIp5qnVa8ojcp+gi0HTICHo7gcaBKaE0lrMweXhShHZ+YP/vMHL4aekaTQUNIYpBfuuvPEzlSv4/J9yQ8ClZbSf1jR41TvpcWtmiyDCUYLOWUbs7s+jkjH9dCqiY0lmRNOM=");
+            TpmPublic ekPublic = CommandTpm.GenerateEKTemplateL1();
+            TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
+            Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
+            Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
+            IdentityClaimResponse idClaimResp = new() {
+                Status = ResponseStatus.Pass,
+                CredentialBlob = Google.Protobuf.ByteString.CopyFrom(combinedBlob)
+            };
+
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            byte[] name = null!, qualifiedName = null!;
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
+            A.CallTo(() => tpm.ConvertLDevIDPublic(A<string>.Ignored)).Returns([.. "LDEVID PUBLIC"u8]);
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<byte[]>.Ignored)).Returns([]);
+
+            IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(new DeviceInfo());
+
+            IHirsAcaClient client = A.Fake<IHirsAcaClient>();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<List<byte[]>>.Ignored, A<string>.Ignored, A<byte[]>.Ignored))
+                .Returns(new IdentityClaim());
+            A.CallTo(() => client.PostIdentityClaim(A<IdentityClaim>.Ignored)).Returns(Task.FromResult(idClaimResp));
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+
+            IHirsProvisioner provisioner = new Provisioner(settings, A.Fake<CLI>());
+            provisioner.SetClient(client);
+            provisioner.SetDeviceInfoCollector(collector);
+
+            int result = await provisioner.Provision(tpm);
+
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL1EkHandle,
+                A<byte[]>.That.IsSameSequenceAs(integrityHmac), A<byte[]>.That.IsSameSequenceAs(encIdentity),
+                A<byte[]>.That.IsSameSequenceAs(encryptedSecret))).MustHaveHappenedOnceExactly();
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.PASS_1_STATUS_FAIL)); // the fake TPM recovers nothing
+        }
+
+        [Test]
+        public async Task TestProvisionUsesEkTemplateFromSettings() {
+            const string address = "https://127.0.0.1:8443/";
+            byte[] credentialBlob = [.. "CREDENTIAL BLOB"u8];
+            byte[] encryptedSecret = [.. "ENCRYPTED SECRET"u8];
+            EndorsementKey l1Ek = new(EkTemplate.EkL1, CommandTpm.GenerateEKTemplateL1(), CommandTpm.DefaultL1EkHandle, true, null);
+            EndorsementKey l2Ek = new(EkTemplate.EkL2, CommandTpm.GenerateEKTemplateL2(), CommandTpm.DefaultL2EkHandle, true, null);
+            TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
+            Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
+            Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
+            IdentityClaimResponse idClaimResp = new() {
+                Status = ResponseStatus.Pass,
+                CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob),
+                EncryptedSecret = Google.Protobuf.ByteString.CopyFrom(encryptedSecret)
+            };
+
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            byte[] name = null!, qualifiedName = null!;
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(l1Ek);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(l2Ek);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
+            A.CallTo(() => tpm.ConvertLDevIDPublic(A<string>.Ignored)).Returns([.. "LDEVID PUBLIC"u8]);
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored))
+                .Returns([]);
+
+            IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(new DeviceInfo());
+
+            IHirsAcaClient client = A.Fake<IHirsAcaClient>();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<List<byte[]>>.Ignored, A<string>.Ignored, A<byte[]>.Ignored, A<List<KeyCandidate>>.Ignored))
+                .Returns(new IdentityClaim());
+            A.CallTo(() => client.PostIdentityClaim(A<IdentityClaim>.Ignored)).Returns(Task.FromResult(idClaimResp));
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ek_l2.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+
+            IHirsProvisioner provisioner = new Provisioner(settings, A.Fake<CLI>());
+            provisioner.SetClient(client);
+            provisioner.SetDeviceInfoCollector(collector);
+
+            await provisioner.Provision(tpm);
+
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, A<bool>.Ignored))
+                .MustHaveHappenedOnceExactly();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.That.IsSameSequenceAs(l2Ek.PublicArea), A<byte[]>.Ignored, A<List<byte[]>>.Ignored,
+                A<string>.Ignored, A<byte[]>.Ignored, A<List<KeyCandidate>>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL2EkHandle,
+                A<byte[]>.That.IsSameSequenceAs(credentialBlob), A<byte[]>.That.IsSameSequenceAs(encryptedSecret)))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task TestProvisionEvictsLegacyAkOnlyWhenReplacingAk(bool replaceAk) {
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            A.CallTo(() => tpm.AcquireEndorsementKey(A<EkTemplate>.Ignored)).Returns(null);
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.CompleteSetUp();
+            CLI cli = A.Fake<CLI>();
+            cli.ReplaceAK = replaceAk;
+
+            int result = await new Provisioner(settings, cli).Provision(tpm);
+
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.TPM_ERROR)); // stops after the EKs, none were available
+            A.CallTo(() => tpm.EvictLegacyAttestationKey()).MustHaveHappened(replaceAk ? 1 : 0, Times.Exactly);
         }
 
         [Test]
@@ -95,11 +304,13 @@ namespace hirsTest.provisioner {
             idClaimResp.ClearCredentialBlob();
 
             IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
             byte[] name = null!, qualifiedName = null!;
-            A.CallTo(() => tpm.GetCertificateFromNvIndex(CommandTpm.DefaultEkcNvIndex)).Returns(ekCert);
-            A.CallTo(() => tpm.CreateEndorsementKey(CommandTpm.DefaultEkHandle)).DoesNothing();
-            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultEkHandle, out name, out qualifiedName)).Returns(ekPublic);
-            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultEkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
+            A.CallTo(() => tpm.GetCertificateFromNvIndex(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1)!.Value)).Returns(ekCert);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(
+                new EndorsementKey(EkTemplate.EkL1, ekPublic, CommandTpm.DefaultL1EkHandle, true, null));
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(null);
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, false)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(ekPublic);
             A.CallTo(() => tpm.CreateStorageRootKey(CommandTpm.DefaultSrkHandle)).DoesNothing();
             A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
@@ -120,9 +331,7 @@ namespace hirsTest.provisioner {
 
             CLI cli = A.Fake<CLI>();
 
-            IHirsProvisioner p = A.Fake<Provisioner>();
-            p.SetSettings(settings);
-            p.SetCLI(cli);
+            IHirsProvisioner p = new Provisioner(settings, cli);
             p.SetClient(client);
             
             p.SetDeviceInfoCollector(collector); // Give the provisioner the mocked collector

@@ -13,6 +13,7 @@ namespace hirs {
         PROVISIONING_ERROR = 60, // Generic provisioning error | 
         PASS_1_STATUS_FAIL = 61,
         PASS_2_STATUS_FAIL = 62,
-        MAKE_CREDENTIAL_BLOB_MALFORMED = 63 // The TPM2_MakeCredential blob was not correct 
+        MAKE_CREDENTIAL_BLOB_MALFORMED = 63, // The TPM2_MakeCredential credentialBlob was not correct 
+        MAKE_CREDENTIAL_ENCRYPTED_SECRET_MALFORMED = 64 // The TPM2_MakeCredential encryptedSecret was not correct 
     }
 }
