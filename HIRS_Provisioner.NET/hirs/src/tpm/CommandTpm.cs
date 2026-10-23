@@ -125,6 +125,11 @@ namespace hirs {
                 int q = Math.DivRem(size - offset, maxReadSize, out int r);
                 ushort sizeToRead = q > 0 ? maxReadSize : (ushort)r;
                 byte[] block = tpm.NvRead(authHandle, nvIndex, sizeToRead, offset);
+                if (block == null || block.Length < sizeToRead) {
+                    Log.Warning("NV read of 0x{Index:X} at offset {Offset} failed with TPM response {Rc}.",
+                        nvIndex.handle, offset, tpm._GetLastResponseCode());
+                    return null;
+                }
                 Array.Copy(block, 0, buffer, ptr, sizeToRead);
                 offset += sizeToRead;
                 ptr += sizeToRead;
