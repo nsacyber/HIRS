@@ -13,6 +13,7 @@ namespace hirs {
         /// template into a transient handle that is released when the result is disposed.
         /// </summary>
         EndorsementKey? AcquireEndorsementKey(EkTemplate template);
+        bool EvictLegacyAttestationKey();
         void CreateAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace);
         void CreateStorageRootKey(uint srkHandleInt);
         void CreateLDevIDKey(uint srkHandleInt, string pubPath, string privPath, bool replace);

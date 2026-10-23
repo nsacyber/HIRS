@@ -174,6 +174,9 @@ namespace hirs {
                 EndorsementKey? l1Ek = null;
                 EndorsementKey? claimEk = null;
                 byte[] ekc = [];
+                if (Cli.ReplaceAK && tpm.EvictLegacyAttestationKey()) {
+                    Log.Information("----> Removed the previous Attestation Key from 0x{Handle:X}.", CommandTpm.LegacyAkHandle);
+                }
                 Log.Information("----> Gathering Endorsement Keys and Certificates.");
                 foreach (EkTemplate template in KeyTemplateCatalog.SupportedEkTemplates) {
                     EndorsementKey? ek = null;

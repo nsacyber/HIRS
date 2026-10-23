@@ -107,6 +107,25 @@ namespace hirsTest.tpm {
         }
 
         [Test]
+        public void TestEvictLegacyAttestationKeyRemovesOldAk() {
+            using EndorsementKey l1Ek = tpm.AcquireEndorsementKey(Hirs.Pb.EkTemplate.EkL1)!;
+            tpm.CreateAttestationKey(l1Ek.Handle, CommandTpm.LegacyAkHandle, replace: true);
+
+            Assert.That(tpm.EvictLegacyAttestationKey(), Is.True);
+            Assert.That(tpm.ReadPublicArea(CommandTpm.LegacyAkHandle, out byte[] _, out byte[] _), Is.Null);
+        }
+
+        [Test]
+        public void TestEvictLegacyAttestationKeyKeepsL2Ek() {
+            using (EndorsementKey _ = tpm.AcquireEndorsementKey(Hirs.Pb.EkTemplate.EkL2)!) { }
+            Assume.That(tpm.ReadPublicArea(CommandTpm.DefaultL2EkHandle, out byte[] _, out byte[] _), Is.Not.Null,
+                "The EK was not persisted. Nothing to keep.");
+
+            Assert.That(tpm.EvictLegacyAttestationKey(), Is.False);
+            Assert.That(tpm.ReadPublicArea(CommandTpm.DefaultL2EkHandle, out byte[] _, out byte[] _), Is.Not.Null);
+        }
+
+        [Test]
         public void TestSupportsAlgorithmReportsKnownAlgorithm() {
             Assert.That(tpm.SupportsAlgorithm(TpmAlgId.Rsa), Is.True);
         }

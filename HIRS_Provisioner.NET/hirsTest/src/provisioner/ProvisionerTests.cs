@@ -269,6 +269,24 @@ namespace hirsTest.provisioner {
                 .MustHaveHappenedOnceExactly();
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public async Task TestProvisionEvictsLegacyAkOnlyWhenReplacingAk(bool replaceAk) {
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            A.CallTo(() => tpm.AcquireEndorsementKey(A<EkTemplate>.Ignored)).Returns(null);
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.CompleteSetUp();
+            CLI cli = A.Fake<CLI>();
+            cli.ReplaceAK = replaceAk;
+
+            int result = await new Provisioner(settings, cli).Provision(tpm);
+
+            Assert.That(result, Is.EqualTo((int)ClientExitCodes.TPM_ERROR)); // stops after the EKs, none were available
+            A.CallTo(() => tpm.EvictLegacyAttestationKey()).MustHaveHappened(replaceAk ? 1 : 0, Times.Exactly);
+        }
+
         [Test]
         public async Task TestIssueWithIdentityClaimResponse() {
             const string address = "https://127.0.0.1:8443/";

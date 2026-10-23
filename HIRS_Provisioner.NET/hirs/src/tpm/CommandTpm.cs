@@ -23,6 +23,7 @@ namespace hirs {
         // conventional persistent handle for the ECC NIST P256 (L-2) EK.
         public const uint DefaultL2EkHandle = 0x81010002;
         public const uint DefaultAkHandle = 0x81000002;
+        public const uint LegacyAkHandle = 0x81010002;
         public const uint DefaultSrkHandle = 0x81000001;
 
         private readonly Tpm2 tpm;
@@ -219,12 +220,12 @@ namespace hirs {
             };
             // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
             EccParms ecc = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), EccCurve.TpmEccNistP256, new NullKdfScheme());
-            // unique buffer must be filled with 0 for the EK Template L-1.
-            byte[] zero16 = new byte[16];
-            Array.Fill<byte>(zero16, 0x00);
+            // parameter buffer must be filled with 0 for the EK Template L-2.
+            byte[] zero32 = new byte[32];
+            Array.Fill<byte>(zero32, 0x00);
             EccPoint point = new() {
-                x = zero16,
-                y = zero16
+                x = zero32,
+                y = zero32
             };
             TpmPublic inPublic = new(nameAlg, attributes, auth_policy, ecc, point);
             return inPublic;
@@ -349,6 +350,26 @@ namespace hirs {
             ObjectAttr attributes = LDevIDAttributes();
             TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
             return inPublic;
+        }
+
+        /**
+         * True if the key has the HIRS AK template.
+         */
+        public static bool IsHirsAttestationKey(TpmPublic pub) {
+            TpmPublic withoutKey = new(pub.nameAlg, pub.objectAttributes, pub.authPolicy, pub.parameters, new Tpm2bPublicKeyRsa());
+            return pub.type == TpmAlgId.Rsa
+                && withoutKey.GetTpmRepresentation().SequenceEqual(GenerateAKTemplate(TpmAlgId.Sha256).GetTpmRepresentation());
+        }
+
+        public bool EvictLegacyAttestationKey() {
+            TpmPublic? existing = ReadPublicArea(LegacyAkHandle, out byte[] _, out byte[] _);
+            if (existing == null || !IsHirsAttestationKey(existing)) {
+                return false;
+            }
+            TpmHandle legacyAkHandle = new(LegacyAkHandle);
+            tpm.EvictControl(TpmRh.Owner, legacyAkHandle, legacyAkHandle);
+            Log.Debug("Removed the AK a previous provisioner version left at 0x" + LegacyAkHandle.ToString("X") + ".");
+            return true;
         }
 
         public void CreateAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace) {

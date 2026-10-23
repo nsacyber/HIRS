@@ -1,10 +1,39 @@
 using hirs;
 using NUnit.Framework;
+using System.Security.Cryptography;
 using Tpm2Lib;
 
 namespace hirsTest.tpm;
 
 public class CommandTpmTests {
+    private const ObjectAttr AkAttributes = ObjectAttr.Restricted | ObjectAttr.Sign | ObjectAttr.FixedParent
+        | ObjectAttr.FixedTPM | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
+
+    private static TpmPublic Ak(ObjectAttr attributes) {
+        RsaParms rsa = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0);
+        return new TpmPublic(TpmAlgId.Sha256, attributes, [], rsa, new Tpm2bPublicKeyRsa(RandomNumberGenerator.GetBytes(256)));
+    }
+
+    [Test]
+    public void TestEkTemplateL2UniqueIsTwo32ByteZeroBuffers() {
+        EccPoint unique = (EccPoint)CommandTpm.GenerateEKTemplateL2().unique;
+
+        Assert.That(unique.x, Is.EqualTo(new byte[32]));
+        Assert.That(unique.y, Is.EqualTo(new byte[32]));
+    }
+
+    [Test]
+    public void TestIsHirsAttestationKeyMatchesAkTemplate() {
+        Assert.That(CommandTpm.IsHirsAttestationKey(Ak(AkAttributes)), Is.True);
+    }
+
+    [Test]
+    public void TestIsHirsAttestationKeyRejectsOtherKeys() {
+        Assert.That(CommandTpm.IsHirsAttestationKey(CommandTpm.GenerateEKTemplateL1()), Is.False);
+        Assert.That(CommandTpm.IsHirsAttestationKey(CommandTpm.GenerateEKTemplateL2()), Is.False);
+        Assert.That(CommandTpm.IsHirsAttestationKey(Ak(AkAttributes & ~ObjectAttr.Restricted)), Is.False);
+    }
+
     [Test]
     public void TestMarshalling() {
         byte[] integrityHMAC = Convert.FromBase64String("VAtedc1RlNA1w0XfrtwmhE0ILBlILP6163Tur5HRIo0=");
