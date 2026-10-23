@@ -89,6 +89,7 @@ public class UefiProcessingTest {
         uefiTxt = IOUtils.toString(this.getClass()
                         .getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT),
                 StandardCharsets.UTF_8);
+        uefiTxt = uefiTxt.replaceAll("\\s+", "");
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
         guid = uefiVariable.getVariableNameGuid();

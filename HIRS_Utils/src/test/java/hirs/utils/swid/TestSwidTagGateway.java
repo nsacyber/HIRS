@@ -9,7 +9,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,21 +23,13 @@ public class TestSwidTagGateway {
     @TempDir
     private static Path tempDir;
 
-    private static final String ATTRIBUTES_FILE = Objects.requireNonNull(
-            TestSwidTagGateway.class.getClassLoader()
-                    .getResource("swid/rim_fields.json")).getPath();
-
-    private static final String CA_CHAIN_FILE = Objects.requireNonNull(
-            TestSwidTagGateway.class.getClassLoader()
-                    .getResource("swid/RimCertChain.pem")).getPath();
-
-    private static final String SUPPORT_RIM_FILE = Objects.requireNonNull(
-            TestSwidTagGateway.class.getClassLoader()
-                    .getResource("swid/Example.com.BIOS.01.rimel")).getPath();
-
     private static SwidTagGateway gateway;
 
     private static ReferenceManifestValidator validator;
+
+    private static URI SUPPORT_RIM_FILE;
+
+    private static URI rfc3852CounterSignatureFile;
 
     private static final String DEFAULT_OUTPUT = "generated_swidTag.swidtag";
 
@@ -47,17 +42,26 @@ public class TestSwidTagGateway {
     private final String privateKeyFile = Objects.requireNonNull(TestSwidTagGateway.class.getClassLoader()
             .getResource("swid/privateRimKey.pem")).getPath();
 
-    private final String rfc3852CounterSignatureFile = Objects.requireNonNull(
-            TestSwidTagGateway.class.getClassLoader()
-                    .getResource("swid/counterSignature.file")).getPath();
-
     /**
      * Sets the variables used for the test.
      */
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws URISyntaxException {
+        String ATTRIBUTES_FILE = Objects.requireNonNull(
+                TestSwidTagGateway.class.getClassLoader()
+                        .getResource("swid/rim_fields.json")).getPath();
+        String CA_CHAIN_FILE = Objects.requireNonNull(
+                TestSwidTagGateway.class.getClassLoader()
+                        .getResource("swid/RimCertChain.pem")).getPath();
+        SUPPORT_RIM_FILE = Objects.requireNonNull(
+                TestSwidTagGateway.class.getClassLoader()
+                        .getResource("swid/Example.com.BIOS.01.rimel").toURI());
+        rfc3852CounterSignatureFile = Objects.requireNonNull(
+                TestSwidTagGateway.class.getClassLoader()
+                        .getResource("swid/counterSignature.file").toURI());
+
         gateway = new SwidTagGateway();
-        gateway.setRimEventLog(SUPPORT_RIM_FILE);
+        gateway.setRimEventLog(Paths.get(SUPPORT_RIM_FILE).toString());
         gateway.setAttributesFile(ATTRIBUTES_FILE);
         validator = new ReferenceManifestValidator();
         validator.setTrustStoreFile(CA_CHAIN_FILE);
@@ -147,7 +151,7 @@ public class TestSwidTagGateway {
         gateway.setDefaultCredentials(true);
         gateway.setJksTruststoreFile(jksKeystoreFile);
         gateway.setTimestampFormat("RFC3852");
-        gateway.setTimestampArgument(rfc3852CounterSignatureFile);
+        gateway.setTimestampArgument(Paths.get(rfc3852CounterSignatureFile).toString());
         gateway.generateSwidTag(outputPath.toString());
 
         validator.setRim(outputPath.toString());
