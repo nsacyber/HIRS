@@ -68,14 +68,14 @@ namespace hirs {
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
-                    if (!string.IsNullOrEmpty(settings.linux_bios_vendor)) {
-                        fw.BiosVendor = settings.linux_bios_vendor.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosVendor)) {
+                        fw.BiosVendor = settings.LinuxBiosVendor.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_bios_version)) {
-                        fw.BiosVersion = settings.linux_bios_version.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosVersion)) {
+                        fw.BiosVersion = settings.LinuxBiosVersion.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_bios_date)) {
-                        fw.BiosReleaseDate = settings.linux_bios_date.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosDate)) {
+                        fw.BiosReleaseDate = settings.LinuxBiosDate.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(fw.BiosVendor)) {
@@ -124,17 +124,17 @@ namespace hirs {
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
-                    if (!string.IsNullOrEmpty(settings.linux_sys_vendor)) {
-                        hw.Manufacturer = settings.linux_sys_vendor.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxSysVendor)) {
+                        hw.Manufacturer = settings.LinuxSysVendor.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_name)) {
-                        hw.ProductName = settings.linux_product_name.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductName)) {
+                        hw.ProductName = settings.LinuxProductName.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_version)) {
-                        hw.ProductVersion = settings.linux_product_version.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductVersion)) {
+                        hw.ProductVersion = settings.LinuxProductVersion.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_serial)) {
-                        hw.SystemSerialNumber = settings.linux_product_serial.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductSerial)) {
+                        hw.SystemSerialNumber = settings.LinuxProductSerial.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(hw.Manufacturer)) {

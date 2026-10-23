@@ -211,6 +211,65 @@ namespace hirsTest.provisioner {
         }
 
         [Test]
+        public async Task TestProvisionUsesEkTemplateFromSettings() {
+            const string address = "https://127.0.0.1:8443/";
+            byte[] credentialBlob = [.. "CREDENTIAL BLOB"u8];
+            byte[] encryptedSecret = [.. "ENCRYPTED SECRET"u8];
+            EndorsementKey l1Ek = new(EkTemplate.EkL1, CommandTpm.GenerateEKTemplateL1(), CommandTpm.DefaultL1EkHandle, true, null);
+            EndorsementKey l2Ek = new(EkTemplate.EkL2, CommandTpm.GenerateEKTemplateL2(), CommandTpm.DefaultL2EkHandle, true, null);
+            TpmPublic akPublic = new(TpmAlgId.Sha256, ObjectAttr.None, [.. "AK PUBLIC AUTH POLICY"u8], new RsaParms(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(TpmAlgId.Sha256), 2048, 0), new Tpm2bPublicKeyRsa());
+            TpmPublic srkPublic = CommandTpm.GenerateSRKTemplateL1();
+            Tpm2bDigest[] sha1Values = [new([.. "SHA1 DIGEST1"u8])];
+            Tpm2bDigest[] sha256Values = [new([.. "SHA256 DIGEST1"u8])];
+            IdentityClaimResponse idClaimResp = new() {
+                Status = ResponseStatus.Pass,
+                CredentialBlob = Google.Protobuf.ByteString.CopyFrom(credentialBlob),
+                EncryptedSecret = Google.Protobuf.ByteString.CopyFrom(encryptedSecret)
+            };
+
+            IHirsAcaTpm tpm = A.Fake<IHirsAcaTpm>();
+            A.CallTo(() => tpm.IsTpmPresent()).Returns(true);
+            byte[] name = null!, qualifiedName = null!;
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL1)).Returns(l1Ek);
+            A.CallTo(() => tpm.AcquireEndorsementKey(EkTemplate.EkL2)).Returns(l2Ek);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultAkHandle, out name, out qualifiedName)).Returns(akPublic);
+            A.CallTo(() => tpm.ReadPublicArea(CommandTpm.DefaultSrkHandle, out name, out qualifiedName)).Returns(srkPublic);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha1, A<uint[]>.Ignored)).Returns(sha1Values);
+            A.CallTo(() => tpm.GetPcrList(TpmAlgId.Sha256, A<uint[]>.Ignored)).Returns(sha256Values);
+            A.CallTo(() => tpm.ConvertLDevIDPublic(A<string>.Ignored)).Returns([.. "LDEVID PUBLIC"u8]);
+            A.CallTo(() => tpm.ActivateCredential(A<uint>.Ignored, A<uint>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored))
+                .Returns([]);
+
+            IHirsDeviceInfoCollector collector = A.Fake<IHirsDeviceInfoCollector>();
+            A.CallTo(() => collector.CollectDeviceInfo(address)).Returns(new DeviceInfo());
+
+            IHirsAcaClient client = A.Fake<IHirsAcaClient>();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.Ignored, A<List<byte[]>>.Ignored, A<string>.Ignored, A<byte[]>.Ignored, A<List<KeyCandidate>>.Ignored))
+                .Returns(new IdentityClaim());
+            A.CallTo(() => client.PostIdentityClaim(A<IdentityClaim>.Ignored)).Returns(Task.FromResult(idClaimResp));
+
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ek_l2.json");
+            settings.SetUpLog();
+            settings.CompleteSetUp();
+
+            IHirsProvisioner provisioner = new Provisioner(settings, A.Fake<CLI>());
+            provisioner.SetClient(client);
+            provisioner.SetDeviceInfoCollector(collector);
+
+            await provisioner.Provision(tpm);
+
+            A.CallTo(() => tpm.CreateAttestationKey(CommandTpm.DefaultL1EkHandle, CommandTpm.DefaultAkHandle, A<bool>.Ignored))
+                .MustHaveHappenedOnceExactly();
+            A.CallTo(() => client.CreateIdentityClaim(A<DeviceInfo>.Ignored, A<byte[]>.Ignored,
+                A<byte[]>.That.IsSameSequenceAs(l2Ek.PublicArea), A<byte[]>.Ignored, A<List<byte[]>>.Ignored,
+                A<string>.Ignored, A<byte[]>.Ignored, A<List<KeyCandidate>>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => tpm.ActivateCredential(CommandTpm.DefaultAkHandle, CommandTpm.DefaultL2EkHandle,
+                A<byte[]>.That.IsSameSequenceAs(credentialBlob), A<byte[]>.That.IsSameSequenceAs(encryptedSecret)))
+                .MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
         public async Task TestIssueWithIdentityClaimResponse() {
             const string address = "https://127.0.0.1:8443/";
             byte[] ekCert = [.. "EK CERTIFICATE"u8];

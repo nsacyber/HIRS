@@ -170,15 +170,16 @@ namespace hirs {
             if (tpm != null && tpm.IsTpmPresent()) {
                 Log.Information("--> Provisioning");
                 ProvisioningKeys keys = new();
+                EkTemplate ekTemplate = Settings.EkTemplate;
                 EndorsementKey? l1Ek = null;
+                EndorsementKey? claimEk = null;
                 byte[] ekc = [];
                 Log.Information("----> Gathering Endorsement Keys and Certificates.");
                 foreach (EkTemplate template in KeyTemplateCatalog.SupportedEkTemplates) {
                     EndorsementKey? ek = null;
                     try {
                         ek = tpm.AcquireEndorsementKey(template);
-                    } catch (Exception e) when (template != EkTemplate.EkL1) {
-                        // Only the L-1 EK is required (legacy protocol, AK parent).
+                    } catch (Exception e) when (template != EkTemplate.EkL1 && template != ekTemplate) {
                         Log.Debug(e, "EK {Template} was not available; continuing without it.", template);
                     }
                     if (ek == null) {
@@ -192,6 +193,9 @@ namespace hirs {
                         ek.IsPersistent ? (uint?)ek.Handle : null, ekCertificate), ek.Handle, ek);
                     if (template == EkTemplate.EkL1) {
                         l1Ek = ek;
+                    }
+                    if (template == ekTemplate) {
+                        claimEk = ek;
                         ekc = ekCertificate;
                     }
                 }
@@ -199,7 +203,11 @@ namespace hirs {
                     Log.Error("Could not obtain the L-1 Endorsement Key from the TPM.");
                     return (int)ClientExitCodes.TPM_ERROR;
                 }
-                byte[] ekPublicArea = l1Ek.PublicArea;
+                if (claimEk == null) {
+                    Log.Error("Could not obtain the {Template} Endorsement Key set by ek_template in the settings file.", ekTemplate);
+                    return (int)ClientExitCodes.TPM_ERROR;
+                }
+                byte[] ekPublicArea = claimEk.PublicArea;
 
                 Log.Information("----> " + (Cli.ReplaceAK ? "Creating new" : "Verifying existence of") + " Attestation Key.");
                 tpm.CreateAttestationKey(l1Ek.Handle, CommandTpm.DefaultAkHandle, Cli.ReplaceAK);
@@ -218,14 +226,14 @@ namespace hirs {
                 List<byte[]> pcs = null, baseRims = null, supportRimELs = null, supportRimPCRs = null;
                 if (Settings.HasEfiPrefix()) {
                     Log.Information("----> Gathering artifacts from EFI.");
-                    pcs = Settings.gatherPlatformCertificatesFromEFI();
-                    baseRims = Settings.gatherRIMBasesFromEFI();
-                    supportRimELs = Settings.gatherSupportRIMELsFromEFI();
-                    supportRimPCRs = Settings.gatherSupportRIMPCRsFromEFI();
+                    pcs = Settings.GatherPlatformCertificatesFromEfi();
+                    baseRims = Settings.GatherRimBasesFromEfi();
+                    supportRimELs = Settings.GatherSupportRimeLsFromEfi();
+                    supportRimPCRs = Settings.GatherSupportRimpcRsFromEfi();
                 }
 
                 Log.Debug("Setting up the Client.");
-                Uri acaAddress = Settings.aca_address_port;
+                Uri acaAddress = Settings.AcaAddressPort;
                 if (acaClient == null) {
                     UseBuiltInClient(acaAddress.AbsoluteUri);
                 }
@@ -263,7 +271,7 @@ namespace hirs {
                 if (Settings.HasHardwareManifestPlugins()) {
                     manifest = Settings.RunHardwareManifestCollectors();
                 } else if (Settings.HasPaccorOutputFromFile()) {
-                    manifest = Settings.paccor_output;
+                    manifest = Settings.PaccorOutput;
                 } else {
                     Log.Warning("No hardware collectors nor paccor output file were identified.");
                 }
@@ -274,7 +282,7 @@ namespace hirs {
                 byte[] eventLog;
                 if (Settings.HasEventLogFromFile()) {
                     Log.Debug("  Using the event log identified in settings.");
-                    eventLog = Settings.event_log;
+                    eventLog = Settings.EventLog;
                 } else {
                     Log.Debug("  Attempting to collect the event log from the system.");
                     eventLog = tpm.GetEventLog();
@@ -296,9 +304,9 @@ namespace hirs {
 
                 Log.Information("----> " + (Cli.ReplaceLDevID ? "Creating new" : "Verifying existence of") +
                                 " LDevID Key.");
-                string ldevidPubPath = FormatCertificatePath(dv, Settings.certificate_output_directory,
+                string ldevidPubPath = FormatCertificatePath(dv, Settings.CertificateOutputDirectory,
                     DefaultLDevIDPubKeyFileName);
-                string ldevidPrivPath = FormatCertificatePath(dv, Settings.certificate_output_directory,
+                string ldevidPrivPath = FormatCertificatePath(dv, Settings.CertificateOutputDirectory,
                     DefaultLDevIDPrivKeyFileName);
                 tpm.CreateLDevIDKey(CommandTpm.DefaultSrkHandle, ldevidPubPath, ldevidPrivPath, Cli.ReplaceLDevID);
 
@@ -355,7 +363,7 @@ namespace hirs {
                     Log.Debug("ACA delivered IdentityClaimResponse encryptedSecret " +
                               BitConverter.ToString(encryptedSecret));
                     Log.Debug("Executing activateCredential.");
-                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
+                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, claimEk.Handle,
                         credentialBlob, encryptedSecret); // credentialBlob is a TPM2B_ID_OBJECT
                 } else {
                     // Attempt compatibility fallback
@@ -366,7 +374,7 @@ namespace hirs {
                         return (int)ClientExitCodes.MAKE_CREDENTIAL_BLOB_MALFORMED;
                     }
                     Log.Debug("Executing activateCredential.");
-                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, l1Ek.Handle,
+                    recoveredSecret = tpm.ActivateCredential(CommandTpm.DefaultAkHandle, claimEk.Handle,
                         integrityHmac, encIdentity, encryptedSecret);
                 }
 
@@ -422,7 +430,7 @@ namespace hirs {
 
                 if (cr.HasCertificate) {
                     certificate = cr.Certificate; // contains certificate
-                    String certificateDirPath = Settings.certificate_output_directory;
+                    String certificateDirPath = Settings.CertificateOutputDirectory;
                     if (!string.IsNullOrWhiteSpace(certificateDirPath)) {
                         String certificateFilePath =
                             FormatCertificatePath(dv, certificateDirPath, DefaultAKCertFileName);
@@ -440,7 +448,7 @@ namespace hirs {
 
                 if (cr.HasLdevidCertificate) {
                     certificate = cr.LdevidCertificate; // contains certificate
-                    String ldevidCertificateDirPath = Settings.certificate_output_directory;
+                    String ldevidCertificateDirPath = Settings.CertificateOutputDirectory;
                     if (!string.IsNullOrWhiteSpace(ldevidCertificateDirPath)) {
                         String certificateFilePath =
                             FormatCertificatePath(dv, ldevidCertificateDirPath, DefaultLDevIDCertFileName);
