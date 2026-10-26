@@ -132,7 +132,7 @@ public class SwidTagGateway {
     private String rimEventLog;
 
     /**
-     * hashing algorithm for paylod file(s)
+     * hashing algorithm for paylod file(s).
      */
     @Setter
     private String hashAlgorithm;
@@ -553,7 +553,7 @@ public class SwidTagGateway {
                     break;
                 default:
                     throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
-            };
+            }
         }
         addNonNullAttribute(attributes, hashKey, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,

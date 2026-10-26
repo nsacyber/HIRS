@@ -14,12 +14,17 @@ import java.util.Base64;
  * This class is a helper for creating hash values for the files associated
  * with the swidtag program.
  */
-public class HashSwid {
+public final class HashSwid {
 
     public static final String ENCODING = "UTF-8";
     public static final String SHA256 = "SHA-256";
     public static final String SHA384 = "SHA-384";
     public static final String SHA512 = "SHA-512";
+
+    //Private constructor prevents instantiation.
+    private HashSwid() {
+        throw new UnsupportedOperationException("HashSwid is a utility class and should not be instantiated!");
+    }
 
     /**
      * This method creates the hash based on the provided algorithm

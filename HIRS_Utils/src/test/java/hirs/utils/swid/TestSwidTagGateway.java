@@ -27,7 +27,7 @@ public class TestSwidTagGateway {
 
     private static ReferenceManifestValidator validator;
 
-    private static URI SUPPORT_RIM_FILE;
+    private static URI supportRimFile;
 
     private static URI rfc3852CounterSignatureFile;
 
@@ -47,13 +47,13 @@ public class TestSwidTagGateway {
      */
     @BeforeAll
     public static void setUp() throws URISyntaxException {
-        String ATTRIBUTES_FILE = Objects.requireNonNull(
+        String attributesFile = Objects.requireNonNull(
                 TestSwidTagGateway.class.getClassLoader()
                         .getResource("swid/rim_fields.json")).getPath();
-        String CA_CHAIN_FILE = Objects.requireNonNull(
+        String caChainFile = Objects.requireNonNull(
                 TestSwidTagGateway.class.getClassLoader()
                         .getResource("swid/RimCertChain.pem")).getPath();
-        SUPPORT_RIM_FILE = Objects.requireNonNull(
+        supportRimFile = Objects.requireNonNull(
                 TestSwidTagGateway.class.getClassLoader()
                         .getResource("swid/Example.com.BIOS.01.rimel").toURI());
         rfc3852CounterSignatureFile = Objects.requireNonNull(
@@ -61,10 +61,10 @@ public class TestSwidTagGateway {
                         .getResource("swid/counterSignature.file").toURI());
 
         gateway = new SwidTagGateway();
-        gateway.setRimEventLog(Paths.get(SUPPORT_RIM_FILE).toString());
-        gateway.setAttributesFile(ATTRIBUTES_FILE);
+        gateway.setRimEventLog(Paths.get(supportRimFile).toString());
+        gateway.setAttributesFile(attributesFile);
         validator = new ReferenceManifestValidator();
-        validator.setTrustStoreFile(CA_CHAIN_FILE);
+        validator.setTrustStoreFile(caChainFile);
     }
 
     /**
@@ -176,7 +176,7 @@ public class TestSwidTagGateway {
     @Order(Integer.MAX_VALUE)
     public void testValidateSupportRim() throws IOException {
         Path outputPath = tempDir.resolve(DEFAULT_OUTPUT);
-        Path supportRimPath = Path.of(SUPPORT_RIM_FILE).getParent();
+        Path supportRimPath = Path.of(supportRimFile).getParent();
 
         if (supportRimPath == null) {
             throw new IllegalStateException("Support RIM path is null");
