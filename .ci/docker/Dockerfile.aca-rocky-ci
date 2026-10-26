@@ -1,4 +1,4 @@
-FROM rockylinux:9.8
+FROM rockylinux/rockylinux:9.8
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
