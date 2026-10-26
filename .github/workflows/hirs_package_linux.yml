@@ -1,4 +1,4 @@
-# Updated: 02/03/2026
+# Updated: 10/26/2026
 name: HIRS build and packages for Linux
 on:
   pull_request:
@@ -17,6 +17,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
       - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
@@ -37,10 +41,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
       - name: Execute Gradle build
         run: |
+          ./gradlew clean;
           ./gradlew build;
           ./gradlew bootWar;
-          ./gradlew buildDeb;
-          ./gradlew buildRpm;
+          ./gradlew release;
           ./gradlew buildZip
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
@@ -54,6 +58,7 @@ jobs:
           name: RPM_Files
           path: |
             HIRS_AttestationCAPortal/build/distributions/*.rpm
+            HIRS_Provisioner.NET/build/distributions/*.rpm
             tools/tcg_rim_tool/build/distributions/*.rpm
             tools/tcg_eventlog_tool/build/distributions/*.rpm
           if-no-files-found: error
@@ -61,7 +66,9 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: DEB_Files
-          path: HIRS_AttestationCAPortal/build/distributions/*.deb
+          path: |
+            HIRS_AttestationCAPortal/build/distributions/*.deb
+            HIRS_Provisioner.NET/build/distributions/*.deb
           if-no-files-found: error
       - name: War files
         uses: actions/upload-artifact@v5
