@@ -1,14 +1,14 @@
-FROM rockylinux:9
+FROM rockylinux:9.8
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description Tools for testing the build and deployment of HIRS projects.
 
 # Purpose: This image is designed for HIRS Provisioner.Net testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the Provisioner upon running the container.
-# Date Modified: 2/20/2026
+# Date Modified: 10/26/2026
 # Notes: The image to be built should be named "tpm2provisioner-dotnet-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
-#           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner_dotnet -t tpm2provisioner-dotnet-ci:latest .
+#           $ docker build -f ./.ci/docker/Dockerfile.tpm2provisioner-dotnet-ci -t tpm2provisioner-dotnet-ci:latest .
 
 # REF can be specified as a docker run environment variable to select the HIRS branch to work with
 ENV REF=main
@@ -68,29 +68,22 @@ RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirs
 WORKDIR /hirs
 RUN ./gradlew bootWar
 
-# Install dotnet tools
-RUN dotnet tool install --global dotnet-deb --allow-roll-forward
-RUN dotnet tool install --global dotnet-rpm --allow-roll-forward
-RUN dotnet tool install --global dotnet-zip --allow-roll-forward
-# Add dotnet PATHs
-ENV PATH="/root/.dotnet:/root/.dotnet/tools:$PATH"
 # Build .NET
 WORKDIR /hirs/HIRS_Provisioner.NET
 RUN dotnet restore
 WORKDIR /hirs/HIRS_Provisioner.NET/hirs
 RUN dotnet test
-RUN dotnet deb -r linux-x64 -c Release
-RUN dotnet rpm -r linux-x64 -c Release
+WORKDIR /hirs
+RUN ./gradlew -p HIRS_Provisioner.NET release
 
 # The following script will clone and copy the referenced branch of HIRS off GitHub
-# If configured, run bootwar to cache build artifacts
+# If configured, run bootwar and build the provisioner packages to cache build artifacts
 RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
     echo "cd /hirs" >> /tmp/auto_clone_branch && \
     echo "git fetch origin && git pull origin main && git reset --hard" >> /tmp/auto_clone_branch && \
     echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
     echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
-    echo "cd HIRS_Provisioner.NET/hirs" >> /tmp/auto_clone_branch && \
-    echo 'if [ -n "${2}" ]; then dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
+    echo 'if [ -n "${2}" ]; then ./gradlew -p HIRS_Provisioner.NET release; fi' >> /tmp/auto_clone_branch && \
     chmod 755 /tmp/auto_clone_branch
 
 # Reset working directory
