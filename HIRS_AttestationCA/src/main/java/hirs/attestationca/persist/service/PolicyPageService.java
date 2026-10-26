@@ -194,6 +194,7 @@ public class PolicyPageService {
             policySettings.setIgnoreImaEnabled(false);
             policySettings.setIgnoretBootEnabled(false);
             policySettings.setIgnoreOsEvtEnabled(false);
+            policySettings.setIgnoreOsEvtPxeBootEnabled(false);
         }
 
         policyRepository.saveAndFlush(policySettings);
@@ -320,7 +321,7 @@ public class PolicyPageService {
     public boolean updateIgnoreOSEventsPxeBootPolicy(final boolean isIgnoreOSEvtPxeBootOptionEnabled) {
         PolicySettings policySettings = getDefaultPolicy();
 
-        //If Ignore OS events is enabled and Firmware Validation is not enabled, disallow change
+        //If Ignore OS PXE boot is enabled and Firmware Validation is not enabled, disallow change
         if (isIgnoreOSEvtPxeBootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
             log.error("Ignore OS Events for PXE Boot cannot be enabled without Firmware Validation "
                     + "policy enabled.");
