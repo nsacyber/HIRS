@@ -162,10 +162,21 @@ function startupTpm {
 function installEkCert {
   # Setting configurations
   . /hirs/.ci/docker/.env
-  
+
+  # The simulator gets a new endorsement seed after each reset. Certify its actual EK
+  tpm2_createek -T mssim -G rsa -c 0x81010001 > /dev/null
+  tpm2_readpublic -T mssim -c 0x81010001 -f pem -o /tmp/hirs-system-test-ek-public.pem > /dev/null
+  openssl x509 -new -sha256 -days 3650 \
+    -subj '/C=US/ST=ST/L=EXAMPLE/O=org/CN=dummy' \
+    -force_pubkey /tmp/hirs-system-test-ek-public.pem \
+    -CA "$HIRS_CI_TPM_EK_CA_CERT_FILE" -CAkey "$HIRS_CI_TPM_EK_CA_KEY_FILE" -CAkeyform DER \
+    -set_serial 0x01642813778A \
+    -extfile <(printf 'basicConstraints=critical,CA:FALSE\nkeyUsage=critical,keyEncipherment\n') \
+    -outform DER -out "$HIRS_CI_TPM_EK_CERT_FILE"
+
   echo "Installing EK Cert $HIRS_CI_TPM_EK_CERT_FILE into TPM NVRAM at index $HIRS_CI_TPM_EK_CERT_NV_INDEX"
-  tpm2_nvdefine -T mssim -C o -a $HIRS_CI_TPM_EK_CERT_NV_ATTR -s $(cat $HIRS_CI_TPM_EK_CERT_FILE | wc -c) $HIRS_CI_TPM_EK_CERT_NV_INDEX
-  tpm2_nvwrite -T mssim -C o -i $HIRS_CI_TPM_EK_CERT_FILE $HIRS_CI_TPM_EK_CERT_NV_INDEX
+  tpm2_nvdefine -T mssim -C o -a "$HIRS_CI_TPM_EK_CERT_NV_ATTR" -s "$(stat -c %s "$HIRS_CI_TPM_EK_CERT_FILE")" "$HIRS_CI_TPM_EK_CERT_NV_INDEX"
+  tpm2_nvwrite -T mssim -C o -i "$HIRS_CI_TPM_EK_CERT_FILE" "$HIRS_CI_TPM_EK_CERT_NV_INDEX"
   echo "Finished installing EK cert."
 }
 
