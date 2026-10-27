@@ -60,6 +60,20 @@ jar {
     }
 }
 
+task rimtoolJar(type: Jar) {
+    archiveBaseName.set('utils-for-rimtool')
+
+    dependsOn compileJava
+    
+    from(sourceSets.main.output) {
+	include("hirs/utils/rim/**/*.class")
+    }
+
+    includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    doNotTrackState("Build a jar specifically for RIM-Tool independently of the main build.")
+}
+
 //task generateXjcLibrary(type:Exec) {
 //    workingDir 'config'
 //
