@@ -59,6 +59,8 @@ ospackage {
 
     link('/usr/bin/tpm_aca_provision', '/usr/share/hirs/tpm_aca_provision', 0755)
 
+    requires('jq')
+
     buildRpm {
         dependsOn tasks.named('stageLinuxPackage')
         arch = X86_64
