@@ -56,7 +56,7 @@ import java.util.ArrayList;
  */
 @Log4j2
 public class TpmPcrEvent2 extends TpmPcrEvent {
-
+    private static final int EVENT_SIZE_MIN = 50;
     /**
      * Constructor.
      *
@@ -84,10 +84,9 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
         byte[] eventContent = null;
         TcgTpmtHa hashAlg = null;
         int eventSize = 0;
-
         //TCG_PCR_EVENT2 (50 is minimum byte size of Event2)
-        if (is.available() < 50) {
-            throw new IOException("Only " + is.available() + " bytes available after event #" + (eventNumber-1)
+        if (is.available() < EVENT_SIZE_MIN) {
+            throw new IOException("Only " + is.available() + " bytes available after event #" + (eventNumber - 1)
                     + ", possible truncated event");
         }
 
