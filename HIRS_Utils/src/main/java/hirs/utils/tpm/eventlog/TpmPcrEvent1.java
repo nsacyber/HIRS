@@ -59,7 +59,7 @@ public class TpmPcrEvent1 extends TpmPcrEvent {
 
         //TCG_PCR_EVENT2 (32 is minimum byte size of Event2)
         if (is.available() < UefiConstants.SIZE_32) {
-            throw new IOException("Only " + is.available() + " bytes available after event #" + (eventNumber-1)
+            throw new IOException("Only " + is.available() + " bytes available after event #" + (eventNumber - 1)
                     + ", possible truncated event");
         }
 

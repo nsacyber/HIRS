@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'io.github.ben-manes.versions' version '0.61.0'
+    id 'io.github.ben-manes.versions' version '0.66.0'
     id 'application'
     id 'com.github.spotbugs' version '6.5.6' apply false
-    id 'org.owasp.dependencycheck' version '13.0.0'
+    id 'org.owasp.dependencycheck' version '12.2.2'
     id 'com.palantir.git-version' version '5.0.0'
 }
 
@@ -57,8 +57,16 @@ subprojects {
     }
 
     dependencyCheck {
-        // Read API key from a system property 'nvd.apiKey'
-        nvd.apiKey = System.getProperty("nvd.apiKey")
+        def cmdApiKey = System.getProperty("nvd.apiKey") ?: ""
+        if (cmdApiKey) {
+            println ">>>> [OWASP] NVD API Key detected for project: ${project.name}: [${cmdApiKey}]"
+        } else {
+            println ">>>> [OWASP] Warning: No nvdApiKey parameter found for project: ${project.name}."
+        }
+        nvd {
+            apiKey=cmdApiKey
+            delay = 16000
+            }
     }
 
 //    Uncomment the lines right after this comment, if you wish to see all the places

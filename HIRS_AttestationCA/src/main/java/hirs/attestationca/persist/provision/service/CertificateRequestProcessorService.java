@@ -67,6 +67,7 @@ public class CertificateRequestProcessorService {
     private final X509Certificate acaCertificate;
     private final int certificateValidityInDays;
     private final PrivateKey privateKey;
+    private static final int CERT_SERIAL_SIZE = 159;
 
     /**
      * Constructor.
@@ -490,7 +491,7 @@ public class CertificateRequestProcessorService {
             Date notAfter = expiry.getTime();
             BigInteger serialNumber;
             do {
-                serialNumber = new BigInteger(159, new SecureRandom());
+                serialNumber = new BigInteger(CERT_SERIAL_SIZE, new SecureRandom());
             } while (serialNumber.signum() == 0);
             SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 
