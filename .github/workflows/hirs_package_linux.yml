@@ -88,3 +88,35 @@ jobs:
           name: ZIP_Files
           path: artifacts/win/
           if-no-files-found: error
+
+  # install the provisioner packages on clean OS images, without the .NET SDK, and check that it runs
+  Package_install:
+    needs: Package_linux
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:24.04
+            artifact: DEB_Files
+            install: apt-get update -qq && apt-get install -y -qq ./*.deb
+          - image: rockylinux/rockylinux:9.8
+            artifact: RPM_Files
+            install: dnf install -y ./*.rpm
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist
+      - name: Install on ${{ matrix.image }} and run --help
+        run: |
+          docker run --rm -v "$PWD/dist:/dist" -w /dist/HIRS_Provisioner.NET/build/distributions ${{ matrix.image }} bash -c '
+            set -e
+            ${{ matrix.install }}
+            cd /tmp
+            tpm_aca_provision --help > help.txt 2>&1 || { cat help.txt; echo "tpm_aca_provision --help failed"; exit 1; }
+            cat help.txt
+            grep -q -- "--tcp" help.txt
+          '
