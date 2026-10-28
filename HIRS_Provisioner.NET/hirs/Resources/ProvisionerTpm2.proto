@@ -340,7 +340,7 @@ message SignatureChallenge {
 message QuoteChallenge {
   optional bytes nonce = 1;
   repeated uint32 pcr_index = 2;
-  optional AlgorithmId pcr_bank = 3;
+  repeated AlgorithmId pcr_bank = 3;
 }
 
 message ExternalEvidenceChallenge {
@@ -366,14 +366,14 @@ message ActivateCredentialResult {
 }
 
 message SignatureResult {
-  optional bytes signature = 1;
+  optional bytes signature = 1; // e.g. TPMT_SIGNATURE
   optional bytes signed_data = 2;
 }
 
 message QuoteResult {
-  optional bytes attest = 1;
-  optional bytes attest_signature = 2;
-  optional bytes pcr_values = 3;
+  optional bytes attest = 1; // e.g. TPM2B_ATTEST
+  optional bytes attest_signature = 2; // e.g. TPMT_SIGNATURE
+  repeated bytes pcr_values = 3;
 }
 
 message ExternalEvidenceResult {
