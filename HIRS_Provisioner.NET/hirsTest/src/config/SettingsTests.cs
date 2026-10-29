@@ -30,6 +30,29 @@ namespace hirsTest {
         }
 
         [Test]
+        public void TestAkTemplateDefaultsToRsa2048() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.AkTemplate, Is.EqualTo(AsymmetricKeyTemplate.Rsa2048Quote));
+        }
+
+        [Test]
+        public void TestAkTemplateAcceptsProtobufName() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ak_ecc.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.AkTemplate, Is.EqualTo(AsymmetricKeyTemplate.EccP384Quote));
+        }
+
+        [Test]
+        public void TestAkTemplateRejectsSigningKeyTemplate() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ak_unsupported.json");
+
+            Assert.Throws<ArgumentException>(() => settings.CompleteSetUp());
+        }
+
+        [Test]
         public void TestConstructorWithAppsettings() {
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
             settings.SetUpLog();

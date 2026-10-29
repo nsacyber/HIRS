@@ -32,7 +32,7 @@ namespace hirs {
                 bool helpOrVersion = cliParseResult.Errors.IsHelp() || cliParseResult.Errors.IsVersion();
                 if (cliParseResult.Tag == ParserResultType.Parsed) {
                     Provisioner p = new(settings, cli);
-                    IHirsAcaTpm tpm = p.ConnectTpm();
+                    using IHirsAcaTpm tpm = p.ConnectTpm();
                     p.UseClassicDeviceInfoCollector();
                     result = (ClientExitCodes)await p.Provision(tpm);
                     Log.Information("----> Provisioning " + (result == 0 ? "successful" : "failed") + ".");

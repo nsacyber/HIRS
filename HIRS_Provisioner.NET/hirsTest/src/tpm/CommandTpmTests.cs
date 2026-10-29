@@ -15,8 +15,41 @@ public class CommandTpmTests {
     }
 
     [Test]
+    public void TestExtractFirstCertificateReturnsEmptyForZeroFill() {
+        Assert.That(CommandTpm.ExtractFirstCertificate(new byte[1024]), Is.Empty);
+    }
+
+    [Test]
+    public void TestExtractFirstCertificateSkipsFill() {
+        byte[] certificate = [0x30, 0x82, 0x00, 0x03, 0x01, 0x02, 0x03];
+        byte[] data = [0xFF, 0x00, .. certificate, 0xFF, 0xFF];
+
+        Assert.That(CommandTpm.ExtractFirstCertificate(data), Is.EqualTo(certificate));
+    }
+
+    // The standard SRK with an empty unique
+    [Test]
+    public void TestSrkTemplateHasEmptyUnique() {
+        TpmPublic rsa = KeyTemplateCatalog.GenerateSrkTemplate(TpmAlgId.Rsa);
+        TpmPublic ecc = KeyTemplateCatalog.GenerateSrkTemplate(TpmAlgId.Ecc);
+        const ObjectAttr storage = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin
+            | ObjectAttr.UserWithAuth | ObjectAttr.Restricted | ObjectAttr.Decrypt | ObjectAttr.NoDA;
+
+        Assert.Multiple(() => {
+            // TSS.NET leaves an empty buffer null; either marshals as a zero-length unique
+            Assert.That(((Tpm2bPublicKeyRsa)rsa.unique).buffer ?? [], Is.Empty);
+            Assert.That(((EccPoint)ecc.unique).x ?? [], Is.Empty);
+            Assert.That(((EccPoint)ecc.unique).y ?? [], Is.Empty);
+            Assert.That(rsa.objectAttributes, Is.EqualTo(storage));
+            Assert.That(rsa.nameAlg, Is.EqualTo(TpmAlgId.Sha256));
+            Assert.That(((RsaParms)rsa.parameters).keyBits, Is.EqualTo(2048));
+            Assert.That(((EccParms)ecc.parameters).curveID, Is.EqualTo(EccCurve.TpmEccNistP256));
+        });
+    }
+
+    [Test]
     public void TestEkTemplateL2UniqueIsTwo32ByteZeroBuffers() {
-        EccPoint unique = (EccPoint)CommandTpm.GenerateEKTemplateL2().unique;
+        EccPoint unique = (EccPoint)KeyTemplateCatalog.GenerateEkTemplateL2().unique;
 
         Assert.That(unique.x, Is.EqualTo(new byte[32]));
         Assert.That(unique.y, Is.EqualTo(new byte[32]));
@@ -29,8 +62,8 @@ public class CommandTpmTests {
 
     [Test]
     public void TestIsHirsAttestationKeyRejectsOtherKeys() {
-        Assert.That(CommandTpm.IsHirsAttestationKey(CommandTpm.GenerateEKTemplateL1()), Is.False);
-        Assert.That(CommandTpm.IsHirsAttestationKey(CommandTpm.GenerateEKTemplateL2()), Is.False);
+        Assert.That(CommandTpm.IsHirsAttestationKey(KeyTemplateCatalog.GenerateEkTemplateL1()), Is.False);
+        Assert.That(CommandTpm.IsHirsAttestationKey(KeyTemplateCatalog.GenerateEkTemplateL2()), Is.False);
         Assert.That(CommandTpm.IsHirsAttestationKey(Ak(AkAttributes & ~ObjectAttr.Restricted)), Is.False);
     }
 

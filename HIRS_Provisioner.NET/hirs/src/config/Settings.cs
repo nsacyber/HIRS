@@ -25,7 +25,8 @@ public class Settings {
         linux_product_version_file,
         linux_product_serial_file,
         certificate_output_directory,
-        ek_template
+        ek_template,
+        ak_template
     }
 
     public static readonly string DEFAULT_SETTINGS_FILE = "appsettings.json";
@@ -80,6 +81,9 @@ public class Settings {
     public virtual EkTemplate EkTemplate {
         get; private set;
     } = EkTemplate.EkL1; // default RSA-2048 Low Template
+    public virtual AsymmetricKeyTemplate AkTemplate {
+        get; private set;
+    } = AsymmetricKeyTemplate.Rsa2048Quote;
     private List<IHardwareManifestPlugin> hardwareManifests = [];
     private Dictionary<string, string> hardwareManifestCollectorsWithArgs = new();
     private bool hardwareManifestCollectionSwidEnforced;
@@ -141,6 +145,8 @@ public class Settings {
             StoreCustomDeviceInfoCollectorOptions();
 
             CheckEkTemplate();
+
+            CheckAkTemplate();
 
         } catch (Exception e) {
             Log.Error(e, "Error reading the settings file.");
@@ -269,22 +275,30 @@ public class Settings {
     }
     #endregion
 
-    #region EK Template
+    #region EK and AK Templates
     private void CheckEkTemplate() {
-        string ekTemplateStr = configFromSettingsFile[nameof(Options.ek_template)];
-        if (string.IsNullOrWhiteSpace(ekTemplateStr)) {
-            Log.Debug(nameof(Options.ek_template) + " not set in the settings file. Using " + EkTemplate + ".");
-            return;
+        EkTemplate = ParseTemplate(Options.ek_template, KeyTemplateCatalog.SupportedEkTemplates, EkTemplate);
+    }
+
+    private void CheckAkTemplate() {
+        AkTemplate = ParseTemplate(Options.ak_template, KeyTemplateCatalog.SupportedAkTemplates, AkTemplate);
+    }
+
+    private T ParseTemplate<T>(Options option, IReadOnlyList<T> supported, T defaultTemplate) where T : struct, Enum {
+        string? value = configFromSettingsFile[option.ToString()];
+        if (string.IsNullOrWhiteSpace(value)) {
+            Log.Debug(option + " not set in the settings file. Using " + defaultTemplate + ".");
+            return defaultTemplate;
         }
-        // Accepts the C# name (EkL2) or the protobuf name (EK_L2)
-        EkTemplate = KeyTemplateCatalog.SupportedEkTemplates
-            .FirstOrDefault(template => template.ToString().Equals(ekTemplateStr.Replace("_", "").Trim(),
-                StringComparison.OrdinalIgnoreCase));
-        if (EkTemplate == EkTemplate.Unspecified) {
-            throw new ArgumentException(nameof(Options.ek_template) + " '" + ekTemplateStr + "' is not supported. Use one of: "
-                                        + string.Join(", ", KeyTemplateCatalog.SupportedEkTemplates) + ".");
+        string name = value.Replace("_", "").Trim();
+        foreach (T template in supported) {
+            if (template.ToString().Equals(name, StringComparison.OrdinalIgnoreCase)) {
+                Log.Debug("  " + option + " is " + template + ".");
+                return template;
+            }
         }
-        Log.Debug("  The identity claim will use " + EkTemplate + ".");
+        throw new ArgumentException(option + " '" + value + "' is not supported. Use one of: "
+                                    + string.Join(", ", supported) + ".");
     }
     #endregion
 

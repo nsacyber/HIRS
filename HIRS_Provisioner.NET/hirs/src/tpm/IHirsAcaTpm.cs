@@ -2,7 +2,7 @@
 using Tpm2Lib;
 
 namespace hirs {
-    public interface IHirsAcaTpm {
+    public interface IHirsAcaTpm : IDisposable {
         bool IsTpmPresent();
         byte[] GetCertificateFromNvIndex(uint index);
         TpmPublic ReadPublicArea(uint handleInt, out byte[] name, out byte[] qualifiedName);
@@ -13,12 +13,27 @@ namespace hirs {
         /// template into a transient handle that is released when the result is disposed.
         /// </summary>
         EndorsementKey? AcquireEndorsementKey(EkTemplate template);
-        bool EvictLegacyAttestationKey();
-        void CreateAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace);
-        void CreateStorageRootKey(uint srkHandleInt);
-        void CreateLDevIDKey(uint srkHandleInt, string pubPath, string privPath, bool replace);
-        uint LoadLDevIDKey(uint srkHandleInt, string pubPath, string privPath);
-        byte[] ConvertLDevIDPublic(string ldevidPubPath);
+        /// <summary>
+        /// True if the TPM already has this EK
+        /// NV index defined. Does not create a key.
+        /// </summary>
+        bool HasEndorsementKey(EkTemplate template);
+        int EvictLegacyAttestationKeys();
+        /// <summary>
+        /// Creates the AK under the SRK and saves it as files.
+        /// </summary>
+        void CreateAttestationKey(string pubPath, string privPath, AsymmetricKeyTemplate template, bool replace);
+        void CreateLDevIDKey(string pubPath, string privPath, bool replace);
+        /// <summary>
+        /// Loads a key saved to files under the SRK.
+        /// </summary>
+        uint LoadKeyFromFiles(string pubPath, string privPath);
+        void FlushHandle(uint handleInt);
+        byte[] ReadPublicAreaFromFile(string pubPath);
+        /// <summary>
+        /// The SHA PCR banks the TPM has PCRs allocated in.
+        /// </summary>
+        IReadOnlyList<TpmAlgId> GetPcrBanks();
         Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null);
         void GetQuote(uint akHandleInt, TpmAlgId pcrBankDigestAlg, byte[] nonce, out CommandTpmQuoteResponse ctqr, uint[] pcrs = null);
         byte[] ActivateCredential(uint akHandleInt, uint ekHandleInt, byte[] integrityHMAC, byte[] encIdentity, byte[] encryptedSecret);
@@ -26,6 +41,7 @@ namespace hirs {
         byte[] GetEventLog();
         byte[] Sign(uint keyHandleInt, byte[] digest, TpmAlgId hashAlg);
         bool SupportsAlgorithm(TpmAlgId algId);
+        bool SupportsTemplate(TpmPublic template);
 
     }
 }
