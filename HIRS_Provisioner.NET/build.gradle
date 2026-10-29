@@ -1,0 +1,106 @@
+plugins {
+    id 'base'
+    id 'com.netflix.nebula.ospackage' version '12.3.0'
+}
+
+def provisionerProject = file('hirs/HIRS_Provisioner.NET.csproj')
+def versionMatcher = provisionerProject.getText('UTF-8') =~ /<Version>([^<]+)<\/Version>/
+if (!versionMatcher.find()) {
+    throw new GradleException("Could not read <Version> from ${provisionerProject}")
+}
+def packageVersion = versionMatcher.group(1)
+
+def linuxPublishDir = layout.buildDirectory.dir('publish/linux-x64').get().asFile
+def windowsPublishDir = layout.buildDirectory.dir('publish/win-x64').get().asFile
+def linuxPackageRoot = layout.buildDirectory.dir('staging/linux-x64/usr/share/hirs').get().asFile
+def packageOutputDir = layout.buildDirectory.dir('distributions').get().asFile
+def linuxPackageFileName = "HIRS_Provisioner.NET.${packageVersion}.linux-x64"
+def isWindowsHost = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
+
+tasks.register('publishLinux', Exec) {
+    workingDir projectDir
+    commandLine 'dotnet', 'publish', provisionerProject,
+            '--configuration', 'Release',
+            '--runtime', 'linux-x64',
+            '--self-contained', 'true',
+            "-p:PublishDir=${linuxPublishDir.absolutePath}${File.separator}"
+}
+
+tasks.register('stageLinuxPackage', Sync) {
+    dependsOn tasks.named('publishLinux')
+    from(linuxPublishDir) {
+        exclude '**/*.pdb'
+        rename { fileName -> fileName == 'HIRS_Provisioner.NET' ? 'tpm_aca_provision' : fileName }
+    }
+    into linuxPackageRoot
+}
+
+ospackage {
+    packageName = 'HIRS_Provisioner.NET'
+    description = 'HIRS Provisioner for Linux'
+    os = LINUX
+    version = packageVersion
+    release = 1
+    user = 'root'
+    fileMode = 0644
+    addParentDirs = true
+    createDirectoryEntry = true
+
+    into('/usr/share/hirs') {
+        from(linuxPackageRoot) {
+            exclude 'tpm_aca_provision'
+            fileMode = 0644
+        }
+        from(linuxPackageRoot) {
+            include 'tpm_aca_provision'
+            fileMode = 0755
+        }
+    }
+
+    link('/usr/bin/tpm_aca_provision', '/usr/share/hirs/tpm_aca_provision', 0755)
+
+    requires('jq')
+
+    buildRpm {
+        dependsOn tasks.named('stageLinuxPackage')
+        arch = X86_64
+        packageName = 'HIRS_Provisioner.NET'
+        destinationDirectory.set(packageOutputDir)
+        archiveFileName.set("${linuxPackageFileName}.rpm")
+    }
+
+    buildDeb {
+        dependsOn tasks.named('stageLinuxPackage')
+        arch = 'amd64'
+        packageName = 'hirs-provisioner.net'
+        destinationDirectory.set(packageOutputDir)
+        archiveFileName.set("${linuxPackageFileName}.deb")
+    }
+}
+
+if (isWindowsHost) {
+    tasks.register('buildMsi', Exec) {
+        workingDir file('hirs')
+        def msiPath = new File(packageOutputDir, "HIRS_Provisioner.NET.${packageVersion}.msi")
+        commandLine 'dotnet', 'msbuild', 'HIRS_Provisioner.NET.csproj',
+                '/t:Msi',
+                '/p:TargetFramework=net10.0',
+                '/p:RuntimeIdentifier=win-x64',
+                '/p:Configuration=Release',
+                "/p:PublishDir=${windowsPublishDir.absolutePath}${File.separator}",
+                "/p:SetupFilePath=${msiPath.absolutePath}"
+        mustRunAfter tasks.named('buildDeb')
+    }
+} else {
+    tasks.register('buildMsi') {
+        doLast {
+            logger.lifecycle('Skipping MSI generation. It will only build on Windows.')
+        }
+    }
+}
+
+tasks.register('release') {
+    group = 'distribution'
+    description = 'Build release packages: Linux RPM/DEB and Windows MSI.'
+    dependsOn tasks.named('buildRpm'), tasks.named('buildDeb'), tasks.named('buildMsi')
+}

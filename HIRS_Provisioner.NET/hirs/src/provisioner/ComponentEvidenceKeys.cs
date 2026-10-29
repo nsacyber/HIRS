@@ -7,11 +7,12 @@ using Serilog;
 
 namespace hirs {
     /**
-     * Offers component keys from hardware manifest plugins to the ACA, and answers the ACA's evidence challenges for them.
+     * Offers component keys from hardware manifest plugins to the ACA as external keys in the ProvisioningKeys registry.
+     * The registry answers the ACA's evidence challenges for them by asking the plugin.
      * A component qualifies when its plugin supports component evidence and the component carries a hashed certificate
      * identifier (componentPlatformCert). The ACA finds the same identifier in the platform certificate.
      */
-    public class ComponentEvidenceKeys {
+    public static class ComponentEvidenceKeys {
         private const int Sha384AlgId = 0x000C; // TPM_ALG_SHA384
 
         /**
@@ -22,49 +23,30 @@ namespace hirs {
             ["paccor.hp.epsc"] = EvidenceFormat.HpEpscBootlog
         };
 
-        private readonly Dictionary<ByteString, ComponentKey> keysById = new();
-
-        public IReadOnlyList<KeyCandidate> KeyCandidates => keysById.Values.Select(key => key.Candidate).ToList();
-
-        public static ComponentEvidenceKeys FromPlugins(IEnumerable<IHardwareManifestPlugin> plugins) {
-            ComponentEvidenceKeys keys = new();
+        /**
+         * Adds a key for each qualifying component.
+         * @return how many component keys were added
+         */
+        public static int AddTo(ProvisioningKeys keys, IEnumerable<IHardwareManifestPlugin> plugins) {
+            int added = 0;
             foreach (IHardwareManifestPlugin plugin in plugins.Where(plugin => plugin.SupportsComponentEvidence)) {
                 if (!EvidenceFormatByPlugin.TryGetValue(plugin.Name, out EvidenceFormat format)) {
                     Log.Debug("{Plugin} supports component evidence, but its evidence format is unknown.", plugin.Name);
                     continue;
                 }
                 for (int index = 0; index < plugin.ManifestV2.COMPONENTS.Count; index++) {
-                    keys.Add(plugin, index, format);
+                    if (Add(keys, plugin, index, format)) {
+                        added++;
+                    }
                 }
             }
-            return keys;
+            return added;
         }
 
-        /**
-         * Asks the plugins to sign the ACA's nonces. Challenges for other keys are ignored.
-         */
-        public List<VerificationResult> Answer(IEnumerable<VerificationChallenge> challenges) {
-            List<VerificationResult> results = new();
-            foreach (VerificationChallenge challenge in challenges.Where(c => c.ChallengeCase == VerificationChallenge.ChallengeOneofCase.ExternalEvidence)) {
-                if (!keysById.TryGetValue(challenge.KeyId, out ComponentKey? key)) {
-                    Log.Warning("The ACA sent an evidence challenge for a key this provisioner did not offer.");
-                    continue;
-                }
-                Log.Information("----> Asking {Plugin} for component evidence.", key.Plugin.Name);
-                ComponentEvidence? evidence = key.Plugin.GatherComponentEvidence(challenge.ExternalEvidence.Nonce.ToByteArray())
-                    .FirstOrDefault(e => e.ComponentIndex == key.ComponentIndex);
-                if (evidence == null) {
-                    Log.Warning("{Plugin} did not return component evidence. The ACA will reject the component.", key.Plugin.Name);
-                }
-                results.Add(ToResult(challenge.KeyId, evidence));
-            }
-            return results;
-        }
-
-        private void Add(IHardwareManifestPlugin plugin, int index, EvidenceFormat format) {
+        private static bool Add(ProvisioningKeys keys, IHardwareManifestPlugin plugin, int index, EvidenceFormat format) {
             HashedCertificateIdentifier? identifier = plugin.ManifestV2.COMPONENTS[index].PLATFORMCERT?.HASHEDCERTIDENTIFIER;
             if (identifier == null || string.IsNullOrEmpty(identifier.HASHVALUE)) {
-                return;
+                return false;
             }
             byte[] certIdentifier = Convert.FromBase64String(identifier.HASHVALUE);
             KeyCandidate candidate = new() {
@@ -77,24 +59,41 @@ namespace hirs {
                 }
             };
             candidate.Role.Add(KeyRole.DeviceIdentity);
-            keysById[candidate.KeyId] = new ComponentKey(plugin, index, candidate);
+            if (keys.TryGet(candidate.KeyId, out ProvisioningKey _)) {
+                Log.Debug("{Plugin} reported the same component key twice; offering it once.", plugin.Name);
+                return false;
+            }
+            keys.AddExternal(candidate, challenge => GatherEvidence(plugin, index, challenge));
             Log.Debug("Offering a {Format} component key from {Plugin}.", format, plugin.Name);
+            return true;
         }
 
-        private static VerificationResult ToResult(ByteString keyId, ComponentEvidence? evidence) {
-            VerificationResult result = new() { KeyId = keyId, ExternalEvidence = new ExternalEvidenceResult() };
+        /**
+         * Asks the plugin to sign the ACA's nonce. A component that returns no evidence still gets an empty result,
+         * so the ACA records it as failed rather than unanswered.
+         */
+        private static ExternalEvidenceResult GatherEvidence(IHardwareManifestPlugin plugin, int index,
+            ExternalEvidenceChallenge challenge) {
+            Log.Information("----> Asking {Plugin} for component evidence.", plugin.Name);
+            ComponentEvidence? evidence = plugin.GatherComponentEvidence(challenge.Nonce.ToByteArray())
+                .FirstOrDefault(e => e.ComponentIndex == index);
             if (evidence == null) {
-                return result;
+                Log.Warning("{Plugin} did not return component evidence. The ACA will reject the component.", plugin.Name);
+                return new ExternalEvidenceResult();
             }
+            return ToResult(evidence);
+        }
+
+        private static ExternalEvidenceResult ToResult(ComponentEvidence evidence) {
             EnumValueDescriptor? format = ProvisionerTpm2Reflection.Descriptor.FindTypeByName<EnumDescriptor>(nameof(EvidenceFormat))
                 .FindValueByName(evidence.EvidenceFormat);
-            result.ExternalEvidence.EvidenceFormat = format == null ? EvidenceFormat.Unspecified : (EvidenceFormat)format.Number;
-            result.ExternalEvidence.EvidenceVersion = evidence.EvidenceVersion;
-            result.ExternalEvidence.Evidence = ByteString.CopyFrom(evidence.Evidence);
-            result.ExternalEvidence.CertificateChain.AddRange(evidence.CertificateChain.Select(ByteString.CopyFrom));
+            ExternalEvidenceResult result = new() {
+                EvidenceFormat = format == null ? EvidenceFormat.Unspecified : (EvidenceFormat)format.Number,
+                EvidenceVersion = evidence.EvidenceVersion,
+                Evidence = ByteString.CopyFrom(evidence.Evidence)
+            };
+            result.CertificateChain.AddRange(evidence.CertificateChain.Select(ByteString.CopyFrom));
             return result;
         }
-
-        private sealed record ComponentKey(IHardwareManifestPlugin Plugin, int ComponentIndex, KeyCandidate Candidate);
     }
 }

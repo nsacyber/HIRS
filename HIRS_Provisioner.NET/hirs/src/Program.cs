@@ -29,17 +29,19 @@ namespace hirs {
                         .WithParsed(parsed => cli = parsed)
                         .WithNotParsed(HandleParseError);
 
-                if (cliParseResult.Tag == ParserResultType.NotParsed
-                    && !cliParseResult.Errors.IsHelp()
-                    && !cliParseResult.Errors.IsVersion()) {
-                    // Parsing failed. Exit.
-                    Log.Warning("Could not parse command line arguments. Set --tcp --sim, --tcp <ip>:<port>, --nix, or --win. See documentation for further assistance.");
-                } else {
+                bool helpOrVersion = cliParseResult.Errors.IsHelp() || cliParseResult.Errors.IsVersion();
+                if (cliParseResult.Tag == ParserResultType.Parsed) {
                     Provisioner p = new(settings, cli);
-                    IHirsAcaTpm tpm = p.ConnectTpm();
+                    using IHirsAcaTpm tpm = p.ConnectTpm();
                     p.UseClassicDeviceInfoCollector();
                     result = (ClientExitCodes)await p.Provision(tpm);
                     Log.Information("----> Provisioning " + (result == 0 ? "successful" : "failed") + ".");
+                } else if (helpOrVersion) {
+                    result = ClientExitCodes.SUCCESS;
+                } else {
+                    // Parsing failed. Exit.
+                    Log.Warning("Could not parse command line arguments. Set --tcp --sim, --tcp <ip>:<port>, --nix, or --win. See documentation for further assistance.");
+                    result = ClientExitCodes.FAIL;
                 }
             } catch (AcaConnectionException e) {
                 result = ClientExitCodes.ACA_UNREACHABLE;

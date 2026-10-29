@@ -18,13 +18,13 @@ public class EkCertificateMatcherTests {
     }
 
     private static TpmPublic RsaEk(RSA key) {
-        TpmPublic pub = CommandTpm.GenerateEKTemplateL1();
+        TpmPublic pub = KeyTemplateCatalog.GenerateEkTemplateL1();
         pub.unique = new Tpm2bPublicKeyRsa(key.ExportParameters(false).Modulus!);
         return pub;
     }
 
     private static TpmPublic EccEk(ECDsa key) {
-        TpmPublic pub = CommandTpm.GenerateEKTemplateL2();
+        TpmPublic pub = KeyTemplateCatalog.GenerateEkTemplateL2();
         ECParameters p = key.ExportParameters(false);
         pub.unique = new EccPoint(p.Q.X!, p.Q.Y!);
         return pub;

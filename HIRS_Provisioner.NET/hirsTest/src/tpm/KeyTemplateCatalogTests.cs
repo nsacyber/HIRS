@@ -59,8 +59,8 @@ public class KeyTemplateCatalogTests {
     [Test]
     public void LowRangeTemplatesClassifyAsLAndUseLowRangeNvIndices() {
         using (Assert.EnterMultipleScope()) {
-            Assert.That(KeyTemplateCatalog.ClassifyEk(CommandTpm.GenerateEKTemplateL1()), Is.EqualTo(EkTemplate.EkL1));
-            Assert.That(KeyTemplateCatalog.ClassifyEk(CommandTpm.GenerateEKTemplateL2()), Is.EqualTo(EkTemplate.EkL2));
+            Assert.That(KeyTemplateCatalog.ClassifyEk(KeyTemplateCatalog.GenerateEkTemplateL1()), Is.EqualTo(EkTemplate.EkL1));
+            Assert.That(KeyTemplateCatalog.ClassifyEk(KeyTemplateCatalog.GenerateEkTemplateL2()), Is.EqualTo(EkTemplate.EkL2));
             Assert.That(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL1), Is.EqualTo(0x01c00002u));
             Assert.That(KeyTemplateCatalog.GetEkCertificateNvIndex(EkTemplate.EkL2), Is.EqualTo(0x01c0000au));
         }
@@ -90,7 +90,7 @@ public class KeyTemplateCatalogTests {
 
     [Test]
     public void BuildEkCandidateSetsCertificateNvIndex() {
-        TpmPublic l1 = CommandTpm.GenerateEKTemplateL1();
+        TpmPublic l1 = KeyTemplateCatalog.GenerateEkTemplateL1();
         KeyCandidate candidate = KeyTemplateCatalog.BuildEkCandidate(l1, l1, CommandTpm.DefaultL1EkHandle);
         using (Assert.EnterMultipleScope()) {
             Assert.That(candidate.Tpm.EkTemplate, Is.EqualTo(EkTemplate.EkL1));
@@ -101,7 +101,7 @@ public class KeyTemplateCatalogTests {
     [Test]
     public void EverySupportedEkTemplateIsGeneratedAndRoundTrips() {
         foreach (EkTemplate template in KeyTemplateCatalog.SupportedEkTemplates) {
-            TpmPublic? generated = CommandTpm.GenerateEkTemplate(template);
+            TpmPublic? generated = KeyTemplateCatalog.GenerateEkTemplate(template);
             Assert.That(generated, Is.Not.Null, template.ToString());
             Assert.That(KeyTemplateCatalog.ClassifyEk(generated), Is.EqualTo(template), template.ToString());
             Assert.That(KeyTemplateCatalog.GetEkCertificateNvIndex(template), Is.Not.Null, template.ToString());

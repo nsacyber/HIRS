@@ -22,8 +22,8 @@ namespace hirs {
         // "Registry of Reserved TPM 2.0 Handles and Localities", 0x81010002 is the
         // conventional persistent handle for the ECC NIST P256 (L-2) EK.
         public const uint DefaultL2EkHandle = 0x81010002;
-        public const uint DefaultAkHandle = 0x81000002;
-        public const uint DefaultSrkHandle = 0x81000001;
+        public const uint PersistentAkHandle = 0x81000002;
+        public const uint LegacyAkHandle = 0x81010002; // before v3. Now the L-2 EK handle
 
         private readonly Tpm2 tpm;
 
@@ -70,8 +70,13 @@ namespace hirs {
             this.tpm = tpm;
         }
 
+        public void Dispose() {
+            tpm?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         ~CommandTpm() {
-            tpm.Dispose();
+            tpm?.Dispose();
         }
         
         public bool IsTpmPresent() {
@@ -124,6 +129,11 @@ namespace hirs {
                 int q = Math.DivRem(size - offset, maxReadSize, out int r);
                 ushort sizeToRead = q > 0 ? maxReadSize : (ushort)r;
                 byte[] block = tpm.NvRead(authHandle, nvIndex, sizeToRead, offset);
+                if (block == null || block.Length < sizeToRead) {
+                    Log.Warning("NV read of 0x{Index:X} at offset {Offset} failed with TPM response {Rc}.",
+                        nvIndex.handle, offset, tpm._GetLastResponseCode());
+                    return null;
+                }
                 Array.Copy(block, 0, buffer, ptr, sizeToRead);
                 offset += sizeToRead;
                 ptr += sizeToRead;
@@ -131,8 +141,11 @@ namespace hirs {
             return buffer;
         }
 
-        private static byte[] ExtractFirstCertificate(byte[] data) {
-            byte[] extracted = null;
+        /**
+         * Returns the first DER certificate in the data, or [] if there is none.
+         */
+        public static byte[] ExtractFirstCertificate(byte[] data) {
+            byte[] extracted = [];
 
             if (data != null) {
                 // search for first instance of 30 82
@@ -185,85 +198,14 @@ namespace hirs {
             return obj;
         }
 
-        public static TpmPublic GenerateEKTemplateL1() {
-            TpmAlgId nameAlg = TpmAlgId.Sha256;
-            ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt;
-            byte[] auth_policy = { // Template L-1
-                0x83, 0x71, 0x97, 0x67, 0x44, 0x84,
-                0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D,
-                0x46, 0xA5, 0xD7, 0x24, 0xFD, 0x52,
-                0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64,
-                0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14,
-                0x69, 0xAA
-            };
-            // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
-            RsaParms rsa = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), 2048, 0);
-            // unique buffer must be filled with 0 for the EK Template L-1.
-            byte[] zero256 = new byte[256];
-            Array.Fill<byte>(zero256, 0x00);
-            Tpm2bPublicKeyRsa unique = new(zero256);
-            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, rsa, unique);
-            return inPublic;
-        }
-        
-        public static TpmPublic GenerateEKTemplateL2() {
-            TpmAlgId nameAlg = TpmAlgId.Sha256;
-            ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt;
-            byte[] auth_policy = { // Template L-2
-                0x83, 0x71, 0x97, 0x67, 0x44, 0x84,
-                0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D,
-                0x46, 0xA5, 0xD7, 0x24, 0xFD, 0x52,
-                0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64,
-                0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14,
-                0x69, 0xAA
-            };
-            // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
-            EccParms ecc = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), EccCurve.TpmEccNistP256, new NullKdfScheme());
-            // unique buffer must be filled with 0 for the EK Template L-1.
-            byte[] zero16 = new byte[16];
-            Array.Fill<byte>(zero16, 0x00);
-            EccPoint point = new() {
-                x = zero16,
-                y = zero16
-            };
-            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, ecc, point);
-            return inPublic;
-        }
-
-        public static TpmPublic GenerateSRKTemplateL1() {
-            TpmAlgId nameAlg = TpmAlgId.Sha256;
-            ObjectAttr attributes = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth | ObjectAttr.Restricted | ObjectAttr.Decrypt | ObjectAttr.NoDA;
-            byte[] auth_policy = null;
-            // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
-            RsaParms rsa = new(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb), new NullAsymScheme(), 2048, 0);
-            // unique buffer must be filled with 0 for the EK Template L-1.
-            byte[] zero256 = new byte[256];
-            Array.Fill<byte>(zero256, 0x00);
-            Tpm2bPublicKeyRsa unique = new(zero256);
-            TpmPublic inPublic = new(nameAlg, attributes, auth_policy, rsa, unique);
-            return inPublic;
-        }
-
-        /**
-         * The TPM object template for an EK template this provisioner can generate, or null.
-         * See KeyTemplateCatalog.SupportedEkTemplates
-         */
-        public static TpmPublic? GenerateEkTemplate(EkTemplate template) {
-            return template switch {
-                EkTemplate.EkL1 => GenerateEKTemplateL1(),
-                EkTemplate.EkL2 => GenerateEKTemplateL2(),
-                _ => null
-            };
-        }
-
         public EndorsementKey? AcquireEndorsementKey(EkTemplate template) {
-            TpmPublic? inPublic = GenerateEkTemplate(template);
+            TpmPublic? inPublic = KeyTemplateCatalog.GenerateEkTemplate(template);
             if (inPublic == null) {
                 Log.Debug("No local template for EK template {Template}.", template);
                 return null;
             }
-            if (!SupportsAlgorithm(inPublic.type)) {
-                Log.Debug("The TPM does not support {Alg}; skipping EK template {Template}.", inPublic.type, template);
+            if (!SupportsTemplate(inPublic)) {
+                Log.Debug("The TPM does not support the parameters of EK template {Template}; skipping it.", template);
                 return null;
             }
 
@@ -313,179 +255,197 @@ namespace hirs {
                 () => tpm.FlushContext(toRelease));
         }
 
-        private static RsaParms AkRsaParms() {
-            TpmAlgId digestAlg = TpmAlgId.Sha256;
-            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), new SchemeRsassa(digestAlg), 2048, 0);
-            return parms;
+        /**
+         * True if the key has an old HIRS AK template.
+         */
+        public static bool IsHirsAttestationKey(TpmPublic pub) {
+            return IsAttestationKey(pub, AsymmetricKeyTemplate.Rsa2048Quote);
         }
 
-        private static ObjectAttr AkAttributes() {
-            ObjectAttr attrib = ObjectAttr.Restricted | ObjectAttr.Sign | ObjectAttr.FixedParent | ObjectAttr.FixedTPM
-                    | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
-            return attrib;
-        }   
-
-        private static TpmPublic GenerateAKTemplate(TpmAlgId nameAlg) {
-            RsaParms rsa = AkRsaParms();
-            ObjectAttr attributes = AkAttributes();
-            TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
-            return inPublic;
+        /**
+         * True if the key has the AK template.
+         */
+        public static bool IsAttestationKey(TpmPublic pub, AsymmetricKeyTemplate template) {
+            TpmPublic expected = KeyTemplateCatalog.GenerateAkTemplate(template);
+            TpmPublic withoutKey = new(pub.nameAlg, pub.objectAttributes, pub.authPolicy, pub.parameters, expected.unique);
+            return pub.type == expected.type
+                && withoutKey.GetTpmRepresentation().SequenceEqual(expected.GetTpmRepresentation());
         }
 
-        private static RsaParms LDevIDRSAParms() {
-            TpmAlgId digestAlg = TpmAlgId.Sha256;
-            RsaParms parms = new(new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null), null, 2048, 0);
-            return parms;
-        }
-
-        private static ObjectAttr LDevIDAttributes() {
-            ObjectAttr attrib =  ObjectAttr.Sign | ObjectAttr.FixedParent | ObjectAttr.FixedTPM
-                    | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
-            return attrib;
-        }
-
-        private static TpmPublic GenerateLDevIDTemplate(TpmAlgId nameAlg) {
-            RsaParms rsa = LDevIDRSAParms();
-            ObjectAttr attributes = LDevIDAttributes();
-            TpmPublic inPublic = new(nameAlg, attributes, null, rsa, new Tpm2bPublicKeyRsa());
-            return inPublic;
-        }
-
-        public void CreateAttestationKey(uint ekHandleInt, uint akHandleInt, bool replace) {
-            TpmHandle ekHandle = new(ekHandleInt);
-            TpmHandle akHandle = new(akHandleInt);
-
-            TpmPublic existingObject = null;
+        /**
+         * True if the TPM already has this EK.
+         */
+        public bool HasEndorsementKey(EkTemplate template) {
+            if (KeyTemplateCatalog.GetConventionalEkHandle(template) is { } handle) {
+                TpmPublic? existing = ReadPublicArea(handle, out byte[] _, out byte[] _);
+                if (existing != null && KeyTemplateCatalog.ClassifyEk(existing) == template) {
+                    return true;
+                }
+            }
+            if (KeyTemplateCatalog.GetEkCertificateNvIndex(template) is not { } nvIndex) {
+                return false;
+            }
             try {
-                existingObject = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
-            } catch { }
+                return tpm.NvReadPublic(new TpmHandle(nvIndex), out byte[] _) != null;
+            } catch (TpmException) {
+                return false;
+            }
+        }
 
-            if (!replace && existingObject != null) {
-                // Do Nothing
-                Log.Debug("AK exists at expected handle. Flag to not replace the AK is set in the settings file.");
-                return;
-            } else if (replace && existingObject != null) {
-                // Clear the object and continue
+        /**
+         * Removes old AKs persisted at LegacyAkHandle and PersistentAkHandle.
+         * Anything at those handles that is not an AK is left alone.
+         * Returns how many were removed.
+         */
+        public int EvictLegacyAttestationKeys() {
+            int removed = 0;
+            foreach (uint handle in (uint[])[LegacyAkHandle, PersistentAkHandle]) {
+                TpmPublic? existing = ReadPublicArea(handle, out byte[] _, out byte[] _);
+                if (existing == null || !KeyTemplateCatalog.SupportedAkTemplates.Any(template => IsAttestationKey(existing, template))) {
+                    continue;
+                }
+                TpmHandle akHandle = new(handle);
                 tpm.EvictControl(TpmRh.Owner, akHandle, akHandle);
-                Log.Debug("Removed previous AK.");
-            }  
+                Log.Debug("Removed the AK found at 0x" + handle.ToString("X") + ".");
+                removed++;
+            }
+            return removed;
+        }
 
-            // Create a new key and make it persistent at akHandle
-            TpmAlgId nameAlg = TpmAlgId.Sha256;
+        /**
+         * Creates the AK under the SRK and saves it as files.
+         */
+        public void CreateAttestationKey(string pubPath, string privPath, AsymmetricKeyTemplate template, bool replace) {
+            CreateKeyFiles(KeyTemplateCatalog.GenerateAkTemplate(template), pubPath, privPath, replace, "AK", "--replaceAK");
+        }
 
-            SensitiveCreate inSens = new();
-            TpmPublic inPublic = GenerateAKTemplate(nameAlg);
+        /**
+         * Creates a key under the SRK and saves it as two files: its public area (TPM2B_PUBLIC), and its private area
+         * encrypted by the SRK (TPM2B_PRIVATE), which only this TPM can load.
+         * Existing files are kept unless replace is set.
+         */
+        private void CreateKeyFiles(TpmPublic template, string pubPath, string privPath, bool replace, string description,
+            string replaceOption) {
+            if (!replace && File.Exists(privPath) && File.Exists(pubPath)) {
+                Log.Debug("{Description} exists at local file system path. Flag to not replace it is not set.", description);
+                if (!CanLoadKeyFiles(pubPath, privPath)) {
+                    throw new ProvisioningFailureException(ClientExitCodes.TPM_ERROR,
+                        $"This TPM cannot load the saved {description} at {privPath}. The TPM may have been cleared. " +
+                        $"Run again with {replaceOption} to create a new {description}.");
+                }
+                return;
+            }
 
-            var policyEK = new PolicyTree(nameAlg);
+            (TpmPrivate privateArea, TpmPublic outPublic) = WithStorageRootKey(srk => {
+                TpmPrivate created = tpm.Create(srk, new SensitiveCreate(), template, null, null,
+                    out TpmPublic createdPublic, out CreationData _, out byte[] _, out TkCreation _);
+                return (created, createdPublic);
+            });
+            Log.Debug("New {Description} PUB Name: {Name}", description, BitConverter.ToString(outPublic.GetName()));
+            Log.Debug("New {Description} PUB 2BREP: {Public}", description,
+                BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
+
+            File.WriteAllBytes(pubPath, new Tpm2bPublic(outPublic));
+            File.WriteAllBytes(privPath, privateArea);
+            Log.Debug("Created new {Description} at local file system paths.", description);
+            Log.Debug("    Pub Path: {0}", pubPath);
+            Log.Debug("    Priv Path: {0}", privPath);
+        }
+
+        /**
+         * Start an auth session for using an EK (ActivateCredential).
+         */
+        private AuthSession? StartEndorsementKeySession(TpmHandle ekHandle) {
+            TpmPublic ek = tpm.ReadPublic(ekHandle, out byte[] _, out byte[] _);
+            if (ek.objectAttributes.HasFlag(ObjectAttr.UserWithAuth)) {
+                return null;
+            }
+            return StartEndorsementPolicySession(ek.nameAlg);
+        }
+
+        private static SessionBase EndorsementKeyAuth(AuthSession? policySession) {
+            return policySession != null ? policySession : Auth.Pw;
+        }
+
+        /**
+         * A policy session satisfying the EK policy, PolicySecret(TPM_RH_ENDORSEMENT). The caller should clear it.
+         */
+        private AuthSession StartEndorsementPolicySession(TpmAlgId nameAlg) {
+            PolicyTree policyEK = new(nameAlg);
             policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
 
-            AuthSession sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
-
-            TpmPrivate kAK = tpm[sessEK].Create(ekHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
-                                            out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
-
-            Log.Debug("New AK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
-            Log.Debug("New AK PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
-            Log.Debug("New AK PUB unique: " + BitConverter.ToString((Tpm2bPublicKeyRsa)(outPublic.unique)));
-
-            tpm.FlushContext(sessEK);
-
-            sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
-
-            TpmHandle hAK = tpm[sessEK].Load(ekHandle, kAK, outPublic);
-
-            tpm.EvictControl(TpmRh.Owner, hAK, akHandle);
-            Log.Debug("Created and persisted new AK at handle 0x" + akHandle.handle.ToString("X") + ".");
-
-            tpm.FlushContext(sessEK);
-        }
-
-        public void CreateStorageRootKey(uint srkHandleInt) {
-            TpmHandle srkHandle = new(srkHandleInt);
-
-            TpmPublic existingObject;
+            AuthSession session = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
             try {
-                existingObject = tpm.ReadPublic(srkHandle, out byte[] name, out byte[] qualifiedName);
-                Log.Debug("SRK already exists.");
-                return;
-            } catch (TpmException) {
-                Log.Debug("Verified SRK does not exist at expected handle. Creating SRK.");
+                session.RunPolicy(tpm, policyEK);
+            } catch {
+                FlushQuietly(session);
+                throw;
             }
-
-            SensitiveCreate inSens = new(); // key password (no params = no key password)
-            TpmPublic inPublic = CommandTpm.GenerateSRKTemplateL1(); 
-
-            TpmHandle newTransientSrkHandle = tpm.CreatePrimary(TpmRh.Owner, inSens, inPublic,
-                                                new byte[] { }, new PcrSelection[] { }, out TpmPublic outPublic,
-                                                out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
-
-            Log.Debug("New SRK Handle: " + BitConverter.ToString(newTransientSrkHandle));
-            Log.Debug("New SRK PUB Name: " + BitConverter.ToString(outPublic.GetName()));
-            Log.Debug("New SRK PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
-
-            // Make the object persistent
-            tpm.EvictControl(TpmRh.Owner, newTransientSrkHandle, srkHandle);
-            Log.Debug("Successfully made the new SRK persistent at handle " + BitConverter.ToString(srkHandle) + ".");
-
-            tpm.FlushContext(newTransientSrkHandle);
-            Log.Debug("Flushed the context for the transient SRK.");
+            return session;
         }
 
-        public void CreateLDevIDKey(uint srkHandleInt, string pubPath, string privPath, bool replace) {
-            TpmHandle srkHandle = new(srkHandleInt);
+        private void FlushQuietly(TpmHandle handle) {
+            tpm.CancelSafeFlushContext(handle);
+        }
 
-            if (!replace && File.Exists(privPath) && File.Exists(pubPath)) {
-                // Do Nothing
-                Log.Debug("LDevID exists at local file system path. Flag to not replace the LDevID is set in the settings file.");
-                return;
+        private void FlushQuietly(AuthSession? session) {
+            if (session != null) {
+                tpm.CancelSafeFlushContext(session);
             }
+        }
 
-            // Create a new transient key
-            TpmAlgId nameAlg = TpmAlgId.Sha256;
+        /**
+         * Regenerates the SRK, runs the operation with it, and flushes it.
+         * The SRK is not persisted, so whatever the operating system keeps at the TCG SRK handle (0x81000001) is left alone.
+         * TPM2_Clear will replace the storage seed. Otherwise, the SRK can be regenerated.
+         */
+        private T WithStorageRootKey<T>(Func<TpmHandle, T> operation) {
+            TpmHandle srk = tpm.CreatePrimary(TpmRh.Owner, new SensitiveCreate(), KeyTemplateCatalog.GenerateSrkTemplate(),
+                [], [], out TpmPublic _, out CreationData _, out byte[] _, out TkCreation _);
+            try {
+                return operation(srk);
+            } finally {
+                FlushQuietly(srk);
+            }
+        }
 
-            SensitiveCreate inSens = new();
-            TpmPublic inPublic = GenerateLDevIDTemplate(nameAlg);
+        /**
+         * Creates the LDevID under the SRK and saves it as files.
+         */
+        public void CreateLDevIDKey(string pubPath, string privPath, bool replace) {
+            CreateKeyFiles(KeyTemplateCatalog.GenerateLDevIdTemplate(TpmAlgId.Sha256), pubPath, privPath, replace, "LDevID",
+                "--replaceLDevID");
+        }
 
-            TpmPrivate kLDevID = tpm.Create(srkHandle, inSens, inPublic, null, null, out TpmPublic outPublic,
-                                            out CreationData creationData, out byte[] creationHash, out TkCreation ticket);
-
-            Log.Debug("New LDevID PUB Name: " + BitConverter.ToString(outPublic.GetName()));
-            Log.Debug("New LDevID PUB 2BREP: " + BitConverter.ToString(outPublic.GetTpm2BRepresentation()));
-            Log.Debug("New LDevID PUB unique: " + BitConverter.ToString((Tpm2bPublicKeyRsa)(outPublic.unique)));
-
-            Tpm2bPublic ldevidPublic = new Tpm2bPublic(outPublic);
-
-            File.WriteAllBytes(pubPath, ldevidPublic);
-            File.WriteAllBytes(privPath, kLDevID);
-            Log.Debug("Created new LDevID at local file system paths.");
-            Log.Debug("    LDevID Pub Path: {0}", pubPath);
-            Log.Debug("    LDevID Priv Path: {0}", privPath);
+        private bool CanLoadKeyFiles(string pubPath, string privPath) {
+            try {
+                FlushHandle(LoadKeyFromFiles(pubPath, privPath));
+                return true;
+            } catch (TpmException e) {
+                Log.Debug(e, "The key saved at {Path} could not be loaded.", privPath);
+                return false;
+            }
         }
 
         /*
-         * Loads LDevID previously saved to file by CreateLDevIDKey
+         * Loads a key saved to files by CreateAttestationKey or CreateLDevIDKey.
+         * It stays loaded after the SRK is flushed.  The caller should clear it.
          */
-        public uint LoadLDevIDKey(uint srkHandleInt, string pubPath, string privPath) {
-            TpmHandle srkHandle = new(srkHandleInt);
-
+        public uint LoadKeyFromFiles(string pubPath, string privPath) {
             Tpm2bPublic pub2b = Marshal<Tpm2bPublic>(File.ReadAllBytes(pubPath));
             TpmPrivate priv = Marshal<TpmPrivate>(File.ReadAllBytes(privPath));
 
-            TpmHandle loaded = tpm.Load(srkHandle, priv, pub2b.publicArea);
-            return loaded.handle;
+            return WithStorageRootKey(srk => tpm.Load(srk, priv, pub2b.publicArea).handle);
         }
 
         public void FlushHandle(uint handleInt) {
             tpm.FlushContext(new TpmHandle(handleInt));
         }
 
-        public byte[] ConvertLDevIDPublic(string ldevidPubPath) {
-            byte[] ldevidPubBytes = File.ReadAllBytes(ldevidPubPath);
-            var marshaller = new Marshaller(ldevidPubBytes, DataRepresentation.Tpm);
-            Tpm2bPublic ldevidPublic = marshaller.Get<Tpm2bPublic>();
-            return ldevidPublic.publicArea;
+        // The public area (TPMT_PUBLIC) of a key saved to files
+        public byte[] ReadPublicAreaFromFile(string pubPath) {
+            Marshaller marshaller = new(File.ReadAllBytes(pubPath), DataRepresentation.Tpm);
+            return marshaller.Get<Tpm2bPublic>().publicArea;
         }
 
         public Tpm2bDigest[] GetPcrList(TpmAlgId pcrBankDigestAlg, uint[] pcrs = null) {
@@ -501,7 +461,7 @@ namespace hirs {
             return pcrValues;
         }
 
-        // qualifying data hashed with SHA256, quote set to use RSASSA scheme with SHA256-- TODO: enable usage of ECC and other digest alg
+        // qualifying data hashed with SHA256. The quote is signed with the AK's own scheme: (RSASSA or ECDSA, with its hash)
         // if no pcrs are requested (parameter pcrs == null), all pcrs wil be returned. The function does not check if any pcr is available before asking for the quote
         public void GetQuote(uint akHandleInt, TpmAlgId pcrBankDigestAlg, byte[] nonce, out CommandTpmQuoteResponse ctqr, uint[] pcrs = null) {
             TpmHandle akHandle = new(akHandleInt);
@@ -519,12 +479,13 @@ namespace hirs {
             // for test only
             TpmHash qualifyingData = TpmHash.FromData(TpmAlgId.Sha256, nonce);
 
-            Attest localQuotedInfo = tpm.Quote(akHandle, qualifyingData, new SchemeRsassa(TpmAlgId.Sha256), pcrSelection, out ISignatureUnion localQuoteSig);
+            Attest localQuotedInfo = tpm.Quote(akHandle, qualifyingData, new NullSigScheme(), pcrSelection, out ISignatureUnion localQuoteSig);
             Tpm2bDigest[] localPcrValues = MultiplePcrRead(pcrSelection[0]);
 
             TpmPublic pub = tpm.ReadPublic(akHandle, out byte[] name, out byte[] qualifiedName);
 
-            bool verified = pub.VerifyQuote(TpmAlgId.Sha256, pcrSelection, localPcrValues, qualifyingData, localQuotedInfo, localQuoteSig, qualifiedName);
+            // The quote's PCR digest uses the AK's name algorithm
+            bool verified = pub.VerifyQuote(pub.nameAlg, pcrSelection, localPcrValues, qualifyingData, localQuotedInfo, localQuoteSig, qualifiedName);
             Log.Debug("Quote " + (verified ? "was" : "was not") + " verified.");
             ctqr = null;
             if (verified) {
@@ -532,14 +493,8 @@ namespace hirs {
             }
         }
 
-        /*
-         * Raw TPM2_Sign proof-of-possession signature. Only valid for a
-         * non-restricted signing key (e.g. LDevID) — a restricted key (e.g. AK)
-         * cannot sign an externally-supplied digest without a same-TPM hash
-         * validation ticket (TPM2_Hash), which this method does not attempt.
-         * Callers pass an unrestricted key's handle; a restricted key will
-         * fail with TPM_RC_TICKET/TPM_RC_ATTRIBUTES from the TPM itself.
-         */
+        // For non-restricted signing keys
+        // Will need to create a (not null) ticket for restricted keys
         public byte[] Sign(uint keyHandleInt, byte[] digest, TpmAlgId hashAlg) {
             TpmHandle keyHandle = new(keyHandleInt);
 
@@ -581,6 +536,39 @@ namespace hirs {
             return false;
         }
 
+        /*
+         * Check whether the TPM supports algorithms and parameters.
+         */
+        public bool SupportsTemplate(TpmPublic template) {
+            try {
+                tpm.TestParms(template.parameters);
+                return true;
+            } catch (TpmException e) {
+                Log.Debug(e, "SupportsTemplate: the TPM does not support these {Type} parameters.", template.type);
+                return false;
+            }
+        }
+
+        private static readonly TpmAlgId[] ShaPcrBanks = [TpmAlgId.Sha1, TpmAlgId.Sha256, TpmAlgId.Sha384, TpmAlgId.Sha512];
+
+        /*
+         * The PCR banks the TPM has PCRs allocated in (TPM_CAP_PCRS).
+         */
+        public IReadOnlyList<TpmAlgId> GetPcrBanks() {
+            try {
+                tpm.GetCapability(Cap.Pcrs, 0, 1, out ICapabilitiesUnion capData);
+                if (capData is PcrSelectionArray allocated) {
+                    return allocated.pcrSelections
+                        .Where(bank => ShaPcrBanks.Contains(bank.hash) && bank.NumPcrsSelected() > 0)
+                        .Select(bank => bank.hash)
+                        .ToList();
+                }
+            } catch (TpmException e) {
+                Log.Debug(e, "GetPcrBanks: TPM2_GetCapability failed for TPM_CAP_PCRS.");
+            }
+            return [];
+        }
+
         public Tpm2bDigest[] MultiplePcrRead(PcrSelection pcrs) {
             if (pcrs == null) {
                 return Array.Empty<Tpm2bDigest>();
@@ -619,18 +607,18 @@ namespace hirs {
             IdObject credentialBlob = new(integrityHMAC, encIdentity);
 
             TpmAlgId nameAlg = TpmAlgId.Sha256;
-            var policyEK = new PolicyTree(nameAlg);
-            policyEK.SetPolicyRoot(new TpmPolicySecret(TpmRh.Endorsement, false, 0, null, null));
-
-            AuthSession sessEK = tpm.StartAuthSessionEx(TpmSe.Policy, nameAlg);
-            sessEK.RunPolicy(tpm, policyEK);
-
-            AuthSession sessAK = tpm.StartAuthSessionEx(TpmSe.None, nameAlg);
-            recoveredSecret = tpm[sessAK, sessEK].ActivateCredential(akHandle, ekHandle, credentialBlob, encryptedSecret);
-            Log.Debug("encryptedSecret: " + BitConverter.ToString(encryptedSecret));
-
-            tpm.FlushContext(sessEK);
-            tpm.FlushContext(sessAK);
+            AuthSession? sessEK = StartEndorsementKeySession(ekHandle);
+            AuthSession? sessAK = null;
+            try {
+                sessAK = tpm.StartAuthSessionEx(TpmSe.None, nameAlg);
+                recoveredSecret = tpm[sessAK, EndorsementKeyAuth(sessEK)].ActivateCredential(akHandle, ekHandle, credentialBlob, encryptedSecret);
+                Log.Debug("encryptedSecret: " + BitConverter.ToString(encryptedSecret));
+            } finally {
+                FlushQuietly(sessEK);
+                if (sessAK != null) {
+                    FlushQuietly(sessAK);
+                }
+            }
 
             return recoveredSecret;
         }

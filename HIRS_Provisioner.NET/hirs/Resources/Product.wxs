@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="$(var.SetupProductName)" Manufacturer="$(var.SetupProductManufacturer)" Language="$(var.SetupProductLanguage)" Version="$(var.SetupProductVersion)">
+  <Product Id="*" UpgradeCode="{A5C1BC72-CA3D-5A86-A08F-DFEB46D33DC8}" Name="$(var.SetupProductName)" Manufacturer="$(var.SetupProductManufacturer)" Language="$(var.SetupProductLanguage)" Version="$(var.SetupProductVersion)">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <!--

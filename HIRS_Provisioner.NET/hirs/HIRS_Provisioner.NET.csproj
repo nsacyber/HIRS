@@ -7,6 +7,7 @@
     <StartupObject>hirs.Program</StartupObject>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
+    <InvariantGlobalization>true</InvariantGlobalization>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Version>3.3.0</Version>
@@ -29,7 +30,7 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Google.Protobuf" Version="3.36.2" />
-    <PackageReference Include="Google.Protobuf.Tools" Version="3.36.1">
+    <PackageReference Include="Google.Protobuf.Tools" Version="3.36.2">
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
@@ -43,10 +44,6 @@
     <PackageReference Include="paccor.pcie" Version="0.9.5" />
     <PackageReference Include="paccor.smbios" Version="0.9.5" />
     <PackageReference Include="paccor.storage" Version="0.9.5" />
-    <PackageReference Include="Packaging.Targets" Version="0.1.232">
-      <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Serilog" Version="4.4.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />

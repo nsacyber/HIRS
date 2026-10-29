@@ -1,5 +1,5 @@
 # This workflow will build HIRS, run system tests, and create artifacts consisting of ACA and Provisioner logs.
-# Updated: 02/03/2026
+# Updated: 10/26/2026
 name: HIRS System Tests
 on:
   pull_request:
@@ -25,7 +25,7 @@ jobs:
           # If on a forked repo, ensure that it has a new secret for the PAT
           # and replace secrets.GITHUB_TOKEN with the secret in the fork
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          .ci/system-tests/setup_system_tests.sh ${GITHUB_REF#refs/heads/}
+          .ci/system-tests/setup_system_tests.sh ${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
       - name: ACA POLICY TEST 1 - Test ACA default policy
         if: always()
         shell: bash

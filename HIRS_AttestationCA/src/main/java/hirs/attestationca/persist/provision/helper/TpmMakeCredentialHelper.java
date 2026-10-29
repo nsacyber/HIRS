@@ -106,8 +106,10 @@ public final class TpmMakeCredentialHelper {
         keyAgreement.doPhase(ek, true);
         byte[] sharedSecret = keyAgreement.generateSecret();
 
-        byte[] partyU = ProvisionUtils.convertECPublicKeyToBytes((ECPublicKey) ephemeral.getPublic());
-        byte[] partyV = ProvisionUtils.convertECPublicKeyToBytes(ek);
+        // KDFe party info is the x-coordinate of each key (TPM 2.0 Part 1, ECDH secret sharing)
+        int fieldSize = ProvisionUtils.getFieldSizeInBytes(ek);
+        byte[] partyU = ProvisionUtils.convertBigIntegerToByteArray(((ECPublicKey) ephemeral.getPublic()).getW().getAffineX(), fieldSize);
+        byte[] partyV = ProvisionUtils.convertBigIntegerToByteArray(ek.getW().getAffineX(), fieldSize);
         int seedLengthBits = digestLengthBytes(ekPub.nameAlg()) * Byte.SIZE;
         byte[] seed = ProvisionUtils.cryptKDFe(
                 ekPub.nameAlg(), sharedSecret, IDENTITY_LABEL, partyU, partyV, seedLengthBits);

@@ -13,16 +13,17 @@ namespace hirsTest.provisioner {
 
         [Test]
         public void TestOffersComponentWithCertificateIdentifier() {
-            ComponentEvidenceKeys keys = ComponentEvidenceKeys.FromPlugins([FakeEpscPlugin()]);
+            ProvisioningKeys keys = new();
 
-            Assert.That(keys.KeyCandidates, Has.Count.EqualTo(1));
-            KeyCandidate candidate = keys.KeyCandidates[0];
+            Assert.That(ComponentEvidenceKeys.AddTo(keys, [FakeEpscPlugin()]), Is.EqualTo(1));
+            KeyCandidate candidate = keys.Candidates[0];
             Assert.Multiple(() => {
                 Assert.That(candidate.Role, Is.EqualTo(new[] { KeyRole.DeviceIdentity }));
                 Assert.That(candidate.External.EvidenceFormat, Is.EqualTo(EvidenceFormat.HpEpscBootlog));
                 Assert.That(candidate.External.CertDigest.ToByteArray(), Is.EqualTo(CertIdentifier));
                 Assert.That(candidate.KeyId.ToByteArray(), Is.EqualTo(
                     KeyTemplateCatalog.DeriveKeyId(KeyRole.DeviceIdentity, ProvisioningOrigin.OemExternal, CertIdentifier)));
+                Assert.That(keys.TryGet(candidate.KeyId, out ProvisioningKey key) && key.IsExternal, Is.True);
             });
         }
 
@@ -30,8 +31,10 @@ namespace hirsTest.provisioner {
         public void TestIgnoresPluginsWithoutEvidence() {
             IHardwareManifestPlugin plugin = FakeEpscPlugin();
             A.CallTo(() => plugin.SupportsComponentEvidence).Returns(false);
+            ProvisioningKeys keys = new();
 
-            Assert.That(ComponentEvidenceKeys.FromPlugins([plugin]).KeyCandidates, Is.Empty);
+            Assert.That(ComponentEvidenceKeys.AddTo(keys, [plugin]), Is.Zero);
+            Assert.That(keys.Candidates, Is.Empty);
         }
 
         [Test]
@@ -47,11 +50,9 @@ namespace hirsTest.provisioner {
                     CertificateChain = [[10], [20]]
                 }
             ]);
-            ComponentEvidenceKeys keys = ComponentEvidenceKeys.FromPlugins([plugin]);
-            VerificationChallenge challenge = new() {
-                KeyId = keys.KeyCandidates[0].KeyId,
-                ExternalEvidence = new ExternalEvidenceChallenge { Nonce = ByteString.CopyFrom(Nonce), EvidenceFormat = EvidenceFormat.HpEpscBootlog }
-            };
+            ProvisioningKeys keys = new();
+            ComponentEvidenceKeys.AddTo(keys, [plugin]);
+            VerificationChallenge challenge = Challenge(keys.Candidates[0].KeyId);
 
             List<VerificationResult> results = keys.Answer([challenge]);
 
@@ -67,14 +68,31 @@ namespace hirsTest.provisioner {
         }
 
         [Test]
-        public void TestIgnoresChallengesForOtherKeys() {
-            ComponentEvidenceKeys keys = ComponentEvidenceKeys.FromPlugins([FakeEpscPlugin()]);
-            VerificationChallenge challenge = new() {
-                KeyId = ByteString.CopyFrom([9, 9, 9]),
-                ExternalEvidence = new ExternalEvidenceChallenge { Nonce = ByteString.CopyFrom(Nonce) }
-            };
+        public void TestAnswersWithEmptyResultWhenPluginHasNoEvidence() {
+            IHardwareManifestPlugin plugin = FakeEpscPlugin();
+            A.CallTo(() => plugin.GatherComponentEvidence(A<byte[]>._)).Returns([]);
+            ProvisioningKeys keys = new();
+            ComponentEvidenceKeys.AddTo(keys, [plugin]);
 
-            Assert.That(keys.Answer([challenge]), Is.Empty);
+            List<VerificationResult> results = keys.Answer([Challenge(keys.Candidates[0].KeyId)]);
+
+            Assert.That(results, Has.Count.EqualTo(1));
+            Assert.That(results[0].ExternalEvidence.Evidence.IsEmpty, Is.True);
+        }
+
+        [Test]
+        public void TestIgnoresChallengesForOtherKeys() {
+            ProvisioningKeys keys = new();
+            ComponentEvidenceKeys.AddTo(keys, [FakeEpscPlugin()]);
+
+            Assert.That(keys.Answer([Challenge(ByteString.CopyFrom([9, 9, 9]))]), Is.Empty);
+        }
+
+        private static VerificationChallenge Challenge(ByteString keyId) {
+            return new VerificationChallenge {
+                KeyId = keyId,
+                ExternalEvidence = new ExternalEvidenceChallenge { Nonce = ByteString.CopyFrom(Nonce), EvidenceFormat = EvidenceFormat.HpEpscBootlog }
+            };
         }
 
         /**
