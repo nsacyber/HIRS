@@ -181,6 +181,28 @@ namespace hirsTest.tpm {
         }
 
         [Test]
+        public void TestKeptAkFilesThatCannotLoadAskForReplacement() {
+            string pubPath = Path.Combine(tempDir, "ak.pub");
+            string privPath = Path.Combine(tempDir, "ak.priv");
+            string otherPubPath = Path.Combine(tempDir, "other.pub");
+            string otherPrivPath = Path.Combine(tempDir, "other.priv");
+            Hirs.Pb.AsymmetricKeyTemplate template = Hirs.Pb.AsymmetricKeyTemplate.Rsa2048Quote;
+            tpm.CreateAttestationKey(pubPath, privPath, template, replace: true);
+            tpm.CreateAttestationKey(otherPubPath, otherPrivPath, template, replace: true);
+            File.Copy(otherPrivPath, privPath, overwrite: true);
+
+            ProvisioningFailureException e = Assert.Throws<ProvisioningFailureException>(
+                () => tpm.CreateAttestationKey(pubPath, privPath, template, replace: false))!;
+            Assert.Multiple(() => {
+                Assert.That(e.ExitCode, Is.EqualTo(ClientExitCodes.TPM_ERROR));
+                Assert.That(e.Message, Does.Contain("--replaceAK"));
+            });
+
+            tpm.CreateAttestationKey(pubPath, privPath, template, replace: true);
+            tpm.FlushHandle(tpm.LoadKeyFromFiles(pubPath, privPath));
+        }
+
+        [Test]
         public void TestStorageRootKeyIsRegeneratedAndSrkHandleIsLeftAlone() {
             const uint tcgSrkHandle = 0x81000001;
             string before = Describe(tpm.ReadPublicArea(tcgSrkHandle, out byte[] _, out byte[] _));

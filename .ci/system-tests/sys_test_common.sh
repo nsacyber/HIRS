@@ -109,7 +109,7 @@ provisionTpm2() {
 }
 
 resetTpmForNewTest() {
-  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert"
+  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert; removeSavedProvisionerKeys"
 }
 
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder

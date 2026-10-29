@@ -316,7 +316,7 @@ namespace hirs {
          * Creates the AK under the SRK and saves it as files.
          */
         public void CreateAttestationKey(string pubPath, string privPath, AsymmetricKeyTemplate template, bool replace) {
-            CreateKeyFiles(KeyTemplateCatalog.GenerateAkTemplate(template), pubPath, privPath, replace, "AK");
+            CreateKeyFiles(KeyTemplateCatalog.GenerateAkTemplate(template), pubPath, privPath, replace, "AK", "--replaceAK");
         }
 
         /**
@@ -324,9 +324,15 @@ namespace hirs {
          * encrypted by the SRK (TPM2B_PRIVATE), which only this TPM can load.
          * Existing files are kept unless replace is set.
          */
-        private void CreateKeyFiles(TpmPublic template, string pubPath, string privPath, bool replace, string description) {
+        private void CreateKeyFiles(TpmPublic template, string pubPath, string privPath, bool replace, string description,
+            string replaceOption) {
             if (!replace && File.Exists(privPath) && File.Exists(pubPath)) {
                 Log.Debug("{Description} exists at local file system path. Flag to not replace it is not set.", description);
+                if (!CanLoadKeyFiles(pubPath, privPath)) {
+                    throw new ProvisioningFailureException(ClientExitCodes.TPM_ERROR,
+                        $"This TPM cannot load the saved {description} at {privPath}. The TPM may have been cleared. " +
+                        $"Run again with {replaceOption} to create a new {description}.");
+                }
                 return;
             }
 
@@ -407,7 +413,18 @@ namespace hirs {
          * Creates the LDevID under the SRK and saves it as files.
          */
         public void CreateLDevIDKey(string pubPath, string privPath, bool replace) {
-            CreateKeyFiles(KeyTemplateCatalog.GenerateLDevIdTemplate(TpmAlgId.Sha256), pubPath, privPath, replace, "LDevID");
+            CreateKeyFiles(KeyTemplateCatalog.GenerateLDevIdTemplate(TpmAlgId.Sha256), pubPath, privPath, replace, "LDevID",
+                "--replaceLDevID");
+        }
+
+        private bool CanLoadKeyFiles(string pubPath, string privPath) {
+            try {
+                FlushHandle(LoadKeyFromFiles(pubPath, privPath));
+                return true;
+            } catch (TpmException e) {
+                Log.Debug(e, "The key saved at {Path} could not be loaded.", privPath);
+                return false;
+            }
         }
 
         /*

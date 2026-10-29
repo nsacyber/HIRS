@@ -153,6 +153,10 @@ function startFreshTpmServer {
   fi
 }
 
+function removeSavedProvisionerKeys {
+  rm -f -- *ak_*.pub *ak_*.priv *ldevid.pub *ldevid.priv
+}
+
 function startupTpm {
   echo "Running tpm2_startup"
   tpm2_startup -T mssim -c
