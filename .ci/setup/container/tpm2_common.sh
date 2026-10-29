@@ -153,8 +153,15 @@ function startFreshTpmServer {
   fi
 }
 
+# A fresh TPM has a new storage seed, so the AK and LDevID files saved by the provisioner can't be loaded anymore.
+# With no certificate_output_directory set, the provisioner saves them under <efi_prefix>/EFI/hirs.
 function removeSavedProvisionerKeys {
-  rm -f -- *ak_*.pub *ak_*.priv *ldevid.pub *ldevid.priv
+  # Setting configurations
+  . /hirs/.ci/docker/.env
+
+  keyDir="${HIRS_CI_EFI_PATH_ROOT:?}/EFI/hirs"
+  echo "Removing saved provisioner keys from $keyDir"
+  rm -f -- "${keyDir:?}"/*ak_*.pub "${keyDir:?}"/*ak_*.priv "${keyDir:?}"/*ldevid.pub "${keyDir:?}"/*ldevid.priv
 }
 
 function startupTpm {
