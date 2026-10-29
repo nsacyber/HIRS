@@ -60,7 +60,7 @@ subprojects {
         def cmdApiKey = System.getProperty("nvd.apiKey") ?: ""
         if (cmdApiKey) {
             println ">>>> [OWASP] NVD API Key detected for project: ${project.name}: [${cmdApiKey}]"
-        } 
+        }
         nvd {
             apiKey=cmdApiKey
             delay = 16000
