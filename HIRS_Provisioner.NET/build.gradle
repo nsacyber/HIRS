@@ -42,6 +42,8 @@ tasks.register('stageWindowsPackage', Sync) {
 
     from(windowsPublishDir) {
         exclude '**/*.pdb'
+        exclude 'tpm_aca_provision.exe'
+        rename { fileName -> fileName == 'HIRS_Provisioner.NET.exe' ? 'tpm_aca_provision.exe' : fileName }
     }
     into layout.buildDirectory.dir('staging/win-x64').get().asFile
 }
