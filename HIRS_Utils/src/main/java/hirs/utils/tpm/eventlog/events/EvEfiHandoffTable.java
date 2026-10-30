@@ -5,6 +5,7 @@ import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
 import lombok.Getter;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class EvEfiHandoffTable {
      *
      * @param tpmEventData byte array holding the Handoff table data.
      */
-    public EvEfiHandoffTable(final byte[] tpmEventData) {
+    public EvEfiHandoffTable(final byte[] tpmEventData) throws IOException {
         // Get NumberOfTables from the EventData
         byte[] count = new byte[UefiConstants.SIZE_8];
         System.arraycopy(tpmEventData, 0, count, 0, UefiConstants.SIZE_8);
@@ -61,9 +62,14 @@ public class EvEfiHandoffTable {
         // process each UEFI_CONFIGURATION_TABLE table
         int offset = UefiConstants.OFFSET_8;
         for (int tables = 0; tables < numberOfTables; tables++) {
-            vendorGuids.add(getNextGUID(tpmEventData, offset));
-            vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
-            offset += UefiConstants.OFFSET_24;
+            try {
+                vendorGuids.add(getNextGUID(tpmEventData, offset));
+                vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
+                offset += UefiConstants.OFFSET_24;
+            }
+            catch (IllegalArgumentException ie) {
+                throw new IOException("Parsing error with EvEfiHandoffTable event: " + ie);
+            }
         }
     }
 
@@ -73,7 +79,7 @@ public class EvEfiHandoffTable {
      * @param tpmEventData     byte array holding the Handoff table data.
      * @param guidTablePathStr the string for the vendor file
      */
-    public EvEfiHandoffTable(final byte[] tpmEventData, final Path guidTablePathStr) {
+    public EvEfiHandoffTable(final byte[] tpmEventData, final Path guidTablePathStr) throws IOException {
         // Get NumberOfTables from the EventData
         byte[] count = new byte[UefiConstants.SIZE_8];
         System.arraycopy(tpmEventData, 0, count, 0, UefiConstants.SIZE_8);
@@ -84,9 +90,14 @@ public class EvEfiHandoffTable {
         // process each UEFI_CONFIGURATION_TABLE table
         int offset = UefiConstants.OFFSET_8;
         for (int tables = 0; tables < numberOfTables; tables++) {
-            vendorGuids.add(getNextGUID(tpmEventData, offset));
-            vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
-            offset += UefiConstants.OFFSET_24;
+            try {
+                vendorGuids.add(getNextGUID(tpmEventData, offset));
+                vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
+                offset += UefiConstants.OFFSET_24;
+            }
+            catch (IllegalArgumentException ie) {
+                throw new IOException("Parsing error with EvEfiHandoffTable event: " + ie);
+            }
         }
     }
 
@@ -98,6 +109,11 @@ public class EvEfiHandoffTable {
      * @return Vendor Guid
      */
     private UefiGuid getNextGUID(final byte[] eventData, final int offset) {
+        if (offset < 0 || UefiConstants.SIZE_16 > (eventData.length - offset)) {
+            throw new IllegalArgumentException(
+                    "Cannot read " + UefiConstants.SIZE_16 + " GUID bytes at offset " + offset
+                            + " from " + eventData.length + "-byte event data");
+        }
         byte[] guid = new byte[UefiConstants.SIZE_16];
         System.arraycopy(eventData, offset, guid, 0, UefiConstants.SIZE_16);
         if (guidTablePathStr == null || guidTablePathStr.toString().isEmpty()) {
@@ -115,6 +131,11 @@ public class EvEfiHandoffTable {
      * @return a  byte array holding the new table.
      */
     private byte[] getNextTable(final byte[] eventData, final int offset) {
+        if (offset < 0 || UefiConstants.SIZE_8 > (eventData.length - offset)) {
+            throw new IllegalArgumentException(
+                    "Cannot read " + UefiConstants.SIZE_16 + " Table bytes at offset " + offset
+                            + " from " + eventData.length + "-byte event data");
+        }
         byte[] table = new byte[UefiConstants.SIZE_8];
         System.arraycopy(eventData, offset, table, 0, UefiConstants.SIZE_8);
         return table;
