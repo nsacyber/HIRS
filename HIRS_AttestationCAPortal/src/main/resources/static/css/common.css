@@ -148,3 +148,37 @@ a:has(.action-icons) {
 .accordion-item:hover {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Soft shadow on hover */
 }
+
+.error-color {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color.collapsed {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color:not(.collapsed) {
+  background-color: #FF6164;
+  color: #FFFFFF;
+}
+
+.accordion-button.error-color:focus {
+  box-shadow: none;
+}
+
+.success-color {
+  background-color: #8AFF92;
+  color: #000000
+}
+
+.accordion-button.success-color.collapsed {
+  background-color: #8AFF92;
+  color: #000000;
+}
+
+.accordion-button.success-color:not(.collapsed) {
+  background-color: #8AFF92;
+  color: #000000;
+}

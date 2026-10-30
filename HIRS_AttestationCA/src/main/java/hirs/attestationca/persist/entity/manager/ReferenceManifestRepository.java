@@ -250,6 +250,17 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
     long countByArchiveFlag(boolean archiveFlag);
 
     /**
+     * Return the record of the given RIM type closest in time to the given timestamp.
+     *
+     * @param timestamp to be closest to
+     * @param rimType to match
+     * @return {@link ReferenceManifest} object
+     */
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE create_time < ?1 AND rimType = ?2 " +
+            "ORDER BY create_time DESC LIMIT 1", nativeQuery = true)
+    ReferenceManifest findByTypeBeforeTime(String timestamp, String rimType);
+
+    /**
      * Retrieves a paginated list of {@link ReferenceManifest} instances matching the specified subclass types.
      *
      * @param types    the list of {@link ReferenceManifest} subclass types to include

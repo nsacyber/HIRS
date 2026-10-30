@@ -38,4 +38,12 @@ public interface SupplyChainValidationSummaryRepository extends JpaRepository<Su
      * @return a list of {@link SupplyChainValidationSummary} objects
      */
     List<SupplyChainValidationSummary> findByArchiveFlagFalseOrderByCreateTimeDesc();
+
+    /**
+     * Query that retrieves a single record from the SupplyChainValidationSummary table by id.
+     *
+     * @param uuid the record id
+     * @return SupplyChainValidationSummary object representation
+     */
+    SupplyChainValidationSummary findSupplyChainValidationSummaryById(UUID uuid);
 }
