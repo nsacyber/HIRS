@@ -26,6 +26,36 @@ tasks.register('publishLinux', Exec) {
             "-p:PublishDir=${linuxPublishDir.absolutePath}${File.separator}"
 }
 
+def windowsZipFileName = "HIRS_Provisioner.NET.${packageVersion}.win-x64.zip"
+
+tasks.register('publishWindows', Exec) {
+    workingDir projectDir
+    commandLine 'dotnet', 'publish', provisionerProject,
+            '--configuration', 'Release',
+            '--runtime', 'win-x64',
+            '--self-contained', 'true',
+            "-p:PublishDir=${windowsPublishDir.absolutePath}${File.separator}"
+}
+
+tasks.register('stageWindowsPackage', Sync) {
+    dependsOn tasks.named('publishWindows')
+
+    from(windowsPublishDir) {
+        exclude '**/*.pdb'
+    }
+    into layout.buildDirectory.dir('staging/win-x64').get().asFile
+}
+
+tasks.register('buildWindowsZip', Zip) {
+    group = 'distribution'
+    description = 'Build the self-contained Windows x64 ZIP package.'
+    dependsOn tasks.named('stageWindowsPackage')
+
+    from(layout.buildDirectory.dir('staging/win-x64'))
+    destinationDirectory.set(packageOutputDir)
+    archiveFileName.set(windowsZipFileName)
+}
+
 tasks.register('stageLinuxPackage', Sync) {
     dependsOn tasks.named('publishLinux')
     from(linuxPublishDir) {
@@ -102,5 +132,5 @@ if (isWindowsHost) {
 tasks.register('release') {
     group = 'distribution'
     description = 'Build release packages: Linux RPM/DEB and Windows MSI.'
-    dependsOn tasks.named('buildRpm'), tasks.named('buildDeb'), tasks.named('buildMsi')
+    dependsOn tasks.named('buildRpm'), tasks.named('buildDeb'), tasks.named('buildWindowsZip'), tasks.named('buildMsi')
 }
