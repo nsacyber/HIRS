@@ -139,8 +139,10 @@ project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}
 
 tasks.register('release') {
     group = 'distribution'
-    description = 'Build ACA and Provisioner RPM/DEB packages and the Provisioner MSI on Windows.'
+    description = 'Build ACA, Provisioner, and tcg_eventLog_tool RPM/DEB packages and the Provisioner MSI on Windows.'
     dependsOn ':HIRS_AttestationCAPortal:buildRpm',
             ':HIRS_AttestationCAPortal:buildDeb',
+            ':tools:tcg_eventlog_tool:buildRpm',
+            ':tools:tcg_eventlog_tool:buildDeb',
             ':HIRS_Provisioner.NET:release'
 }
