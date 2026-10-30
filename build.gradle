@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'io.github.ben-manes.versions' version '0.61.0'
+    id 'io.github.ben-manes.versions' version '0.66.0'
     id 'application'
     id 'com.github.spotbugs' version '6.5.6' apply false
-    id 'org.owasp.dependencycheck' version '13.0.0'
+    id 'org.owasp.dependencycheck' version '12.2.2'
     id 'com.palantir.git-version' version '5.0.0'
 }
 
@@ -15,6 +15,9 @@ plugins {
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
+    if (project.name == 'HIRS_Provisioner.NET') {
+        return
+    }
     apply plugin: "checkstyle"
     apply plugin: "com.github.spotbugs"
     apply plugin: "java"
@@ -54,8 +57,14 @@ subprojects {
     }
 
     dependencyCheck {
-        // Read API key from a system property 'nvd.apiKey'
-        nvd.apiKey = System.getProperty("nvd.apiKey")
+        def cmdApiKey = System.getProperty("nvd.apiKey") ?: ""
+        if (cmdApiKey) {
+            println ">>>> [OWASP] NVD API Key detected for project: ${project.name}: [${cmdApiKey}]"
+        }
+        nvd {
+            apiKey=cmdApiKey
+            delay = 16000
+            }
     }
 
 //    Uncomment the lines right after this comment, if you wish to see all the places
@@ -127,3 +136,11 @@ long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime())
 
 project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}"
 project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}.el8"
+
+tasks.register('release') {
+    group = 'distribution'
+    description = 'Build ACA and Provisioner RPM/DEB packages and the Provisioner MSI on Windows.'
+    dependsOn ':HIRS_AttestationCAPortal:buildRpm',
+            ':HIRS_AttestationCAPortal:buildDeb',
+            ':HIRS_Provisioner.NET:release'
+}

@@ -43,6 +43,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
@@ -66,6 +67,7 @@ public class CertificateRequestProcessorService {
     private final X509Certificate acaCertificate;
     private final int certificateValidityInDays;
     private final PrivateKey privateKey;
+    private static final int CERT_SERIAL_SIZE = 159;
 
     /**
      * Constructor.
@@ -240,7 +242,7 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateResponse);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key exists, could not be parsed "
@@ -295,7 +297,7 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateResponse);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key does not exist, could not be parsed "
@@ -337,7 +339,7 @@ public class CertificateRequestProcessorService {
 
                 String certResponseJsonStringAfterFailure = "";
                 try {
-                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(certificateRequest);
+                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(certificateResponse);
                 } catch (InvalidProtocolBufferException exception) {
                     log.error("Certificate response object after a failed validation could not be parsed"
                             + " properly into a JSON string");
@@ -487,8 +489,10 @@ public class CertificateRequestProcessorService {
             X500Name issuer = new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
             Date notBefore = new Date();
             Date notAfter = expiry.getTime();
-            BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
-
+            BigInteger serialNumber;
+            do {
+                serialNumber = new BigInteger(CERT_SERIAL_SIZE, new SecureRandom());
+            } while (serialNumber.signum() == 0);
             SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 
             // The subject should be left blank, per spec

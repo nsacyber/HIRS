@@ -1,9 +1,10 @@
 package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
-import hirs.utils.crypto.AlgorithmsIds;
 import hirs.utils.digest.AbstractDigest;
-import hirs.utils.tpm.eventlog.events.EvConstants;
+import hirs.utils.specLookups.NistLookups;
+import hirs.utils.specLookups.SpecTranslations;
+import hirs.utils.specLookups.TcgAlgRegLookups;
 import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
@@ -23,13 +24,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-
-import static hirs.utils.crypto.AlgorithmsIds.ALG_TYPE_HASH;
-import static hirs.utils.crypto.AlgorithmsIds.SPEC_TCG_ALG;
-import static hirs.utils.crypto.AlgorithmsIds.findAlgId;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA256_STR;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA384_STR;
-import static hirs.utils.tpm.eventlog.TcgTpmtHa.TPM_ALG_SHA512_STR;
 
 /**
  * Class for handling different formats of TCG Event logs.
@@ -182,9 +176,9 @@ public final class TCGEventLog {
      * Default blank object constructor.
      */
     public TCGEventLog() {
-        this.pcrList = new byte[PCR_COUNT][EvConstants.SHA1_LENGTH];
-        pcrLength = EvConstants.SHA1_LENGTH;
-        strongestEvLogHashAlgName = "TPM_ALG_SHA1";
+        this.pcrList = new byte[PCR_COUNT][NistLookups.SHA1_LEN];
+        pcrLength = NistLookups.SHA1_LEN;
+        strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
         initPcrList();
     }
 
@@ -206,7 +200,8 @@ public final class TCGEventLog {
      * @param bEventFlag        if true provides human-readable event descriptions.
      * @param bHexContentFlag   if true provides hex output for Content in the description.
      * @param bHexEventFlag     if true provides hex event structure in the description.
-     * @throws java.io.IOException                     IO Stream if event cannot be parsed.
+     * @throws java.io.IOException  IO Stream if event digests cannot be parsed
+     *                              (non-parsable event content will not throw error).
      */
     public TCGEventLog(final byte[] rawlog, final boolean bEventFlag,
                        final boolean bHexContentFlag, final boolean bHexEventFlag)
@@ -307,41 +302,45 @@ public final class TCGEventLog {
             List<String> algList = specEvent.getAlgList();
 
             // find the strongest algorithm used and select that for processing
-            String currentStrongestAlg = algList.get(0);
-            try {
-                int currentStrongestAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, currentStrongestAlg);
-                for (int i = 1; i < algList.size(); i++) {
-                    String newAlg = algList.get(i);
-                    int newAlgRow = findAlgId(ALG_TYPE_HASH, SPEC_TCG_ALG, newAlg);
-                    if (newAlgRow > currentStrongestAlgRow) {
-                        currentStrongestAlg = newAlg;
-                    }
+            TcgAlgRegLookups.TcgHashAlg highestAlg = null;
+            TcgAlgRegLookups.TcgHashAlg currentAlg;
+            for (String algStr : algList) {
+                currentAlg = TcgAlgRegLookups.TcgHashAlg.fromAlgName(algStr);
+
+                // Skip if the string doesn't match any enum constant
+                if (currentAlg == null) {
+                    continue;
                 }
-            } catch (IllegalArgumentException i) {
-                throw new IOException("Could not determine info about algorithm from first event", i);
-            }
-            strongestEvLogHashAlgName = currentStrongestAlg;
 
-            //TEMPORARILY use SHA256 until updates on Provisioner are pushed
-            strongestEvLogHashAlgName = "TPM_ALG_SHA256";
-
-            // if more than one set of PCR banks exists in this log, store the one with strongest algorithm
-            switch (strongestEvLogHashAlgName) {
-                case TPM_ALG_SHA256_STR:
-                    pcrLength = EvConstants.SHA256_LENGTH;
-                    break;
-                case TPM_ALG_SHA384_STR:
-                    pcrLength = EvConstants.SHA384_LENGTH;
-                    break;
-                case TPM_ALG_SHA512_STR:
-                    pcrLength = EvConstants.SHA512_LENGTH;
-                    break;
-                default:
-                    break;
+                // If it's our first valid item, or higher than our current maximum
+                if (highestAlg == null || currentAlg.ordinal() > highestAlg.ordinal()) {
+                    highestAlg = currentAlg;
+                }
             }
+            // use the strongest algorithm to perform validation
+            if (highestAlg != null) {
+                strongestEvLogHashAlgName = highestAlg.getAlgName();
+                pcrLength = highestAlg.getAlgLen();
+            }
+
+            // ----------------------------------------------------------------------------------------
+            //TEMPORARILY use SHA256 for crypto agile logs until updates on Provisioner are pushed
+            boolean sha256found = false;
+            for (String algStr : algList) {
+                if (algStr.equals(TcgAlgRegLookups.SHA256_STR)) {
+                    sha256found = true;
+                    strongestEvLogHashAlgName = TcgAlgRegLookups.SHA256_STR;
+                    pcrLength = TcgAlgRegLookups.TcgHashAlg.fromAlgName(strongestEvLogHashAlgName).getAlgLen();
+                }
+            }
+            if (!sha256found) {
+                throw new IOException("Currently can only process crypto agile logs with SHA256 digests");
+            }
+            // ----------------------------------------------------------------------------------------
+
         } else {    // not crypto agile
-            strongestEvLogHashAlgName = "TPM_ALG_SHA1";
-            pcrLength = EvConstants.SHA1_LENGTH;
+            strongestEvLogHashAlgName = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName();
+            pcrLength = TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgLen();
 
             // startup locality event could be the first event in a non-crypto-agile log
             if (firstEvent.isStartupLocalityEvent()) {
@@ -413,8 +412,11 @@ public final class TCGEventLog {
     private byte[] extendPCR(final byte[] currentValue, final byte[] newEvent)
             throws NoSuchAlgorithmException {
 
-        String hashNistName = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_HASH,
-                AlgorithmsIds.SPEC_TCG_ALG, strongestEvLogHashAlgName, AlgorithmsIds.SPEC_COSE_ALG);
+        String hashNistName = SpecTranslations.translate(
+                SpecTranslations.HashAlg.class,
+                SpecTranslations.HashAlg.Format.TCG,
+                strongestEvLogHashAlgName,
+                SpecTranslations.HashAlg.Format.COSE);
         MessageDigest md = MessageDigest.getInstance(hashNistName);
         StringBuilder sb = new StringBuilder(AbstractDigest.SHA512_DIGEST_LENGTH);
         sb.append(Hex.encodeHexString(currentValue).toCharArray());
@@ -510,6 +512,6 @@ public final class TCGEventLog {
      * @return TCG Defined Algorithm ID
      */
     public int getStrongestEvLogHashAlgId() {
-        return TcgTpmtHa.tcgAlgStringToId(strongestEvLogHashAlgName);
+        return TcgTpmtHa.tcgAlgNameToId(strongestEvLogHashAlgName);
     }
 }
