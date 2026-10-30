@@ -6,6 +6,7 @@ import hirs.attestationca.persist.enums.TpmMlDsaParameterSet;
 import hirs.attestationca.persist.enums.TpmMlKemParameterSet;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.PublicKey;
 import java.security.spec.ECPoint;
 import java.util.Optional;
@@ -43,6 +44,19 @@ public sealed interface ParsedTpmPublic {
      * @return parsed TPMT_SYM_DEF_OBJECT
      */
     Optional<SymmetricDefinition> symmetricDefinition();
+
+    /**
+     * The TPMA_OBJECT attributes, read from the public area
+     * @return object attribute selections
+     */
+    default int objectAttributes() {
+        final int attributesOffset = 2 * Short.BYTES;
+        byte[] area = publicArea();
+        if (area == null || area.length < attributesOffset + Integer.BYTES) {
+            throw new IllegalStateException("The public area is too short to contain object attributes");
+        }
+        return ByteBuffer.wrap(area, attributesOffset, Integer.BYTES).getInt();
+    }
 
     /**
      * Parsed TPMT_SYM_DEF_OBJECT.

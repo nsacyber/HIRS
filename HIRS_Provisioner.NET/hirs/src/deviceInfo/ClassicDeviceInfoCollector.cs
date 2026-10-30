@@ -1,15 +1,9 @@
 ﻿using Hirs.Pb;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.IO;
 using Serilog;
 
 namespace hirs {
@@ -57,12 +51,13 @@ namespace hirs {
             FirmwareInfo fw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new("root\\CIMV2");
+                ManagementScope _ = new("root\\CIMV2");
                 ManagementObjectSearcher s = new("SELECT * FROM Win32_BIOS");
                 fw.BiosVendor = NOT_SPECIFIED;
                 fw.BiosVersion = NOT_SPECIFIED;
                 fw.BiosReleaseDate = NOT_SPECIFIED;
-                foreach (ManagementObject o in s.Get()) {
+                foreach (ManagementBaseObject managementBaseObject in s.Get()) {
+                    ManagementObject o = (ManagementObject)managementBaseObject;
                     string manufacturer = (string)o.GetPropertyValue("Manufacturer");
                     string version = (string)o.GetPropertyValue("Version");
                     string releasedate = (string)o.GetPropertyValue("ReleaseDate");
@@ -73,14 +68,14 @@ namespace hirs {
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
-                    if (!string.IsNullOrEmpty(settings.linux_bios_vendor)) {
-                        fw.BiosVendor = settings.linux_bios_vendor.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosVendor)) {
+                        fw.BiosVendor = settings.LinuxBiosVendor.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_bios_version)) {
-                        fw.BiosVersion = settings.linux_bios_version.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosVersion)) {
+                        fw.BiosVersion = settings.LinuxBiosVersion.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_bios_date)) {
-                        fw.BiosReleaseDate = settings.linux_bios_date.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxBiosDate)) {
+                        fw.BiosReleaseDate = settings.LinuxBiosDate.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(fw.BiosVendor)) {
@@ -109,13 +104,14 @@ namespace hirs {
             HardwareInfo hw = new();
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
-                ManagementScope myScope = new("root\\CIMV2");
+                ManagementScope _ = new("root\\CIMV2");
                 ManagementObjectSearcher s = new("SELECT * FROM Win32_ComputerSystemProduct");
                 hw.Manufacturer = NOT_SPECIFIED;
                 hw.ProductName = NOT_SPECIFIED;
                 hw.ProductVersion = NOT_SPECIFIED;
                 hw.SystemSerialNumber = NOT_SPECIFIED;
-                foreach (ManagementObject o in s.Get()) {
+                foreach (ManagementBaseObject managementBaseObject in s.Get()) {
+                    ManagementObject o = (ManagementObject)managementBaseObject;
                     string vendor = (string)o.GetPropertyValue("Vendor");
                     string name = (string)o.GetPropertyValue("Name");
                     string version = (string)o.GetPropertyValue("Version");
@@ -128,17 +124,17 @@ namespace hirs {
                 }
             } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
                 if (settings != null) {
-                    if (!string.IsNullOrEmpty(settings.linux_sys_vendor)) {
-                        hw.Manufacturer = settings.linux_sys_vendor.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxSysVendor)) {
+                        hw.Manufacturer = settings.LinuxSysVendor.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_name)) {
-                        hw.ProductName = settings.linux_product_name.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductName)) {
+                        hw.ProductName = settings.LinuxProductName.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_version)) {
-                        hw.ProductVersion = settings.linux_product_version.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductVersion)) {
+                        hw.ProductVersion = settings.LinuxProductVersion.Trim();
                     }
-                    if (!string.IsNullOrEmpty(settings.linux_product_serial)) {
-                        hw.SystemSerialNumber = settings.linux_product_serial.Trim();
+                    if (!string.IsNullOrEmpty(settings.LinuxProductSerial)) {
+                        hw.SystemSerialNumber = settings.LinuxProductSerial.Trim();
                     }
                 }
                 if (string.IsNullOrEmpty(hw.Manufacturer)) {

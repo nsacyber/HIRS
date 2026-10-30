@@ -24,7 +24,7 @@ namespace hirs {
             quoteInfoSigStr = "quoted:";
             quoteInfoSigStr += BitConverter.ToString(quoteInfo.GetTpm2BRepresentation()).Replace("-", "").ToLower().Trim();
             quoteInfoSigStr += "signature:";
-            quoteInfoSigStr += BitConverter.ToString(((SignatureRsassa)quoteSig).GetTpm2BRepresentation()).Replace("-", "").ToLower().Trim();
+            quoteInfoSigStr += BitConverter.ToString(((TpmStructureBase)quoteSig).GetTpm2BRepresentation()).Replace("-", "").ToLower().Trim();
         }
     }
 }

@@ -1,8 +1,9 @@
 #!/bin/bash
 #########################################################################################
-#    Script to run the System Tests  for HIRS TPM 2.0 Provisoner from GitHub Workflow
-#    *** INTENDED FOR WORKFLOW RUNS, NOT FOR LOCAL SYSTEM TESTING ***
-#    For local system testing, use run_system_tests.sh instead
+#    Script to set up the System Tests for the HIRS TPM 2.0 Provisioner
+#    Used by the GitHub workflow, which then runs each test, and by run_system_tests.sh for local runs.
+#    Run from the HIRS repository root with the HIRS branch to test as an argument
+#    (i.e. $./.ci/system-tests/setup_system_tests.sh main)
 #########################################################################################
 
 # Setting variables
@@ -24,11 +25,9 @@ docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
 # Switching to current/desired branch in Provisioner Container
 docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                    && echo 'Provisioner Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
-			                             && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD \
-                                   && cd HIRS_Provisioner.NET/hirs \
-                                   && rm -rf bin/Release \
-                                   && dotnet deb -r linux-x64 -c Release \
-                                   && dotnet rpm -r linux-x64 -c Release"
+                                   && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD \
+                                   && ./gradlew -p HIRS_Provisioner.NET clean release"
+
 # Install HIRS Provisioner.Net and setup tpm2 simulator.
 # In doing so, tests a single provision between Provisioner.Net and ACA.
 echo "Launching provisioner setup"
