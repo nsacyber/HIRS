@@ -49,7 +49,7 @@ jobs:
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
-          cp tools/tcg_eventlog_tool/build/distributions/*.zip artifacts/win
+          cp tools/tcg_eventlog_tool/libs/*.jar artifacts/jars/.
           cp package/win/tcg-rim-tool/* artifacts/win/hirstools
       - name: Archive RPM files
         uses: actions/upload-artifact@v5
@@ -67,6 +67,7 @@ jobs:
           path: |
             HIRS_AttestationCAPortal/build/distributions/*.deb
             HIRS_Provisioner.NET/build/distributions/*.deb
+            tools/tcg_eventlog_tool/build/distributions/*.deb
           if-no-files-found: error
       - name: War files
         uses: actions/upload-artifact@v5
