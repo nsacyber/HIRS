@@ -45,7 +45,8 @@ jobs:
           ./gradlew build;
           ./gradlew bootWar;
           ./gradlew release;
-          ./gradlew buildZip
+          ./gradlew buildZip;
+          ./gradlew :tool:tcg_eventlog_tool:build;
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
