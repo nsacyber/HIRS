@@ -42,7 +42,6 @@ jobs:
       - name: Execute Gradle build
         run: |
           ./gradlew clean;
-          ./gradlew build;
           ./gradlew release;
           ./gradlew buildZip;
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
