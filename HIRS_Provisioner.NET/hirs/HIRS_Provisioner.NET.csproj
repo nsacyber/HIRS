@@ -34,7 +34,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
-    <ProjectReference Include="..\TSS.MSR\TSS.NET\TSS.Net\TSS.Net.csproj" /> <!--Use ProjectReference until updated nuget package is available-->
+    <ProjectReference Include="..\TSS.MSR\TSS.NET\TSS.Net\TSS.Net.csproj" /> <!--Use ProjectReference until an updated nuget package is available-->
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="paccor.HardwareManifestPlugin" Version="2.2.0" />
