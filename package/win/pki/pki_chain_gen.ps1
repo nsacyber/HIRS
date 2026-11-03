@@ -208,23 +208,23 @@ Function create_cert() {
         Write-Output "This key is intended for use with the database." | WriteAndLog
         if ($ASYM_ALG -eq "rsa") {
             openssl genrsa -out "$CERT_PATH.key" "$ASYM_SIZE" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         } elseif ($ASYM_ALG -eq "ecc") {
             openssl ecparam -genkey -name "$ECC_NAME" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         } elseif ($ASYM_ALG -eq "mldsa") {
             openssl genpkey -algorithm "$MLDSA_NAME" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -new -key "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         }
     } else {
         if ($ASYM_ALG -eq "rsa") {
-            openssl req -newkey "rsa:$ASYM_SIZE" -keyout "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" -passout "pass:$PASS" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -newkey "rsa:$ASYM_SIZE" -keyout "$CERT_PATH.key" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" -passout "pass:$PASS" 2>&1 | WriteAndLog
         } elseif ($ASYM_ALG -eq "ecc") {
             openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-521 -aes256 -pass "pass:$PASS" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" "-$HASH_ALG" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         } elseif ($ASYM_ALG -eq "mldsa") {
             openssl genpkey -algorithm "$MLDSA_NAME" -aes256 -pass "pass:$PASS" -out "$CERT_PATH.key" 2>&1 | WriteAndLog
-            openssl req -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
+            openssl req -config "$global:HIRS_DATA_CERTIFICATES_HIRS_DIR\ca.conf" -new -key "$CERT_PATH.key" -passin "pass:$PASS" -out "$CERT_PATH.csr" -subj "$SUBJ_DN" 2>&1 | WriteAndLog
         }
     }
 
