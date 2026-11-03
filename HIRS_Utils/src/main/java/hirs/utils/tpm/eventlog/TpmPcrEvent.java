@@ -438,9 +438,9 @@ public class TpmPcrEvent {
             case EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY:
                 try {
                     sb.append(new UefiVariable((int) eventType, eventContent));
-                } catch (IOException exception) {
-                    log.error(exception);
-                    sb.append(exception);
+                } catch (IOException ie) {
+                    log.error(ie);
+                    sb.append(ie);
                 }
                 break;
             case EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION:
@@ -471,7 +471,12 @@ public class TpmPcrEvent {
                 sb.append(new UefiFirmware2(eventContent));
                 break;
             case EvConstants.EV_EFI_HANDOFF_TABLES:
-                sb.append(new EvEfiHandoffTable(eventContent));
+                try {
+                    sb.append(new EvEfiHandoffTable(eventContent));
+                } catch (IOException ie) {
+                    log.error(ie);
+                    sb.append(ie);
+                }
                 break;
             case EvConstants.EV_EFI_HANDOFF_TABLES2:
                 sb.append(new EvEfiHandoffTable2(eventContent));
