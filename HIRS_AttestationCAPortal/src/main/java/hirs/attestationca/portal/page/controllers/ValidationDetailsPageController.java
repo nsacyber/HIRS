@@ -55,7 +55,7 @@ public class ValidationDetailsPageController extends PageController<ValidationDe
             mav.addObject(MESSAGES_ATTRIBUTE, messages);
         } else {
             UUID validationSummaryId = UUID.fromString(params.getId());
-            data.putAll(validationDetailsPageService.getAssociatedIds(validationSummaryId));
+            data.putAll(validationDetailsPageService.getValidationDetails(validationSummaryId));
         }
 
         if (data.isEmpty()) {
