@@ -32,7 +32,7 @@ jobs:
       - name: Execute Gradle build
         run: |
           ./gradlew build;
-          ./gradlew buildDeb;
+          ./gradlew :tools:tcg_rim_tool:buildDeb;
       - name: install rim tool
         run: |
           sudo dpkg -i tools/tcg_rim_tool/build/distributions/tcg-rim-tool*.deb
