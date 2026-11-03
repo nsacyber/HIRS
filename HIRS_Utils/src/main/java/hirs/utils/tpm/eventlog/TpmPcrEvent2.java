@@ -170,7 +170,7 @@ public class TpmPcrEvent2 extends TpmPcrEvent {
             throw r;
         } catch (Exception e) {
             String error = "Error parsing event #" + eventNumber + ", " + eventTypeStr + ", " + pcrIndexStr;
-            log.error(error, e);
+            log.warn(error, e);
         }
 
         for (int i = 0; i < algCount; i++) {
