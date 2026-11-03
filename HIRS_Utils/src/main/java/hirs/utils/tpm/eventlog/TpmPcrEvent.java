@@ -14,7 +14,6 @@ import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.events.EvPostCode;
 import hirs.utils.tpm.eventlog.events.EvSCrtmContents;
 import hirs.utils.tpm.eventlog.events.EvSCrtmVersion;
-import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
 import hirs.utils.tpm.eventlog.uefi.UefiFirmware2;
 import hirs.utils.tpm.eventlog.uefi.UefiVariable;
@@ -236,6 +235,9 @@ public class TpmPcrEvent {
             return "EV_EFI_SPDM_DEVICE_POLICY";
         } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY) {
             return "EV_EFI_SPDM_DEVICE_AUTHORITY";
+        } else if ((event >= EvConstants.EV_RESERVED_INTEL_DRTM_MIN)
+                && (event <= EvConstants.EV_RESERVED_INTEL_DRTM_MAX)) {
+            return "DRTM Intel Event";
         } else {
             return "Unknown Event Type encountered";
         }
@@ -505,11 +507,7 @@ public class TpmPcrEvent {
         this.eventNumber = eventPosition;
         description += "Event# " + eventPosition + ": ";
         description += "Index PCR[" + ((getPcrIndex() == -1) ? "N/A" : getPcrIndex()) + "]\n";
-        description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID);
-
-        if (eventID != UefiConstants.SIZE_4) {
-            description += "\n";
-        }
+        description += "Event Type: 0x" + Long.toHexString(eventType) + " " + eventString(eventID) + "\n";
 
         switch (eventID) {
             case EvConstants.EV_PREBOOT_CERT:
@@ -542,7 +540,7 @@ public class TpmPcrEvent {
                 if (EvPostCode.isAscii(content)) {
                     String separatorEventData = new String(content, StandardCharsets.UTF_8);
                     if (!this.isBlank(content)) {
-                        description += "Separator event content = " + separatorEventData;
+                        description += "Event Content:\n   " + separatorEventData;
                     }
                 }
                 break;
@@ -588,7 +586,8 @@ public class TpmPcrEvent {
                 description += "Event Content:\n" + new EvEfiGptPartition(content);
                 break;
             case EvConstants.EV_EFI_ACTION:
-                description += new String(content, StandardCharsets.UTF_8);
+                description += "Event Content:\n   "
+                        + new String(content, StandardCharsets.UTF_8);
                 break;
             case EvConstants.EV_EFI_PLATFORM_FIRMWARE_BLOB:
                 description += "Event Content:\n"
@@ -613,7 +612,24 @@ public class TpmPcrEvent {
                 pciidsFileStatus = efiSpdmDse.getPciidsFileStatus();
                 break;
             default:
-                description += " Unknown Event found" + "\n";
+                if (((eventID >= EvConstants.EV_RESERVED_TCG_BIOS1_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_TCG_BIOS1_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_INTEL_DRTM_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_INTEL_DRTM_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_TBOOT_DRTM_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_TBOOT_DRTM_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_MICROSOFT_BIOS_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_MICROSOFT_BIOS_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_TCG_BIOS2_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_TCG_BIOS2_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_AMD_DRTM_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_AMD_DRTM_MAX))
+                        || ((eventID >= EvConstants.EV_RESERVED_ARM_MIN)
+                        && (eventID <= EvConstants.EV_RESERVED_ARM_MAX))) {
+                    description += " Event content for this event not processed" + "\n";
+                } else {
+                    description += " Unknown Event found" + "\n";
+                }
         }
     }
 
