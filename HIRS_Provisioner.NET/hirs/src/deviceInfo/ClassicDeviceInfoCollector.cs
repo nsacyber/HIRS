@@ -175,13 +175,14 @@ namespace hirs {
 
             nw.ClearIpAddress();
             // First attempt to find local ip by connecting ACA
-            if (string.IsNullOrWhiteSpace(acaAddress)) {
-                Uri uri = new(acaAddress);
+            if (!string.IsNullOrWhiteSpace(acaAddress)) {
                 try {
-                    Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+		    Uri uri = new(acaAddress);	
+                    using Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, 0);
                     socket.Connect(uri.Host, uri.Port);
-                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
-                    nw.IpAddress = endPoint.Address.ToString();
+                    if(socket.LocalEndPoint is IPEndPoint endPoint) {
+                        nw.IpAddress = endPoint.Address.ToString();
+		    }
                 } catch {
                     Log.Debug("Not connected to the internet. Trying another search.");
                 }
