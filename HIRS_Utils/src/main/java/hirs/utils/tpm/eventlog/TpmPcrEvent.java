@@ -235,9 +235,27 @@ public class TpmPcrEvent {
             return "EV_EFI_SPDM_DEVICE_POLICY";
         } else if (event == EvConstants.EV_EFI_SPDM_DEVICE_AUTHORITY) {
             return "EV_EFI_SPDM_DEVICE_AUTHORITY";
+        } else if ((event >= EvConstants.EV_RESERVED_TCG_BIOS1_MIN)
+                && (event <= EvConstants.EV_RESERVED_TCG_BIOS1_MAX)) {
+            return "TCG BIOS Event";
         } else if ((event >= EvConstants.EV_RESERVED_INTEL_DRTM_MIN)
                 && (event <= EvConstants.EV_RESERVED_INTEL_DRTM_MAX)) {
             return "DRTM Intel Event";
+        } else if ((event >= EvConstants.EV_RESERVED_TBOOT_DRTM_MIN)
+                && (event <= EvConstants.EV_RESERVED_TBOOT_DRTM_MAX)) {
+            return "DRTM TBoot Event";
+        } else if ((event >= EvConstants.EV_RESERVED_MICROSOFT_BIOS_MIN)
+                && (event <= EvConstants.EV_RESERVED_MICROSOFT_BIOS_MAX)) {
+            return "Microsoft Custom BIOS Event";
+        } else if ((event >= EvConstants.EV_RESERVED_TCG_BIOS2_MIN)
+                && (event <= EvConstants.EV_RESERVED_TCG_BIOS2_MAX)) {
+            return "TCG BIOS Event";
+        } else if ((event >= EvConstants.EV_RESERVED_AMD_DRTM_MIN)
+                && (event <= EvConstants.EV_RESERVED_AMD_DRTM_MAX)) {
+            return "AMD Event";
+        } else if ((event >= EvConstants.EV_RESERVED_ARM_MIN)
+                && (event <= EvConstants.EV_RESERVED_ARM_MAX)) {
+            return "ARM Event";
         } else {
             return "Unknown Event Type encountered";
         }

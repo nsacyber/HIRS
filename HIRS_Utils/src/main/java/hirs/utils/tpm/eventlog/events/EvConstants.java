@@ -202,19 +202,19 @@ public final class EvConstants {
      */
     public static final int EV_RESERVED_TCG_BIOS2_MAX = 0x00007FFF;
     /**
-     * Min of range 2 reserved for BIOS.
+     * Min of range reserved for AMD.
      */
     public static final int EV_RESERVED_AMD_DRTM_MIN = 0x00008000;
     /**
-     * Max of range 2 reserved for BIOS.
+     * Max of range reserved for AMD.
      */
     public static final int EV_RESERVED_AMD_DRTM_MAX = 0x000080FF;
     /**
-     * Min of range 2 reserved for BIOS.
+     * Min of range reserved for ARM.
      */
     public static final int EV_RESERVED_ARM_MIN = 0x00009000;
     /**
-     * Max of range 2 reserved for BIOS.
+     * Max of range reserved for ARM.
      */
     public static final int EV_RESERVED_ARM_MAX = 0x00009FFF;
 
