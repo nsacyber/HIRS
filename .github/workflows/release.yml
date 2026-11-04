@@ -111,11 +111,6 @@ jobs:
           }
 
           ./gradlew.bat :HIRS_Provisioner.NET:buildMsi "-Pprotoc_windows64=$protoc"
-          
-      - name: Build Windows Provisioner MSI
-        shell: pwsh
-        run: |
-          ./gradlew.bat :HIRS_Provisioner.NET:buildMsi
 
       - name: Collect Windows MSI
         shell: pwsh
