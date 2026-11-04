@@ -96,6 +96,22 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          dotnet restore HIRS_Provisioner.NET/hirs/HIRS_Provisioner.NET.csproj
+
+      - name: Build Windows Provisioner MSI
+        shell: pwsh
+        run: |
+          $protoc = Join-Path $env:USERPROFILE ".nuget\packages\google.protobuf.tools\3.36.2\tools\windows_x64\protoc.exe"
+
+          if (!(Test-Path $protoc)) {
+            throw "protoc.exe not found at $protoc"
+          }
+
+          ./gradlew.bat :HIRS_Provisioner.NET:buildMsi "-Pprotoc_windows64=$protoc"
+          
       - name: Build Windows Provisioner MSI
         shell: pwsh
         run: |
