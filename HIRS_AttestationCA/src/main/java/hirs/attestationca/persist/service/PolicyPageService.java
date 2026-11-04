@@ -23,10 +23,21 @@ public class PolicyPageService {
     public PolicyPageService(final PolicyRepository policyRepository) {
         this.policyRepository = policyRepository;
 
-        if (this.policyRepository.findByName("Default") == null) {
+        if (this.policyRepository.findFirstByOrderedByCreateTimeDesc().isEmpty()) {
             this.policyRepository.saveAndFlush(new PolicySettings("Default",
                     "Settings are configured for no validation flags set."));
         }
+    }
+
+    /**
+     * Retrieves a fresh load of the default policy from the DB.
+     *
+     * @return The default Supply Chain Policy
+     */
+    public PolicySettings getDefaultPolicy() {
+        return policyRepository.findFirstByOrderedByCreateTimeDesc()
+                .orElse(new PolicySettings("Default",
+                        "Settings are configured for no validation flags set."));
     }
 
     /**
@@ -534,21 +545,6 @@ public class PolicyPageService {
 
         log.debug("Current ACA Policy after updating the save protobuf data to ACA log "
                 + "policy: {}", policySettings);
-    }
-
-    /**
-     * Retrieves a fresh load of the default policy from the DB.
-     *
-     * @return The default Supply Chain Policy
-     */
-    public PolicySettings getDefaultPolicy() {
-        PolicySettings defaultSettings = policyRepository.findByName("Default");
-
-        if (defaultSettings == null) {
-            defaultSettings = new PolicySettings("Default",
-                    "Settings are configured for no validation flags set.");
-        }
-        return defaultSettings;
     }
 
     /**

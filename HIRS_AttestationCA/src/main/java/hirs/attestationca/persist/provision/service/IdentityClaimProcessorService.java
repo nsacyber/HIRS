@@ -92,7 +92,9 @@ public class IdentityClaimProcessorService {
             throw new IllegalArgumentException(errorMsg);
         }
 
-        final PolicySettings policySettings = policyRepository.findByName("Default");
+        final PolicySettings policySettings = policyRepository.findFirstByOrderedByCreateTimeDesc()
+                 .orElse(new PolicySettings("Default",
+                  "Settings are configured for no validation flags set."));
 
         // attempt to deserialize Protobuf Identity Claim
         ProvisionerTpm2.IdentityClaim identityClaim = ProvisionUtils.parseIdentityClaim(identityClaimByteArray);

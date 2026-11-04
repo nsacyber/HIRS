@@ -412,7 +412,9 @@ public class SupplyChainValidationService {
      * @return The Supply Chain Policy Settings
      */
     private PolicySettings getPolicySettings() {
-        PolicySettings policySettings = this.policyRepository.findByName("Default");
+        PolicySettings policySettings = this.policyRepository.findFirstByOrderedByCreateTimeDesc()
+                 .orElse(new PolicySettings("Default",
+                  "Settings are configured for no validation flags set."));
 
         if (policySettings == null) {
             policySettings = new PolicySettings("Default",

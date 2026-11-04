@@ -305,7 +305,9 @@ public class CredentialManagementService {
             IssuedAttestationCertificate attCert = new IssuedAttestationCertificate(
                     derEncodedAttestationCertificate, endorsementCredential, platformCredentials, ldevID);
 
-            policySettings = policyRepository.findByName("Default");
+            policySettings = policyRepository.findFirstByOrderedByCreateTimeDesc()
+                 .orElse(new PolicySettings("Default",
+                  "Settings are configured for no validation flags set."));
 
             Sort sortCriteria = Sort.by(Sort.Direction.DESC, "endValidity");
             issuedAc = certificateRepository.findByDeviceIdAndLdevID(device.getId(), ldevID,

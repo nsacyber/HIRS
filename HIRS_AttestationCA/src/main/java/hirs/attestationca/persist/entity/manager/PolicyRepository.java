@@ -4,6 +4,7 @@ import hirs.attestationca.persist.entity.userdefined.PolicySettings;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -25,4 +26,6 @@ public interface PolicyRepository extends JpaRepository<PolicySettings, UUID> {
      * @return a {@link PolicySettings} object
      */
     PolicySettings findByName(String name);
+
+    Optional<PolicySettings> findFirstByOrderedByCreateTimeDesc();
 }

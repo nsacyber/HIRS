@@ -582,7 +582,9 @@ public class ReferenceManifestDetailsPageService {
             referenceValueMap.put(record.getDigestValue(), record);
         }
 
-        PolicySettings policySettings = this.policyRepository.findByName("Default");
+        PolicySettings policySettings = this.policyRepository.findFirstByOrderedByCreateTimeDesc()
+                 .orElse(new PolicySettings("Default",
+                  "Settings are configured for no validation flags set."));
         if (policySettings == null) {
             policySettings = new PolicySettings("Default",
                     "Settings are configured for no validation flags set.");
