@@ -1,10 +1,57 @@
 ﻿using hirs;
+using Hirs.Pb;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text;
 
 namespace hirsTest {
     public class SettingsTests {
+        [Test]
+        public void TestEkTemplateDefaultsToL1() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.EkTemplate, Is.EqualTo(EkTemplate.EkL1));
+        }
+
+        [Test]
+        public void TestEkTemplateAcceptsProtobufName() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ek_l2.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.EkTemplate, Is.EqualTo(EkTemplate.EkL2));
+        }
+
+        [Test]
+        public void TestEkTemplateRejectsUnsupportedTemplate() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ek_unsupported.json");
+
+            Assert.Throws<ArgumentException>(() => settings.CompleteSetUp());
+        }
+
+        [Test]
+        public void TestAkTemplateDefaultsToRsa2048() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.AkTemplate, Is.EqualTo(AsymmetricKeyTemplate.Rsa2048Quote));
+        }
+
+        [Test]
+        public void TestAkTemplateAcceptsProtobufName() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ak_ecc.json");
+            settings.CompleteSetUp();
+
+            Assert.That(settings.AkTemplate, Is.EqualTo(AsymmetricKeyTemplate.EccP384Quote));
+        }
+
+        [Test]
+        public void TestAkTemplateRejectsSigningKeyTemplate() {
+            Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings_ak_unsupported.json");
+
+            Assert.Throws<ArgumentException>(() => settings.CompleteSetUp());
+        }
+
         [Test]
         public void TestConstructorWithAppsettings() {
             Settings settings = Settings.LoadSettingsFromFile("./Resources/test/settings_test/appsettings.json");
@@ -14,7 +61,7 @@ namespace hirsTest {
             Assert.Multiple(() => {
                 Assert.That(settings.IsAutoDetectTpmEnabled(), Is.False);
                 Assert.That(settings.HasAcaAddress(), Is.True);
-                Assert.That(settings.aca_address_port.ToString(), Is.EqualTo("https://127.0.0.1:8443/"));
+                Assert.That(settings.AcaAddressPort.ToString(), Is.EqualTo("https://127.0.0.1:8443/"));
                 Assert.That(settings.HasEfiPrefix(), Is.True);
                 Assert.That(settings.HasPaccorOutputFromFile(), Is.True);
                 Assert.That(settings.HasEventLogFromFile(), Is.True);
@@ -29,12 +76,12 @@ namespace hirsTest {
             const string eventLogModel = "event log\n";
             const string componentList = "component list\n";
 
-            string paccorOutput = settings.paccor_output;
-            List<byte[]> platformCerts = settings.gatherPlatformCertificatesFromEFI();
-            List<byte[]> rims = settings.gatherRIMBasesFromEFI();
-            List<byte[]> rimELs = settings.gatherSupportRIMELsFromEFI();
-            List<byte[]> rimPCRs = settings.gatherSupportRIMPCRsFromEFI();
-            byte[] eventLog = settings.event_log;
+            string paccorOutput = settings.PaccorOutput;
+            List<byte[]> platformCerts = settings.GatherPlatformCertificatesFromEfi();
+            List<byte[]> rims = settings.GatherRimBasesFromEfi();
+            List<byte[]> rimELs = settings.GatherSupportRimeLsFromEfi();
+            List<byte[]> rimPCRs = settings.GatherSupportRimpcRsFromEfi();
+            byte[] eventLog = settings.EventLog;
             //Assert.Multiple(() => {
                 Assert.That(paccorOutput, Is.EqualTo(componentList));
                 Assert.That(platformCerts, Has.Count.EqualTo(3));

@@ -15,6 +15,9 @@ plugins {
 ext.checkstyleConfigFile = new File(rootDir, "/config/checkstyle/sun_checks.xml")
 
 subprojects {
+    if (project.name == 'HIRS_Provisioner.NET') {
+        return
+    }
     apply plugin: "checkstyle"
     apply plugin: "com.github.spotbugs"
     apply plugin: "java"
@@ -131,3 +134,11 @@ long buildTimeInSecs = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime())
 
 project.ext["jarVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}"
 project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}.el8"
+
+tasks.register('release') {
+    group = 'distribution'
+    description = 'Build ACA and Provisioner RPM/DEB packages and the Provisioner MSI on Windows.'
+    dependsOn ':HIRS_AttestationCAPortal:buildRpm',
+            ':HIRS_AttestationCAPortal:buildDeb',
+            ':HIRS_Provisioner.NET:release'
+}
