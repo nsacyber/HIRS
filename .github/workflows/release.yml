@@ -1,0 +1,184 @@
+name: HIRS Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  linux-packages:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Install packaging dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Build ACA packages
+        run: |
+          chmod +x ./gradlew
+
+          ./gradlew \
+            :HIRS_AttestationCAPortal:buildRpm \
+            :HIRS_AttestationCAPortal:buildDeb
+
+      - name: Build Linux Provisioner packages
+        run: |
+          ./gradlew \
+            :HIRS_Provisioner.NET:buildRpm \
+            :HIRS_Provisioner.NET:buildDeb
+
+      - name: Build TCG Event Log Tool packages
+        run: |
+          ./gradlew \
+            :tools:tcg_eventlog_tool:buildRpm \
+            :tools:tcg_eventlog_tool:buildDeb
+
+      - name: Collect Linux packages
+        shell: bash
+        run: |
+          mkdir -p release-assets
+
+          cp HIRS_AttestationCAPortal/build/distributions/*.{rpm,deb} release-assets/
+          cp HIRS_Provisioner.NET/build/distributions/*.{rpm,deb} release-assets/
+          cp tools/tcg_eventlog_tool/build/distributions/*.{rpm,deb} release-assets/
+
+          echo "Linux release assets:"
+          ls -lh release-assets/
+
+      - name: Upload Linux build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release-packages
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  windows-package:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout release source
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Build Windows Provisioner MSI
+        shell: pwsh
+        run: |
+          ./gradlew.bat :HIRS_Provisioner.NET:buildMsi
+
+      - name: Collect Windows MSI
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory `
+            -Force -Path release-assets
+
+          $files = @(Get-ChildItem `
+            -Path HIRS_Provisioner.NET `
+            -Filter "HIRS_Provisioner.NET.*.msi" `
+            -Recurse -File)
+
+          if ($files.Count -ne 1) {
+            throw "Expected exactly one Provisioner MSI."
+          }
+
+          Copy-Item $files[0].FullName release-assets/
+
+      - name: Upload Windows build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-package
+          path: release-assets/*.msi
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-assets:
+    needs:
+      - linux-packages
+      - windows-package
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Linux packages
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-release-packages
+          path: release-assets
+
+      - name: Download Windows MSI
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-release-package
+          path: release-assets
+
+      - name: Verify release assets
+        shell: bash
+        run: |
+          shopt -s nullglob
+
+          rpms=(release-assets/*.rpm)
+          debs=(release-assets/*.deb)
+          msis=(release-assets/*.msi)
+
+          if (( ${#rpms[@]} != 3 ||
+                ${#debs[@]} != 3 ||
+                ${#msis[@]} != 1 )); then
+            echo "Expected 3 RPMs, 3 DEBs, and 1 MSI."
+            ls -lh release-assets/
+            exit 1
+          fi
+
+          echo "All expected release packages are present."
+          ls -lh release-assets/
+
+      - name: Generate SHA-256 checksums
+        shell: bash
+        run: |
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            release-assets/*
+          fail_on_unmatched_files: true
