@@ -3,12 +3,38 @@
     xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="stylesheet" th:href="@{/css/policy.css}" />
     <title th:text="'Attestation Identity CA Policy Settings'">Attestation Identity CA Policy Settings</title>
 </head>
 
 <body>
     <h1 layout:fragment="pageHeaderTitle"> Attestation Identity CA Policy Settings </h1>
     <section layout:fragment="content">
+        <form th:action="@{/save}" th:object="${policySettings}" method="post">
+            <div class="form-row">
+                <span class="switch-label">Endorsement Certificate Validation</span>
+                <label class="switch">
+                    <input type="checkbox" th:field="*{ecValidationEnabled}" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="form-row">
+                <span class="switch-label">Platform Certificate Validation</span>
+                <label class="switch">
+                    <input type="checkbox" th:field="*{pcValidationEnabled}" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="form-row">
+                <span class="switch-label">Firmware Validation</span>
+                <label class="switch">
+                    <input type="checkbox" th:field="*{firmwareValidationEnabled}" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button type="submit">Save Settings</button>
+        </form>
         <ul>
             <!-- Endorsement Certificate Validation  -->
             <li>
