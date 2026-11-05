@@ -1,6 +1,7 @@
 package hirs.utils.dice;
 
 import lombok.Getter;
+import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -12,6 +13,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+
+import static hirs.utils.dice.DiceTcbInfoParser.requireDer;
 
 /**
  * One TCG DiceTcbInfo record, including its position and extension within the source certificate.
@@ -72,10 +75,12 @@ public final class DiceTcbInfo {
                 case LAYER_TAG -> layer = ASN1Integer.getInstance(field, false).getValue();
                 case INDEX_TAG -> index = ASN1Integer.getInstance(field, false).getValue();
                 case FWIDS_TAG -> fwids = DiceTcbInfoParser.fwids(ASN1Sequence.getInstance(field, false));
-                case FLAGS_TAG -> flags = DiceTcbInfoParser.bitString(field);
-                case VENDOR_INFO_TAG -> vendorInfo = ASN1OctetString.getInstance(field, false).getOctets();
-                case TYPE_TAG -> type = ASN1OctetString.getInstance(field, false).getOctets();
-                case FLAGS_MASK_TAG -> flagsMask = DiceTcbInfoParser.bitString(field);
+                case FLAGS_TAG -> flags = new DiceBitString(requireDer(field, ASN1BitString.getInstance(field, false)));
+                case VENDOR_INFO_TAG -> vendorInfo = requireDer(field, ASN1OctetString.getInstance(field, false))
+                        .getOctets();
+                case TYPE_TAG -> type = requireDer(field, ASN1OctetString.getInstance(field, false)).getOctets();
+                case FLAGS_MASK_TAG -> flagsMask = new DiceBitString(requireDer(field,
+                        ASN1BitString.getInstance(field, false)));
                 case INTEGRITY_REGISTERS_TAG -> {
                     ASN1Sequence registers = ASN1Sequence.getInstance(field, false);
                     DiceTcbInfoParser.checkListSize(registers, "integrity registers");

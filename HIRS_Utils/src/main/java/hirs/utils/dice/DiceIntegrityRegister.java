@@ -33,6 +33,9 @@ public final class DiceIntegrityRegister {
                 default -> throw new IOException("Unsupported integrity register field");
             }
         }
+        if (registerName != null && !ASN1IA5String.isIA5String(registerName)) {
+            throw new IOException("A DICE integrity register name must contain only IA5 characters");
+        }
         if ((registerName == null && registerNum == null) || registerDigests == null) {
             throw new IOException("A DICE integrity register requires a name or number and digests");
         }

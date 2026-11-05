@@ -1,6 +1,5 @@
 package hirs.utils.dice;
 
-import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -130,18 +129,19 @@ public final class DiceTcbInfoParser {
     }
 
     /**
-     * Reads an implicit bit string without silently normalizing nonzero unused bits.
-     * @param field a flags or flags-mask field
-     * @return the bit string, retaining its pad-bit count
+     * Rejects implicit values whose decoding normalizes constructed strings or nonzero unused bits.
+     * @param <T> the decoded ASN.1 type
+     * @param field the original tagged field
+     * @param value the decoded value
+     * @return the value after checking its DER encoding
      * @throws IOException if the field is not canonical DER
      */
-    static DiceBitString bitString(final ASN1TaggedObject field) throws IOException {
-        ASN1BitString bits = ASN1BitString.getInstance(field, false);
+    static <T extends ASN1Primitive> T requireDer(final ASN1TaggedObject field, final T value) throws IOException {
         if (!Arrays.equals(field.getEncoded("DER"),
-                new DERTaggedObject(false, field.getTagNo(), bits).getEncoded("DER"))) {
-            throw new IOException("DICE flag bit strings must use DER encoding");
+                new DERTaggedObject(false, field.getTagNo(), value).getEncoded("DER"))) {
+            throw new IOException("DICE field " + field.getTagNo() + " must use DER encoding");
         }
-        return new DiceBitString(bits);
+        return value;
     }
 
     /**
