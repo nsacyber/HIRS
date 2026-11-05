@@ -419,8 +419,8 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
                             .param("type", "idevid"))
                     .andExpect(status().isOk())
                     .andExpect(content().string(containsString("id=\"diceTcbInfo\"")))
-                    .andExpect(content().string(containsString("2.23.133.5.4.5")))
-                    .andExpect(content().string(containsString("2.16.840.1.101.3.4.2.2")))
+                    .andExpect(content().string(containsString("DICE Extension: Multi TCB Info\n")))
+                    .andExpect(content().string(containsString("Hash Algorithm: SHA-384\n")))
                     .andReturn();
             Map<String, String> data = (Map<String, String>) result.getModelAndView().getModel().get("initialData");
             assertEquals("1", data.get("diceTcbInfoCount"));

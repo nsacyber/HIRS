@@ -37,7 +37,7 @@ public class CertificateStringMapBuilderTest {
             Map<String, String> data = CertificateStringMapBuilder.getGeneralCertificateInfo(
                     certificate(Certificate.class, x509), null, null, List.of());
             assertEquals("1", data.get("diceTcbInfoCount"));
-            assertTrue(data.get("diceTcbInfo").contains(DiceTcbInfoParser.MULTI_TCB_INFO_OID));
+            assertTrue(data.get("diceTcbInfo").contains("DICE Extension: Multi TCB Info\n"));
             assertFalse(data.containsKey("diceParsingError"));
         }
     }

@@ -81,6 +81,9 @@ public class DiceTcbInfoParserTest {
                 assertEquals(p256 ? SHA256 : SHA384, record.getFwids().get(0).getHashAlgorithmOid());
                 assertArrayEquals(new byte[p256 ? SHA256_LENGTH : SHA384_LENGTH],
                         record.getFwids().get(0).getDigest());
+                assertTrue(record.toString().contains("DICE Extension: Multi TCB Info"));
+                assertTrue(record.toString().contains(p256 ? "Hash Algorithm: SHA-256"
+                        : "Hash Algorithm: SHA-384"));
             }
         }
     }
@@ -124,7 +127,9 @@ public class DiceTcbInfoParserTest {
         assertEquals(SHA384, ir.getRegisterDigests().get(0).getHashAlgorithmOid());
         assertArrayEquals(new byte[SHA384_LENGTH], ir.getRegisterDigests().get(0).getDigest());
         assertTrue(parsed.toString().contains("Security version: " + largeSvn));
-        assertTrue(parsed.toString().contains("Integrity register: name=journey"));
+        assertTrue(parsed.toString().contains("    Integrity register\n        Name: journey"));
+        assertTrue(parsed.toString().contains("Hash Algorithm: Unknown"));
+        assertTrue(parsed.toString().contains("            Hash Algorithm: SHA-384"));
 
         // Certificate entities can also be returned through Jackson-backed portal endpoints.
         var json = new ObjectMapper().readTree(new ObjectMapper().writeValueAsString(parsed));
@@ -146,6 +151,16 @@ public class DiceTcbInfoParserTest {
         assertThrows(UnsupportedOperationException.class, () -> parsed.getFwids().clear());
         assertThrows(UnsupportedOperationException.class, () -> parsed.getIntegrityRegisters().clear());
         assertThrows(UnsupportedOperationException.class, () -> ir.getRegisterDigests().clear());
+    }
+
+    /**
+     * Labels the single-record extension independently of the multi-record extension.
+     * @throws Exception if the record cannot be decoded
+     */
+    @Test
+    public void testSingleTcbInfoDisplay() throws Exception {
+        DiceTcbInfo record = new DiceTcbInfo(DiceTcbInfoParser.TCB_INFO_OID, false, 0, sequence());
+        assertTrue(record.toString().contains("DICE Extension: TCB Info"));
     }
 
     /**

@@ -3,10 +3,12 @@ package hirs.utils.dice;
 import lombok.Getter;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.ASN1UTF8String;
+import org.bouncycastle.jcajce.util.MessageDigestUtils;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -121,8 +123,14 @@ public final class DiceTcbInfo {
 
     @Override
     public String toString() {
-        StringBuilder text = new StringBuilder("TCB record ").append(recordIndex)
-                .append(" (extension ").append(extensionOid).append(", critical: ").append(critical).append(")\n");
+        StringBuilder text = new StringBuilder("TCB record ").append(recordIndex).append('\n');
+        String extensionName = switch (extensionOid) {
+            case DiceTcbInfoParser.TCB_INFO_OID -> "TCB Info";
+            case DiceTcbInfoParser.MULTI_TCB_INFO_OID -> "Multi TCB Info";
+            default -> "Unknown";
+        };
+        append(text, "DICE Extension", extensionName);
+        append(text, "Critical", critical);
         append(text, "Vendor", vendor);
         append(text, "Model", model);
         append(text, "Version", version);
@@ -131,13 +139,18 @@ public final class DiceTcbInfo {
         append(text, "Target index", index);
         append(text, "Type (hex)", type == null ? null : HexFormat.of().formatHex(type));
         for (DiceFwid fwid : fwids) {
-            append(text, "FWID", fwid);
+            appendFwid(text, "    ", fwid);
         }
         append(text, "Flags (raw ASN.1 BIT STRING)", flags);
         append(text, "Flags mask (raw ASN.1 BIT STRING)", flagsMask);
         append(text, "Vendor info (hex)", vendorInfo == null ? null : HexFormat.of().formatHex(vendorInfo));
         for (DiceIntegrityRegister register : integrityRegisters) {
-            append(text, "Integrity register", register);
+            text.append("    Integrity register\n");
+            append(text, "    Name", register.getRegisterName());
+            append(text, "    Number", register.getRegisterNum());
+            for (DiceFwid digest : register.getRegisterDigests()) {
+                appendFwid(text, "        ", digest);
+            }
         }
         return text.toString().stripTrailing();
     }
@@ -150,7 +163,21 @@ public final class DiceTcbInfo {
      */
     private static void append(final StringBuilder text, final String label, final Object value) {
         if (value != null) {
-            text.append(label).append(": ").append(value).append('\n');
+            text.append("    ").append(label).append(": ").append(value).append('\n');
         }
+    }
+
+    /**
+     * Appends a firmware identifier with its algorithm and digest on separate lines.
+     * @param text destination
+     * @param indent indentation for the firmware identifier heading
+     * @param fwid firmware identifier
+     */
+    private static void appendFwid(final StringBuilder text, final String indent, final DiceFwid fwid) {
+        text.append(indent).append("FWID\n");
+        String oid = fwid.getHashAlgorithmOid();
+        String name = MessageDigestUtils.getDigestName(new ASN1ObjectIdentifier(oid));
+        append(text, indent + "Hash Algorithm", (name.equals(oid) ? "Unknown" : name));
+        append(text, indent + "Digest (hex)", HexFormat.of().formatHex(fwid.getDigest()));
     }
 }
