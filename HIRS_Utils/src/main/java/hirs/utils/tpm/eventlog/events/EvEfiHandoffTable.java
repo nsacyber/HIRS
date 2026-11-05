@@ -66,8 +66,7 @@ public class EvEfiHandoffTable {
                 vendorGuids.add(getNextGUID(tpmEventData, offset));
                 vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
                 offset += UefiConstants.OFFSET_24;
-            }
-            catch (IllegalArgumentException ie) {
+            } catch (IllegalArgumentException ie) {
                 throw new IOException("Parsing error with EvEfiHandoffTable event: " + ie);
             }
         }
@@ -94,8 +93,7 @@ public class EvEfiHandoffTable {
                 vendorGuids.add(getNextGUID(tpmEventData, offset));
                 vendorTables.add(getNextTable(tpmEventData, offset + UefiConstants.OFFSET_16));
                 offset += UefiConstants.OFFSET_24;
-            }
-            catch (IllegalArgumentException ie) {
+            } catch (IllegalArgumentException ie) {
                 throw new IOException("Parsing error with EvEfiHandoffTable event: " + ie);
             }
         }

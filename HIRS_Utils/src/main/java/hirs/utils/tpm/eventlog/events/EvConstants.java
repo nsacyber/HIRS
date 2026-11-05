@@ -160,6 +160,64 @@ public final class EvConstants {
      */
     public static final int EV_EFI_SPDM_DEVICE_AUTHORITY = 0x800000E4;
 
+    // The following ranges are from the TCG PC Client Event Registry
+    /**
+     * Min of range 1 reserved for BIOS.
+     */
+    public static final int EV_RESERVED_TCG_BIOS1_MIN = 0x00000000;
+    /**
+     * Max of range 1 reserved for BIOS.
+     */
+    public static final int EV_RESERVED_TCG_BIOS1_MAX = 0x000003FF;
+    /**
+     * Min of range reserved for Intel - DRTM.
+     */
+    public static final int EV_RESERVED_INTEL_DRTM_MIN = 0x00000400;
+    /**
+     * Max of range reserved for Intel - DRTM.
+     */
+    public static final int EV_RESERVED_INTEL_DRTM_MAX = 0x000004FF;
+    /**
+     * Min of range reserved for TBoot - DRTM.
+     */
+    public static final int EV_RESERVED_TBOOT_DRTM_MIN = 0x00000500;
+    /**
+     * Max of range reserved for TBoot - DRTM.
+     */
+    public static final int EV_RESERVED_TBOOT_DRTM_MAX = 0x000005FF;
+    /**
+     * Min of range reserved for Microsoft Custom BIOS Events.
+     */
+    public static final int EV_RESERVED_MICROSOFT_BIOS_MIN = 0x00000600;
+    /**
+     * Max of range reserved for Microsoft Custom BIOS Events.
+     */
+    public static final int EV_RESERVED_MICROSOFT_BIOS_MAX = 0x000006FF;
+    /**
+     * Min of range 2 reserved for BIOS.
+     */
+    public static final int EV_RESERVED_TCG_BIOS2_MIN = 0x00000700;
+    /**
+     * Max of range 2 reserved for BIOS.
+     */
+    public static final int EV_RESERVED_TCG_BIOS2_MAX = 0x00007FFF;
+    /**
+     * Min of range reserved for AMD.
+     */
+    public static final int EV_RESERVED_AMD_DRTM_MIN = 0x00008000;
+    /**
+     * Max of range reserved for AMD.
+     */
+    public static final int EV_RESERVED_AMD_DRTM_MAX = 0x000080FF;
+    /**
+     * Min of range reserved for ARM.
+     */
+    public static final int EV_RESERVED_ARM_MIN = 0x00009000;
+    /**
+     * Max of range reserved for ARM.
+     */
+    public static final int EV_RESERVED_ARM_MAX = 0x00009FFF;
+
     /**
      * Default private constructor so checkstyles doesn't complain.
      */
