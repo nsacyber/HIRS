@@ -70,9 +70,10 @@ RUN ls 'C:\Program Files\openssl'
 EXPOSE 8443
 
 # Set Environment Variables
-RUN setx JAVA_HOME 'C:\Java\jdk25'
-RUN setx GIT_HOME 'C:\Program Files\Git'
-RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;%PATH%'
+ENV JAVA_HOME="C:\Java\jdk25"
+ENV GIT_HOME="C:\Program Files\Git"
+ENV PATH="C:\Program Files\openssl\bin;C:\Java\jdk25\bin;C:\Program Files\MariaDB 11.1\bin;C:\Program Files\Git\bin;${PATH}"
+RUN Get-Command openssl; openssl version
 
 # Echo System Variables
 RUN echo $Env:PATH

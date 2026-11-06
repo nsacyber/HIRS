@@ -4,22 +4,28 @@ param (
     [Alias("u", "unattended")][switch]$IsUnattended = $false,
     [Alias("h", "help")][switch]$ShowHelp = $false,
     [Alias("aa", "aca-alg")][string]$AcaAlg,
-    [Alias("ta", "ta-alg")][string]$TlsAlg,
-    [Alias("da", "db-alg")][string]$DbAlg
+    [Alias("ta", "tls-alg", "ta-alg")][string]$TlsAlg,
+    [Alias("da", "db-alg")][string]$DbAlg,
+    [Alias("ams", "aca-mldsa-size")][ValidateSet("44", "65", "87")][string]$AcaMldsaSize = "87",
+    [Alias("tms", "tls-mldsa-size")][ValidateSet("44", "65", "87")][string]$TlsMldsaSize = "87",
+    [Alias("dms", "db-mldsa-size")][ValidateSet("44", "65", "87")][string]$DbMldsaSize = "87"
 )
 
 if ($ShowHelp) {
     Write-Host "  Setup script for the HIRS ACA on Windows"
-    Write-Host "  Syntax (short form): .\aca_setup.ps1 [-u|-h|-sp|-sb|-aa|-ta|-da]"
-    Write-Host "  Syntax (long form): .\aca_setup.ps1 [--unattended|--help|--skip-db|--skip-pki|--aca-alg|--tls-alg|--db-alg]"
+    Write-Host "  Syntax (short form): .\aca_setup.ps1 [-u|-h|-sp|-sd|-aa|-ta|-da|-ams|-tms|-dms]"
+    Write-Host "  Syntax (long form): .\aca_setup.ps1 [-unattended|-help|-skip-db|-skip-pki|-aca-alg|-tls-alg|-db-alg|-aca-mldsa-size|-tls-mldsa-size|-db-mldsa-size]"
     Write-Host "  Flag options:"
     Write-Host "     [-u  | -unattended] Runs the script unattended."
     Write-Host "     [-h  | -help]   Prints this help message."
     Write-Host "     [-sp | -skip-pki] Skips the pki setup of the setup script."
-    Write-Host "     [-sb | -skip-db] Skips the database setup of the setup script."
+    Write-Host "     [-sd | -skip-db] Skips the database setup of the setup script."
     Write-Host "     [-aa | -aca-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for Attestation Certificates."
     Write-Host "     [-ta | -tls-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for TLS on the ACA portal."
     Write-Host "     [-da | -db-alg] Sets the ACA's default algorithm (rsa, ecc, or mldsa) for use with MariaDB."
+    Write-Host "     [-ams | -aca-mldsa-size] Sets ACA ML-DSA parameter set (44, 65, or 87)."
+    Write-Host "     [-tms | -tls-mldsa-size] Sets TLS ML-DSA parameter set (44, 65, or 87)."
+    Write-Host "     [-dms | -db-mldsa-size] Sets DB ML-DSA parameter set (44, 65, or 87)."
     exit 1
 }
 
@@ -47,21 +53,21 @@ if (-not $DbAlg) {
 }
 
 # Define valid options
-$validAlgs = @("rsa", "ecc")
+$validAlgs = @("rsa", "ecc", "mldsa")
 
 # Check for valid algorithms
 if ($validAlgs -notcontains $AcaAlg) {
-    Write-Host "Invalid ACA algorithm $AcaAlg specified. Valid options are rsa or ecc."
+    Write-Host "Invalid ACA algorithm $AcaAlg specified. Valid options are rsa, ecc, or mldsa."
     exit 1
 }
 
 if ($validAlgs -notcontains $TlsAlg) {
-    Write-Host "Invalid TLS algorithm $TlsAlg specified. Valid options are rsa or ecc."
+    Write-Host "Invalid TLS algorithm $TlsAlg specified. Valid options are rsa, ecc, or mldsa."
     exit 1
 }
 
 if ($validAlgs -notcontains $DbAlg) {
-    Write-Host "Invalid DB algorithm $DbAlg specified. Valid options are rsa or ecc."
+    Write-Host "Invalid DB algorithm $DbAlg specified. Valid options are rsa, ecc, or mldsa."
     exit 1
 }
 
@@ -170,7 +176,7 @@ else {
 
 # Runs the create_db script (along with the other scripts under the DB folder)
 if (!$skipdb) {
-    pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE "$global:LOG_FILE" -UNATTENDED:$IsUnattended -DB_ALG "$DbAlg"
+    pwsh -ExecutionPolicy Bypass $global:HIRS_REL_WIN_DB_CREATE -LOG_FILE "$global:LOG_FILE" -UNATTENDED:$IsUnattended -DB_ALG "$DbAlg" -DB_MLDSA_SIZE "$DbMldsaSize"
     if ($LastExitCode -eq 0) {
         Write-Output "ACA database setup complete" | WriteAndLog
     }
@@ -208,6 +214,11 @@ Function setup_aca_public_key_algorithm() {
         $aca_leaf_cert_val = "HIRS_leaf_ca3_ecc_512_sha384"
         $aca_intermediate_cert_val = "HIRS_intermediate_ca_ecc_512_sha384"
         $aca_root_cert_val = "HIRS_root_ca_ecc_512_sha384"
+    }
+    elseif ($acaAlg -eq "mldsa") {
+        $aca_leaf_cert_val = "HIRS_leaf_ca3_mldsa_${AcaMldsaSize}_key"
+        $aca_intermediate_cert_val = "HIRS_intermediate_ca_mldsa_${AcaMldsaSize}_key"
+        $aca_root_cert_val = "HIRS_root_ca_mldsa_${AcaMldsaSize}_key"
     }
 
     remove_spring_property_value_pair -file "$global:HIRS_DATA_SPRING_PROP_FILE" -key "$global:SPRING_PROPERTIES_ACA_LEAF_CERTIFICATE_ALIAS_NAME"
@@ -252,6 +263,10 @@ Function setup_tls_config_aliases() {
     elseif($tlsAlg -eq "ecc") {
         $server_ssl_trust_alias_val = "hirs_aca_tls_ecc_512_sha384"
         $server_ssl_key_alias_val = "hirs_aca_tls_ecc_512_sha384"
+    }
+    elseif ($tlsAlg -eq "mldsa") {
+        $server_ssl_trust_alias_val = "hirs_aca_tls_mldsa_${TlsMldsaSize}"
+        $server_ssl_key_alias_val = "hirs_aca_tls_mldsa_${TlsMldsaSize}_key"
     }
 
     # remove default SSL config lines

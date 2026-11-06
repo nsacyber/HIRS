@@ -113,6 +113,32 @@ Function check_pki() {
     check_cert -TrustStore "$global:SSL_DB_ECC_CLIENT_CHAIN" -Cert "$global:ECC_WEB_TLS_CERT"
     Pop-Location | Out-Null
 
+    # Validate ML-DSA certificate chains
+    foreach ($mldsaSize in @(44, 65, 87)) {
+        $mldsaPrefix = "mldsa_${mldsaSize}"
+        $mldsaDir = Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR "${mldsaPrefix}_certs"
+        $mldsaChain = Join-Path $mldsaDir "HIRS_${mldsaPrefix}_Cert_Chain.pem"
+        if (-not (Test-Path -LiteralPath $mldsaDir -PathType Container)) {
+            Write-Host "Unable to access $mldsaDir"
+            $global:ALL_CHECKS_PASSED = $false
+            $global:ALL_CERTS_PASSED = $false
+            continue
+        }
+        foreach ($certName in @(
+            "HIRS_root_ca_${mldsaPrefix}.pem",
+            "HIRS_intermediate_ca_${mldsaPrefix}.pem",
+            "HIRS_leaf_ca1_${mldsaPrefix}.pem",
+            "HIRS_leaf_ca2_${mldsaPrefix}.pem",
+            "HIRS_leaf_ca3_${mldsaPrefix}.pem",
+            "HIRS_rim_signer_${mldsaPrefix}.pem",
+            "HIRS_db_srv_${mldsaPrefix}.pem",
+            "HIRS_db_client_${mldsaPrefix}.pem",
+            "HIRS_aca_tls_${mldsaPrefix}.pem"
+        )) {
+            check_cert -TrustStore $mldsaChain -Cert (Join-Path $mldsaDir $certName)
+        }
+    }
+
     # if the aca properties file does not exist
     if (-not $aca_prop_table) {
         Write-Host "Unable to verify the certificates validity using the pki password since the aca properties file does not exist"
@@ -139,9 +165,9 @@ Function check_pki() {
     }
 
     if ($global:ALL_CERTS_PASSED) {
-        Write-Host "All RSA and ECC certificates under the certificates directory [$global:HIRS_DATA_CERTIFICATES_HIRS_DIR] are valid"
+        Write-Host "All RSA, ECC, and ML-DSA certificates under the certificates directory [$global:HIRS_DATA_CERTIFICATES_HIRS_DIR] are valid"
     } else {
-        Write-Host "Error: There was an error while trying to verify the validity of the RSA and ECC certificates under the certificates directory [$global:HIRS_DATA_CERTIFICATES_HIRS_DIR]"
+        Write-Host "Error: There was an error while trying to verify the validity of the RSA, ECC, and ML-DSA certificates under the certificates directory [$global:HIRS_DATA_CERTIFICATES_HIRS_DIR]"
         $global:ALL_CHECKS_PASSED = $false
     }
 
@@ -155,6 +181,12 @@ Function check_cert() {
         [string]$Cert
     )
 
+    if (-not (Test-Path -LiteralPath $TrustStore -PathType Leaf) -or -not (Test-Path -LiteralPath $Cert -PathType Leaf)) {
+        Write-Host "Missing certificate or chain: $Cert / $TrustStore"
+        $global:ALL_CHECKS_PASSED = $false
+        $global:ALL_CERTS_PASSED = $false
+        return
+    }
     $result = openssl verify -CAfile $TrustStore $Cert
 
     if ($LASTEXITCODE -ne 0) {
@@ -164,6 +196,37 @@ Function check_cert() {
 
     if ($ShowVerbose) {
         Write-Host "$result"
+    }
+}
+
+# Check the selected ACA and portal TLS algorithms using Spring aliases.
+Function check_pki_config() {
+    Write-Host "Checking HIRS ACA pki configuration:"
+    $springFile = $global:HIRS_DATA_SPRING_PROP_FILE
+    if (-not (Test-Path -LiteralPath $springFile)) {
+        Write-Host "Error determining ACA PKI configuration; missing $springFile"
+        $global:ALL_CHECKS_PASSED = $false
+        return
+    }
+    $properties = @{}
+    foreach ($line in (Get-Content -LiteralPath $springFile)) {
+        if ($line -match '^\s*([^#!=\s][^=]*)=(.*)$') {
+            $properties[$matches[1].Trim()] = $matches[2].Trim()
+        }
+    }
+    $tlsAlias = $properties['server.ssl.trust-alias']
+    $rootAlias = $properties['aca.certificates.root-key-alias']
+    switch -Regex ($tlsAlias) {
+        '^hirs_aca_tls_rsa_3k_sha384$' { Write-Host '    ACA Portal is configured for TLS using rsa 3072 key with SHA 384'; break }
+        '^hirs_aca_tls_ecc_512_sha384$' { Write-Host '    ACA Portal is configured for TLS using ecc 512 key with SHA 384'; break }
+        '^hirs_aca_tls_mldsa_(44|65|87)$' { Write-Host "    ACA Portal is configured for TLS using ML-DSA-$($matches[1])"; break }
+        default { Write-Host "Error determining ACA TLS configuration, please check $springFile"; $global:ALL_CHECKS_PASSED = $false }
+    }
+    switch -Regex ($rootAlias) {
+        '^HIRS_root_ca_rsa_3k_sha384_key$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using rsa 3072 key with SHA 384'; break }
+        '^HIRS_root_ca_ecc_512_sha384_key$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384'; break }
+        '^HIRS_root_ca_mldsa_(44|65|87)_key$' { Write-Host "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-$($matches[1])"; break }
+        default { Write-Host "Error determining ACA signing configuration, please check $springFile"; $global:ALL_CHECKS_PASSED = $false }
     }
 }
 
@@ -279,6 +342,9 @@ check_pwds
 
 # Check if the pki certificates for both rsa and ecc are valid and located under the C:\ProgramData\hirs\aca\certificates directory
 check_pki
+
+# Check configured TLS and ACA certificate algorithms
+check_pki_config
 
 # Check if mysql/mariadb is all setup
 check_mysql_setup
