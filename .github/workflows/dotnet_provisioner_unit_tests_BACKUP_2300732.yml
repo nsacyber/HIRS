@@ -1,0 +1,93 @@
+<<<<<<< HEAD
+# Updated: 10/19/2026
+name: Dotnet Provisioner Unit Tests and Packages
+
+on:
+  push:
+=======
+# Updated: 10/26/2026
+name: Dotnet Provisioner Unit Tests and Packages
+
+on:
+  pull_request:
+    branches:
+    - 'development'
+    - 'main'
+>>>>>>> origin/development
+env:
+  DOTNET_VERSION: 10.0.x
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-2022
+          - os: ubuntu-latest
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{env.DOTNET_VERSION}}
+      - name: Restore dependencies
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet restore
+      - name: Build
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet build
+      - name: Test
+        working-directory: HIRS_Provisioner.NET
+        run: dotnet test
+
+  package:
+    needs: test
+    name: Packages
+    runs-on: windows-2022
+    steps:
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{env.DOTNET_VERSION}}
+      - name: Set up JDK for Gradle
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+      - name: Build packages
+        run: .\gradlew.bat -p HIRS_Provisioner.NET clean release
+      - name: Artifacts SHA256
+        shell: bash
+        run: |
+          sha256sum HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
+          ls -go --full-time HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
+      - name: Artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: HIRS_Provisioner.NET-packages
+          retention-days: 5
+          if-no-files-found: error
+          path: |
+            HIRS_Provisioner.NET/build/distributions/*.deb
+            HIRS_Provisioner.NET/build/distributions/*.msi
+<<<<<<< HEAD
+            HIRS_Provisioner.NET/build/distributions/*.rpm
+=======
+            HIRS_Provisioner.NET/build/distributions/*.rpm
+>>>>>>> origin/development

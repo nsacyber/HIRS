@@ -56,6 +56,10 @@ public class ReferenceManifest extends ArchivableEntity {
      * String for display of a Support RIM.
      */
     public static final String MEASUREMENT_RIM = "Measurement";
+    /**
+     * String for display of a Component RIM.
+     */
+    public static final String COMPONENT_RIM = "Component";
 
     /**
      * String for the xml schema ios standard.
@@ -210,5 +214,14 @@ public class ReferenceManifest extends ArchivableEntity {
      */
     public boolean isSupport() {
         return rimType.equals(SUPPORT_RIM);
+    }
+
+    /**
+     * Determines if this reference manifest's rim type is a component rim.
+     *
+     * @return true if the rim type is a component rim, false otherwise
+     */
+    public boolean isComponent() {
+        return rimType.equals(COMPONENT_RIM);
     }
 }

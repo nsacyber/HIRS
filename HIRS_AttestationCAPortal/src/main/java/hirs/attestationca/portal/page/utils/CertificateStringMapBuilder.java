@@ -16,6 +16,8 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestati
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceKeyPurpose;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateInfo;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
@@ -97,6 +99,7 @@ public final class CertificateStringMapBuilder {
         Map<String, String> ekuMap = getExtendedKeyUsageMap();
 
         if (certificate != null) {
+            addDiceInformation(certificate, data);
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Hex.toHexString(certificate.getSerialNumber().toByteArray()));
@@ -925,13 +928,6 @@ public final class CertificateStringMapBuilder {
                 }
             }
 
-            if (certificate.getDiceCertificateInfo() != null) {
-                data.put("diceProfileType", certificate.getDiceCertificateInfo().getProfileType().toString());
-                data.put("diceHasKeyCertSign", certificate.getDiceCertificateInfo().hasKeyCertSign() ? "Yes" : "No");
-                data.put("diceIsCa", certificate.getDiceCertificateInfo().isCa() ? "Yes" : "No");
-                data.put("diceHasCrlSign", certificate.getDiceCertificateInfo().hasCrlSign() ? "Yes" : "No");
-            }
-
             if (certificate.getTpmPolicies() != null) {
                 data.put("tpmPolicies", certificate.getTpmPolicies());
             }
@@ -943,5 +939,38 @@ public final class CertificateStringMapBuilder {
             log.error(notFoundMessage);
         }
         return data;
+    }
+
+    /**
+     * Adds DICE inspection fields for any X.509 certificate category.
+     * @param certificate the source certificate
+     * @param data the certificate display fields
+     */
+    private static void addDiceInformation(final Certificate certificate, final Map<String, String> data) {
+        if (certificate instanceof PlatformCredential) {
+            return; // Platform credentials are attribute certificates.
+        }
+        if (certificate instanceof IDevIDCertificate idevid && idevid.getDiceParsingError() != null) {
+            data.put("diceParsingError", idevid.getDiceParsingError());
+            return;
+        }
+        try {
+            DiceCertificateInfo info = certificate instanceof IDevIDCertificate idevid
+                    ? idevid.getDiceCertificateInfo() : DiceCertificateParser.parse(certificate.getX509Certificate());
+            if (info != null) {
+                data.put("diceProfileType", info.getProfileType().toString());
+                data.put("diceHasKeyCertSign", info.hasKeyCertSign() ? "Yes" : "No");
+                data.put("diceIsCa", info.isCa() ? "Yes" : "No");
+                data.put("diceHasCrlSign", info.hasCrlSign() ? "Yes" : "No");
+                if (!info.getTcbInfo().isEmpty()) {
+                    data.put("diceTcbInfo", info.getTcbInfo().stream().map(Object::toString)
+                            .collect(Collectors.joining("\n\n")));
+                    data.put("diceTcbInfoCount", Integer.toString(info.getTcbInfo().size()));
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Cannot decode DICE certificate information", e);
+            data.put("diceParsingError", e.getMessage());
+        }
     }
 }

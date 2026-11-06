@@ -1,11 +1,11 @@
-FROM rockylinux:9.3
+FROM rockylinux/rockylinux:9.8
 LABEL org.opencontainers.image.vendor NSA Laboratory for Advanced Cybersecurity Research
 LABEL org.opencontainers.image.source https://github.com/nsacyber/hirs
 LABEL org.opencontainers.image.description NSA\'s HIRS Attestation Certificate Authority. Expose port 8443 to access the portal from outside the container.
 
 # Purpose: This image is designed for HIRS ACA testing on Rocky 9. It is meant to be used in
 #          the .ci, and does not automatically start the ACA upon running the container.
-# Date Modified: 2/13/26
+# Date Modified: 10/26/26
 # Notes: The image to be built should be named "aca-rocky-ci:latest".
 #        For local image build, use this command from the /HIRS/ directory to build the image:
 #           $ docker build -f ./.ci/docker/Dockerfile.aca-rocky-ci -t aca-rocky-ci:latest .
@@ -114,8 +114,6 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
     echo "git fetch origin && git pull origin main && git reset --hard" >> /tmp/auto_clone_branch && \
     echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
     echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
-    echo "cd HIRS_Provisioner.NET/hirs" >> /tmp/auto_clone_branch && \
-    echo 'if [ -n "${2}" ]; then dotnet deb -r linux-x64 -c Release && dotnet rpm -r linux-x64 -c Release; fi' >> /tmp/auto_clone_branch && \
     chmod 755 /tmp/auto_clone_branch
 
 # Reset working directory

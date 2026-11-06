@@ -197,14 +197,14 @@ public class PcrValidator {
             } else if (policySettings.isIgnoretBootEnabled() && (pcrIndex >= TBOOT_PCR_START
                     && pcrIndex <= TBOOT_PCR_END)) {
                 log.debug(String.format("TBOOT Ignored -> %s", tpe));
-            } else if ((policySettings.isIgnoreOsEvtEnabled() ||
-                    policySettings.isIgnoreOsEvtPxeBootEnabled()) && tpe.getPcrIndex() > FIRMWARE_PCR_END) {
+            } else if ((policySettings.isIgnoreOsEvtEnabled()
+                    || policySettings.isIgnoreOsEvtPxeBootEnabled()) && tpe.getPcrIndex() > FIRMWARE_PCR_END) {
                 log.debug(String.format("OS Evt Ignored -> %s", tpe));
             } else if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
                 log.debug(String.format("GPT Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoreOsEvtPxeBootEnabled() &&
-                    tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION &&
-                    tpe.getEventContentStr().contains("PIWG Firmware Volume Path")) {
+            } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()
+                    && tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
+                    && tpe.getEventContentStr().contains("PIWG Firmware Volume Path")) {
                 log.debug(String.format("Boot event ignored during PXE Boot -> %s", tpe));
                 String eventDigest = tpe.getEventDigestStr();
                 if (eventLogRecords.containsKey(eventDigest)) {

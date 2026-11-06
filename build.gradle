@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'io.github.ben-manes.versions' version '0.66.0'
+    id 'io.github.ben-manes.versions' version '0.61.0'
     id 'application'
     id 'com.github.spotbugs' version '6.5.6' apply false
-    id 'org.owasp.dependencycheck' version '12.2.2'
+    id 'org.owasp.dependencycheck' version '13.0.0'
     id 'com.palantir.git-version' version '5.0.0'
 }
 
@@ -23,6 +23,10 @@ subprojects {
     apply plugin: "java"
     apply plugin: "jacoco"
     apply plugin: "org.owasp.dependencycheck"
+
+    repositories {
+        mavenCentral()
+    }
 
     java {
         toolchain {
@@ -57,14 +61,8 @@ subprojects {
     }
 
     dependencyCheck {
-        def cmdApiKey = System.getProperty("nvd.apiKey") ?: ""
-        if (cmdApiKey) {
-            println ">>>> [OWASP] NVD API Key detected for project: ${project.name}: [${cmdApiKey}]"
-        }
-        nvd {
-            apiKey=cmdApiKey
-            delay = 16000
-            }
+        // Read API key from a system property 'nvd.apiKey'
+        nvd.apiKey = System.getProperty("nvd.apiKey")
     }
 
 //    Uncomment the lines right after this comment, if you wish to see all the places
@@ -106,7 +104,7 @@ subprojects {
 
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
             if (details.requested.group == 'org.apache.logging.log4j') {
-                details.useVersion '2.26.1' // Force patched Log4j version
+                details.useVersion '2.25.3' // Force patched Log4j version
             }
 
             if (details.requested.group == 'org.apache.commons' &&

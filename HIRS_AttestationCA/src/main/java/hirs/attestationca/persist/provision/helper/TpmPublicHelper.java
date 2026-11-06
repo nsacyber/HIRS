@@ -2,8 +2,17 @@ package hirs.attestationca.persist.provision.helper;
 
 import hirs.attestationca.persist.enums.TpmEccCurve;
 import hirs.attestationca.persist.enums.TcgAlgorithm;
+import hirs.attestationca.persist.enums.TpmMlDsaParameterSet;
+import hirs.attestationca.persist.enums.TpmMlKemParameterSet;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import lombok.extern.log4j.Log4j2;
+import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
+import org.bouncycastle.jcajce.interfaces.MLKEMPublicKey;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jcajce.spec.MLDSAPublicKeySpec;
+import org.bouncycastle.jcajce.spec.MLKEMParameterSpec;
+import org.bouncycastle.jcajce.spec.MLKEMPublicKeySpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.DataInputStream;
 import java.io.ByteArrayInputStream;
@@ -12,6 +21,7 @@ import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECGenParameterSpec;
@@ -21,6 +31,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Optional;
 
 /**
  *  Helper class for parsing TPM 2.0 public area structures, and constructing public keys from this data.
@@ -37,6 +48,8 @@ public final class TpmPublicHelper {
      * <a href="https://en.wikipedia.org/wiki/65537_(number)#Applications">More information</a>
      */
     private static final BigInteger EXPONENT = new BigInteger("010001", RADIX);
+
+    private static final Provider BOUNCY_CASTLE_PROVIDER = new BouncyCastleProvider();
 
     /** Prevent instantiation. */
     private TpmPublicHelper() { }
@@ -68,7 +81,9 @@ public final class TpmPublicHelper {
 
         return switch (alg) {
             case RSA -> parsePublicAreaRsa(publicArea, nameAlg, in);
-            case ECC -> parsePublicAreaEcc(publicArea, nameAlg, in); // TODO enable
+            case ECC -> parsePublicAreaEcc(publicArea, nameAlg, in);
+            case MLDSA -> parsePublicAreaMlDsa(publicArea, nameAlg, in);
+            case MLKEM -> parsePublicAreaMlKem(publicArea, nameAlg, in);
             default -> throw new UnsupportedOperationException("Unsupported or invalid public key algorithm");
         };
     }
@@ -83,7 +98,7 @@ public final class TpmPublicHelper {
      */
     public static ParsedTpmPublic parsePublicAreaRsa(final byte[] publicArea, final TcgAlgorithm nameAlg,
                                                          final DataInputStream in) throws IOException {
-        skipSymDefObject(in); // Skip symdef
+        ParsedTpmPublic.SymmetricDefinition symmetricDefinition = parseSymDefObject(in); // Parse symdef object
         skipRsaScheme(in); // Skip RSA scheme
 
         final int keyBits = in.readShort(); // Read key bits
@@ -99,7 +114,7 @@ public final class TpmPublicHelper {
         ParsedTpmPublic.RsaPublicParameters params = new ParsedTpmPublic.RsaPublicParameters(keyBits,
                 resolvedExponent, modulus);
         return new ParsedTpmPublic.RsaParsedTpmPublic(TcgAlgorithm.RSA, nameAlg, publicArea.clone(),
-                publicKey, params);
+                publicKey, Optional.of(symmetricDefinition), params);
     }
 
     /**
@@ -131,7 +146,7 @@ public final class TpmPublicHelper {
      */
     public static ParsedTpmPublic parsePublicAreaEcc(final byte[] publicArea, final TcgAlgorithm nameAlg,
                                                         final DataInputStream in) throws IOException {
-        skipSymDefObject(in); // Skip symdef object
+        ParsedTpmPublic.SymmetricDefinition symmetricDefinition = parseSymDefObject(in); // Parse symdef object
         skipEccScheme(in); // Skip ECC scheme
 
         int curveId = in.readShort(); // Extract curve family
@@ -146,7 +161,7 @@ public final class TpmPublicHelper {
         // Return parsed structure
         ParsedTpmPublic.EccPublicParameters params = new ParsedTpmPublic.EccPublicParameters(eccCurve, point);
         return new ParsedTpmPublic.EccParsedTpmPublic(TcgAlgorithm.ECC, nameAlg, publicArea.clone(),
-                publicKey, params);
+                publicKey, Optional.of(symmetricDefinition), params);
     }
 
     /**
@@ -171,18 +186,133 @@ public final class TpmPublicHelper {
         }
     }
 
-    private static void skipSymDefObject(final DataInputStream in) throws IOException {
+
+    /**
+     * Parses a TPM 2.0 Version 185 ML-DSA public area.
+     *
+     * @param publicArea marshaled TPMT_PUBLIC
+     * @param nameAlg object Name hash algorithm
+     * @param in stream positioned at TPMS_MLDSA_PARMS
+     * @return parsed ML-DSA public area
+     * @throws IOException if the public area is truncated
+     */
+    public static ParsedTpmPublic parsePublicAreaMlDsa(
+            final byte[] publicArea,
+            final TcgAlgorithm nameAlg,
+            final DataInputStream in) throws IOException {
+        int parameterSetId = in.readUnsignedShort(); // Parse parameter set ID
+
+        TpmMlDsaParameterSet parameterSet = TpmMlDsaParameterSet.fromId(parameterSetId)
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        "Unsupported TPM ML-DSA parameter set: 0x" + Integer.toHexString(parameterSetId)));
+
+        in.skipNBytes(Byte.BYTES); // Skip external mu
+
+        byte[] encodedPublicKey = readTpm2b(in);
+        if (encodedPublicKey.length != parameterSet.getPublicKeySize()) {
+            throw new IOException("Invalid " + parameterSet.getAlgorithmName() + " public key length: "
+                    + encodedPublicKey.length);
+        }
+
+        MLDSAPublicKey publicKey = assembleMlDsaPublicKey(parameterSet, encodedPublicKey);
+
+        // Return parsed structure
+        ParsedTpmPublic.MlDsaPublicParameters params = new ParsedTpmPublic.MlDsaPublicParameters(
+                parameterSet, encodedPublicKey.clone());
+        return new ParsedTpmPublic.MlDsaParsedTpmPublic(TcgAlgorithm.MLDSA, nameAlg, publicArea.clone(),
+                publicKey, Optional.empty(), params);
+    }
+
+    /**
+     * Constructs a JCA ML-DSA public key from the FIPS 204 public key.
+     *
+     * @param parameterSet ML-DSA parameter set
+     * @param encodedPublicKey FIPS 204 key
+     * @return JCA public key
+     */
+    public static MLDSAPublicKey assembleMlDsaPublicKey(
+            final TpmMlDsaParameterSet parameterSet,
+            final byte[] encodedPublicKey) {
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance("ML-DSA", BOUNCY_CASTLE_PROVIDER);
+            MLDSAParameterSpec parameterSpec = MLDSAParameterSpec.fromName(parameterSet.getAlgorithmName());
+            return (MLDSAPublicKey) keyFactory.generatePublic(new MLDSAPublicKeySpec(parameterSpec, encodedPublicKey));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new UnexpectedServerException(
+                    "Encountered unexpected error creating ML-DSA public key: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Parses a TPM 2.0 Version 185 ML-KEM public area.
+     *
+     * @param publicArea marshaled TPMT_PUBLIC
+     * @param nameAlg object Name hash algorithm
+     * @param in stream positioned at TPMS_MLKEM_PARMS
+     * @return parsed ML-KEM public area
+     * @throws IOException if the public area is truncated
+     */
+    public static ParsedTpmPublic parsePublicAreaMlKem(
+            final byte[] publicArea,
+            final TcgAlgorithm nameAlg,
+            final DataInputStream in) throws IOException {
+        ParsedTpmPublic.SymmetricDefinition symmetricDefinition = parseSymDefObject(in); // Parse symdef object
+        int parameterSetId = in.readUnsignedShort(); // Parse parameter set ID
+
+        TpmMlKemParameterSet parameterSet = TpmMlKemParameterSet.fromId(parameterSetId)
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        "Unsupported TPM ML-KEM parameter set: 0x" + Integer.toHexString(parameterSetId)));
+
+        byte[] encodedPublicKey = readTpm2b(in);
+        if (encodedPublicKey.length != parameterSet.getPublicKeySize()) {
+            throw new IOException("Invalid " + parameterSet.getAlgorithmName() + " public key length: "
+                    + encodedPublicKey.length);
+        }
+
+        MLKEMPublicKey publicKey = assembleMlKemPublicKey(parameterSet, encodedPublicKey);
+
+        // Return parsed structure
+        ParsedTpmPublic.MlKemPublicParameters params = new ParsedTpmPublic.MlKemPublicParameters(
+                parameterSet, encodedPublicKey.clone());
+        return new ParsedTpmPublic.MlKemParsedTpmPublic(TcgAlgorithm.MLKEM, nameAlg, publicArea.clone(),
+                publicKey, Optional.of(symmetricDefinition), params);
+    }
+
+    /**
+     * Constructs a JCA ML-KEM public key from the raw FIPS 203 encapsulation key.
+     *
+     * @param parameterSet ML-KEM parameter set
+     * @param encodedPublicKey raw encapsulation key
+     * @return JCA public key
+     */
+    public static MLKEMPublicKey assembleMlKemPublicKey(
+            final TpmMlKemParameterSet parameterSet,
+            final byte[] encodedPublicKey) {
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance("ML-KEM", BOUNCY_CASTLE_PROVIDER);
+            MLKEMParameterSpec parameterSpec = MLKEMParameterSpec.fromName(parameterSet.getAlgorithmName());
+            return (MLKEMPublicKey) keyFactory.generatePublic(new MLKEMPublicKeySpec(parameterSpec, encodedPublicKey));
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new UnexpectedServerException(
+                    "Encountered unexpected error creating ML-KEM public key: " + e.getMessage(), e);
+        }
+    }
+
+    private static ParsedTpmPublic.SymmetricDefinition parseSymDefObject(final DataInputStream in)
+            throws IOException {
         int algId = in.readShort();
         TcgAlgorithm alg = TcgAlgorithm.fromId(algId); // Read algorithm
-        switch (alg) {
-            case NULL -> { }
+        return switch (alg) {
+            case NULL -> new ParsedTpmPublic.SymmetricDefinition(TcgAlgorithm.NULL, 0, TcgAlgorithm.NULL);
             case AES -> {
-                in.skipNBytes(Short.BYTES); // Skip keyBits
-                in.skipNBytes(Short.BYTES); // Skip mode
+                int keyBits = in.readShort();
+                int modeId = in.readShort();
+                TcgAlgorithm mode = TcgAlgorithm.fromId(modeId);
+                yield new ParsedTpmPublic.SymmetricDefinition(TcgAlgorithm.AES, keyBits, mode);
             }
             default -> throw new UnsupportedOperationException("Unsupported TPMT_SYM_DEF_OBJECT alg: 0x"
                     + Integer.toHexString(algId));
-        }
+        };
     }
 
     private static void skipEccScheme(final DataInputStream in) throws IOException {
