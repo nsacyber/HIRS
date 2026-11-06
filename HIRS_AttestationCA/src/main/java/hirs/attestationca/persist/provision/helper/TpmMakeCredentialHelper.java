@@ -108,7 +108,8 @@ public final class TpmMakeCredentialHelper {
 
         // KDFe party info is the x-coordinate of each key (TPM 2.0 Part 1, ECDH secret sharing)
         int fieldSize = ProvisionUtils.getFieldSizeInBytes(ek);
-        byte[] partyU = ProvisionUtils.convertBigIntegerToByteArray(((ECPublicKey) ephemeral.getPublic()).getW().getAffineX(), fieldSize);
+        byte[] partyU = ProvisionUtils.convertBigIntegerToByteArray(
+                ((ECPublicKey) ephemeral.getPublic()).getW().getAffineX(), fieldSize);
         byte[] partyV = ProvisionUtils.convertBigIntegerToByteArray(ek.getW().getAffineX(), fieldSize);
         int seedLengthBits = digestLengthBytes(ekPub.nameAlg()) * Byte.SIZE;
         byte[] seed = ProvisionUtils.cryptKDFe(

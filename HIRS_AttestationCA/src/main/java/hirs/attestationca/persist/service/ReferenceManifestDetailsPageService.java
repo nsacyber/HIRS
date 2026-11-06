@@ -646,7 +646,7 @@ public class ReferenceManifestDetailsPageService {
      * @param cRim the component reference manifest
      * @return map of display attributes for {@code rim-details.html}
      */
-    private HashMap<String, Object> getComponentRimInfo (final ComponentReferenceManifest cRim) {
+    private HashMap<String, Object> getComponentRimInfo(final ComponentReferenceManifest cRim) {
         final HashMap<String, Object> data = new HashMap<>();
 
         final CoseParser cose = cRim.parseCose();
@@ -721,7 +721,7 @@ public class ReferenceManifestDetailsPageService {
                 data.put("authKeyId", Hex.encodeHexString(skid));
                 caCred = this.caCertificateRepository
                         .findBySubjectKeyIdStringAndArchiveFlag(Hex.encodeHexString(skid), false);
-                if(caCred != null) {
+                if (caCred != null) {
                     signer = caCred.getX509Certificate();
                 }
             } else {

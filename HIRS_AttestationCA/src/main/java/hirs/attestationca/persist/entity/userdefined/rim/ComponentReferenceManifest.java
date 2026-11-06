@@ -120,10 +120,11 @@ public class ComponentReferenceManifest extends ReferenceManifest {
     }
 
     /**
+     * Returns the first value if it is nonblank, or the fallback otherwise.
      *
      * @param preferred
      * @param fallback
-     * @return
+     * @return the preferred value when nonblank, or the fallback value
      */
     private static String firstNonBlank(final String preferred, final String fallback) {
         return (preferred != null && !preferred.isBlank()) ? preferred : fallback;

@@ -400,7 +400,8 @@ public class ReferenceManifestPageService {
 
             final boolean isBaseRim = baseRimPattern.matcher(fileName).matches();
             final boolean isSupportRim = !isBaseRim && supportRimPattern.matcher(fileName).matches();
-            final boolean isComponentRim = !isBaseRim && !isSupportRim && componentRimPattern.matcher(fileName).matches();
+            final boolean isComponentRim = !isBaseRim && !isSupportRim
+                    && componentRimPattern.matcher(fileName).matches();
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
@@ -469,6 +470,7 @@ public class ReferenceManifestPageService {
      * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
+     * @param componentRims   list of component reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
                           final List<String> errorMessages,

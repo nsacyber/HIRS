@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests for TpmObjectAttributes
+ * Tests for TpmObjectAttributes.
  */
 public class TpmObjectAttributesTest {
     private static final String AK_PUBLIC_KEY_PATH_RSA = "/tpm2/ak_rsa.pub";
@@ -19,13 +19,18 @@ public class TpmObjectAttributesTest {
     private static final String AK_PUBLIC_KEY_PATH_ML_DSA = "/tpm2/ak_mldsa.pub";
     private static final String EK_PUBLIC_KEY_PATH_ML_KEM = "/tpm2/ek_mlkem.pub";
 
+    /** Verifies that supported attestation keys are accepted. */
     @Test
     public void testAcceptsAttestationKeys() throws Exception {
-        Assertions.assertEquals(Optional.empty(), TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_RSA)));
-        Assertions.assertEquals(Optional.empty(), TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_ECC)));
-        Assertions.assertEquals(Optional.empty(), TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_ML_DSA)));
+        Assertions.assertEquals(Optional.empty(),
+                TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_RSA)));
+        Assertions.assertEquals(Optional.empty(),
+                TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_ECC)));
+        Assertions.assertEquals(Optional.empty(),
+                TpmObjectAttributes.checkAttestationKey(parse(AK_PUBLIC_KEY_PATH_ML_DSA)));
     }
 
+    /** Verifies that an endorsement key is refused as an attestation key. */
     @Test
     public void testRefusesEndorsementKeyAsAttestationKey() throws Exception {
         Optional<String> refusal = TpmObjectAttributes.checkAttestationKey(parse(EK_PUBLIC_KEY_PATH_RSA));
@@ -35,6 +40,7 @@ public class TpmObjectAttributesTest {
         Assertions.assertTrue(refusal.get().contains("decrypt"), refusal.get());
     }
 
+    /** Verifies that an ML-KEM endorsement key is refused as an attestation key. */
     @Test
     public void testRefusesMlKemEndorsementKeyAsAttestationKey() throws Exception {
         Optional<String> refusal = TpmObjectAttributes.checkAttestationKey(parse(EK_PUBLIC_KEY_PATH_ML_KEM));
