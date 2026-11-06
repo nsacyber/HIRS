@@ -547,6 +547,11 @@ public class PolicyPageService {
                 + "policy: {}", policySettings);
     }
 
+    public void saveSettings(PolicySettings policySettings) {
+        //validate policySettings first?
+        policyRepository.saveAndFlush(policySettings);
+    }
+
     /**
      * Takes in policy setting states and determines if policy configuration is
      * valid or not. Platform Certificate Attribute Validation must have PC Validation Enabled PC

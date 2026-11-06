@@ -63,10 +63,32 @@ public class PolicyPageController extends PageController<NoPageParams> {
         PolicySettings policySettings = policyPageService.getDefaultPolicy();
         log.debug("Policy Page Settings: {}", policySettings);
 
-        PolicyPageModel pageModel = new PolicyPageModel(policySettings);
-        mav.addObject(INITIAL_DATA, pageModel);
-        log.debug("Policy Page Model: {}", pageModel);
+        mav.addObject("policySettings", policySettings);
         return mav;
+    }
+
+    @PostMapping("save")
+    public RedirectView saveSettings(@ModelAttribute("policySettings") final PolicySettings policySettings,
+                                     final RedirectAttributes redirectAttributes)
+            throws URISyntaxException{
+        Map<String, Object> model = new HashMap<>();
+        PageMessages messages = new PageMessages();
+        String message;
+
+        try {
+            policyPageService.saveSettings(policySettings);
+        } catch (RuntimeException e) {
+            message = "Exception thrown while saving policy settings: " + e.getMessage();
+            log.warn(message);
+            messages.addErrorMessage(message);
+            model.put(MESSAGES_ATTRIBUTE, messages);
+            return redirectToSelf(new NoPageParams(), model, redirectAttributes);
+        }
+
+        message = "Policy settings saved: " + policySettings.getName();
+        log.info(message);
+        messages.addSuccessMessage(message);
+        return redirectToSelf(new NoPageParams(), model, redirectAttributes);
     }
 
     /**
