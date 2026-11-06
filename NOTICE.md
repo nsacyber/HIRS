@@ -12,7 +12,7 @@ Commons Upload, Apache Commons Validator, Apache http client, authlete-cbor, Jav
 j2obc, jandex, javassist, jboss-logging, log4j2, Embedded tomcat, byte-buddy, caffeine, 
 Micrometer, mysema-commons-lang, xml_rpc_client, taglibs, error-prone, gson, guava, 
 Json-simple, HikariCP, Jackson-core, Jcommander, powermock, Selenium, Spring, Spring Boot, 
-Spring Framework, usertype, validation-api, Querydsl, ws-commons-util, nimbus-jwt, gluecose-test-vectors, 
+Spring Framework, usertype, validation-api, Querydsl, ws-commons-util, nimbus-jwt, gluecose-test-vectors, caliptra-dpe, 
 xml-apis, log4cplus, SnakeYAML, spring-data-jpa-datatables, xunit, serilog, veraison-corim, 
 Serilog.Settings.Configuration, Serilog.Sinks.Console, and Serilog.Sinks.File.
 

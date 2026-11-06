@@ -70,6 +70,10 @@ public class IDevIDCertificate extends Certificate {
     @Transient
     private transient DiceCertificateInfo diceCertificateInfo;
 
+    /** A decoding error retained for inspection. */
+    @Transient
+    private transient String diceParsingError;
+
     /**
      * Corresponds to the hwType field found in a Hardware Module Name (if present).
      */
@@ -177,7 +181,14 @@ public class IDevIDCertificate extends Certificate {
      */
     @PostLoad
     private void parseTransientFields() throws IOException {
-        this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
+        this.diceCertificateInfo = null;
+        this.diceParsingError = null;
+        try {
+            this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
+        } catch (IOException e) {
+            this.diceParsingError = e.getMessage();
+            log.warn("Cannot decode IDevID DICE information", e);
+        }
         this.subjectAltName = getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
     }
 
@@ -187,9 +198,7 @@ public class IDevIDCertificate extends Certificate {
      * @throws IOException if a problem is encountered during parsing
      */
     private void parseIDevIDCertificate() throws IOException {
-
-        this.subjectAltName =
-                getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
+        parseTransientFields();
 
         if (this.subjectAltName != null) {
 
