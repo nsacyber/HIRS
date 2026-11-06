@@ -1570,12 +1570,13 @@
                             </div>
                         </div>
                     </th:block>
+                </th:block> <!-- Close certificate of type 'idevid' -->
                     <!-- Begin DICE Certificate Information -->
                     <th:block th:if="${not #strings.isEmpty(initialData.get('diceProfileType'))}">
                         <div class="certrow">
                             <div class="col-md-1 col-md-offset-1">
                                 <span class="colHeader help-text"
-                                      title="DICE certficate information as defined in the TCG specification &quot;DICE Certificate Profiles&quot;.">
+                                      title="DICE certificate purposes and measurement evidence from TCG DICE extensions.">
                                     DICE Certificate Info
                                 </span>
                             </div>
@@ -1613,11 +1614,25 @@
                                         )}"></span>
                                         </td>
                                     </tr>
+                                    <tr th:if="${not #strings.isEmpty(initialData.get('diceTcbInfo'))}">
+                                        <th>DICE TCB Measurements</th>
+                                        <td>
+                                            <p><span th:text="${initialData.get('diceTcbInfoCount')}"></span>
+                                                record(s). Decoded evidence; measurement appraisal has not been performed.</p>
+                                            <pre class="mb-0" id="diceTcbInfo"
+                                                 style="white-space: pre-wrap; overflow-wrap: anywhere;"
+                                                 th:text="${initialData.get('diceTcbInfo')}"></pre>
+                                        </td>
+                                    </tr>
                                 </table>
                             </div>
                         </div>
                     </th:block> <!-- Close DICE Certificate Information -->
-                </th:block> <!-- Close certificate of type 'idevid' -->
+                <div class="certrow" th:if="${not #strings.isEmpty(initialData.get('diceParsingError'))}">
+                    <div class="col-md-1 col-md-offset-1"><span class="colHeader">DICE Evidence</span></div>
+                    <div class="col col-md-8 text-danger" id="diceParsingError"
+                         th:text="${initialData.get('diceParsingError')}"></div>
+                </div>
             </th:block>
         </div> <!-- Close id="certificate-details-page" -->
     </section> <!-- Close section layout -->

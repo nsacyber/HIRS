@@ -121,7 +121,7 @@ public class CoswidBuilder extends Coswid {
             addTagId(getTagId(), out);
             addStringAttribute(getTagVersion(), CoswidItems.TAG_VERSION_INT, out);
             addBooleanAttribute(isPatch(), CoswidItems.PATCH_INT, out);
-            addBooleanAttribute(isSupplemental(), CoswidItems.PATCH_INT, out);
+            addBooleanAttribute(isSupplemental(), CoswidItems.SUPPLEMENTAL_INT, out);
             addBooleanAttribute(isCorpus(), CoswidItems.CORPUS_INT, out);
             // Entity - Create array and add Entity defined attributes
             cborGen.writeFieldId(CoswidItems.ENTITY_INT);
@@ -147,15 +147,26 @@ public class CoswidBuilder extends Coswid {
             addStringAttribute(getProduct(), CoswidItems.PRODUCT_INT, out);
             // Meta - Coswid defined Meta Values
             addStringAttribute(getPersistentId(), CoswidItems.PERSISTENT_ID_INT, out);
-            addStringAttribute(getDescription(), CoswidItems.PERSISTENT_ID_INT, out);
+            addStringAttribute(getDescription(), CoswidItems.DESCRIPTION_INT, out);
             addStringAttribute(getProductFamily(), CoswidItems.PRODUCT_FAMILY_INT, out);
             addStringAttribute(getSummary(), CoswidItems.SUMMARY_INT, out);
+            writeSoftwareMetaExtensions(out);
             cborGen.writeEndObject();
             cborGen.flush();
         } catch (IOException e) {
             throw new RuntimeException("Error building CoSwid Object: " + e.getMessage());
         }
         return out;
+    }
+
+    /**
+     * Hook for subclasses to append entries to the software-meta map
+     * ($$software-meta-extension socket). Called with the software-meta object still open.
+     *
+     * @param out target stresm
+     */
+    protected void writeSoftwareMetaExtensions(final ByteArrayOutputStream out) {
+
     }
 
     /**

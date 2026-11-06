@@ -31,7 +31,7 @@ public class TcgCompRimCoswid extends Coswid {
     protected String crimComponentManufacturer = null;
     protected static final String CRIM_COMPONENT_MANUFACTURER_STR = "component-manufacturer-str";
     protected static final int CRIM_COMPONENT_MANUFACTURER_INT = 73;
-    protected String crimComponentManufacturerID = null;
+    protected String crimComponentManufacturerId = null;
     protected static final String CRIM_COMPONENT_MANUFACTURER_ID_STR = "component-manufacturer-id";
     protected static final int CRIM_COMPONENT_MANUFACTURER_ID_INT = 74;
 

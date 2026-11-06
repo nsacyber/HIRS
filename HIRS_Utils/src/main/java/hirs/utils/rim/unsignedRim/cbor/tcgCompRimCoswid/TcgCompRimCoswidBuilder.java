@@ -30,7 +30,7 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
         tcRim.setCrimBindingSpec(config.getBindingSpec());
         tcRim.setCrimBindingSpecVersion(config.getBindingSpecVersion());
         tcRim.setCrimComponentManufacturer(config.getComponentManufacturerStr());
-        tcRim.setCrimComponentManufacturerID(config.getComponentManufacturerID());
+        tcRim.setCrimComponentManufacturerId(config.getComponentManufacturerID());
         tcRim.setCrimPayloadType(config.getPayloadType());
         tcRim.setCrimSpdmMeasurementBlock(config.getSpdmMeasurementBlock());
         tcRim.setCrimSpdmMeasurementBlockIndex(config.getSpdmMeasurementBlockIndex());
@@ -57,24 +57,29 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
         }
     }
 
-    /**
-     * Creates a TCG Component RIM Coswid object.
-     *
-     * @param out ByteArrayOutputStream to wite the object to
-     */
-    public void initTcgRim(final ByteArrayOutputStream out) {
-        initCoswid(out); // Add Coswid defined fields
-        // Meta - add TCG Component RIM defined fields
+    @Override
+    protected void writeSoftwareMetaExtensions(final ByteArrayOutputStream out) {
+
         addStringAttribute(tcRim.getCrimBindingSpec(),
                 TcgCompRimCoswid.CRIM_BINDING_SPEC_INT, out);
         addStringAttribute(tcRim.getCrimBindingSpecVersion(),
                 TcgCompRimCoswid.CRIM_BINDING_SPEC_VERSION_INT, out);
-        addStringAttribute(tcRim.getCrimComponentManufacturer(),
-                TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_INT, out);
-        addStringAttribute(tcRim.getCrimComponentManufacturerID(),
-                TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_ID_INT, out);
         addStringAttribute(tcRim.getCrimPayloadType(),
                 TcgCompRimCoswid.CRIM_PAYLOAD_TYPE_INT, out);
+        addStringAttribute(tcRim.getCrimComponentManufacturer(),
+                TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_INT, out);
+        addStringAttribute(tcRim.getCrimComponentManufacturerId(),
+                TcgCompRimCoswid.CRIM_COMPONENT_MANUFACTURER_ID_INT, out);
+    }
+
+    /**
+     * Creates a TCG Component RIM Coswid object.
+     *
+     * @param out ByteArrayOutputStream to write the object to
+     */
+    public void initTcgRim(final ByteArrayOutputStream out) {
+        initCoswid(out); // Add Coswid defined fields; TCG software-meta extensions via writeSoftwareMetaExtensions()
+        // Add SPDM TCG Component RIM defined fields
         addStringAttribute(tcRim.getCrimSpdmMeasurementBlock(),
                 TcgCompRimCoswid.CRIM_SPDM_MEASUREMENT_BLOCK_INT, out);
         addStringAttribute(tcRim.getCrimSpdmMeasurementBlockIndex(),

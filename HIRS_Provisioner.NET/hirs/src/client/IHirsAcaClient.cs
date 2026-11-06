@@ -1,11 +1,13 @@
 ﻿using Hirs.Pb;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace hirs {
     public interface IHirsAcaClient {
+        /// <summary>
+        /// Determines if the ACA is reachable.
+        /// </summary>
+        /// <returns>True if reachable.</returns>
+        Task<bool> IsReachable();
+        
         /// <summary>
         /// Send the <see cref="IdentityClaim"/> to the ACA. The claim is delivered
         /// asynchronously to the ACA. However, the client will wait for the response.
@@ -37,11 +39,14 @@ namespace hirs {
         /// encoded in DER or PEM.</param>
         /// <param name="paccoroutput">Platform Manifest in a JSON format.</param>
         /// <param name="ldevidPublicArea">The public LDevID retrieved as a TPM2B_PUBLIC.</param>
+        /// <param name="keyCandidates">Additional key candidates (e.g. a second EK,
+        /// PQC EKs) to attach to the claim alongside the legacy fields above. May be
+        /// null; an unaware ACA safely ignores this additive field.</param>
         /// <returns>An <see cref="IdentityClaim"/> object that can be sent to the ACA.</returns>
         IdentityClaim CreateIdentityClaim(DeviceInfo dv, byte[] akPublicArea, byte[] ekPublicArea,
                                        byte[] endorsementCredential,
                                        List<byte[]> platformCredentials, string paccoroutput,
-                                       byte[] ldevidPublicArea);
+                                       byte[] ldevidPublicArea, List<KeyCandidate> keyCandidates = null);
         /// <summary>
         /// Collect answers to verification requirements regarding a Device into an object that
         /// can be interpreted by the ACA.
