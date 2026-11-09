@@ -1,65 +1,57 @@
 <Project>
-  <Target Name="RenameBeforePublishLinux" BeforeTargets="CreatePackageProperties" Condition="$(RuntimeIdentifier.Contains('linux'))">
-    <PropertyGroup>
-        <SymlinkAppHostInBin Condition="'$(SymlinkAppHostInBin)' == ''">false</SymlinkAppHostInBin> <!-- If true, this will place a symlink in /usr/local/bin/, which is not on $PATH for root by default. We need the symlink in /bin or /sbin -->
-    </PropertyGroup>
-    <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName)" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision" />
-    <Message Text="Renamed linux binary file." Importance="high" />
-    <PropertyGroup>
-      <Prefix>/usr/share/hirs</Prefix>
-      <PostInstallScript>/usr/bin/chmod 644 /usr/share/hirs/appsettings.json; /usr/bin/ln -s /usr/share/hirs/tpm_aca_provision /usr/bin/tpm_aca_provision</PostInstallScript>
-      <PostRemoveScript>rm -f /usr/bin/tpm_aca_provision; rm -rf /usr/share/hirs</PostRemoveScript>
-    </PropertyGroup>
-    <Message Text="Set installed directory prefix to $(PREFIX)." Importance="high" />
-  </Target>
-  <Target Name="RenameBeforePublishWindows" BeforeTargets="SetWixPath" Condition="$(RuntimeIdentifier.Contains('win'))">
-    <Move SourceFiles="$(OUTDIR)publish\$(AssemblyName).exe" DestinationFiles="$(OUTDIR)publish\tpm_aca_provision.exe" />
-    <Message Text="Renamed exe binary file." Importance="high" />
-  </Target>
-  <Target Name="SetWixPath" BeforeTargets="Msi">
-    <PropertyGroup>
-      <_WindowsFipsEnabled>false</_WindowsFipsEnabled>
-      <!--Test if FIPS is enabled on Windows-->
-      <_WindowsFipsEnabled Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([MSBuild]::GetRegistryValue(`HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy`,`Enabled`,`0`))' == '1'">true</_WindowsFipsEnabled>
+  <PropertyGroup>
+    <SetupProductName Condition="'$(SetupProductName)' == ''">$(AssemblyName)</SetupProductName>
+    <SetupProductManufacturer Condition="'$(SetupProductManufacturer)' == ''">HIRS</SetupProductManufacturer>
+    <SetupFeatureId Condition="'$(SetupFeatureId)' == ''">$(AssemblyName)Feature</SetupFeatureId>
+    <SetupFeatureName Condition="'$(SetupFeatureName)' == ''">$(AssemblyName)</SetupFeatureName>
+    <SetupInstallFolderName Condition="'$(SetupInstallFolderName)' == ''">$(AssemblyName)</SetupInstallFolderName>
+    <SetupProductLanguage Condition="'$(SetupProductLanguage)' == ''">1033</SetupProductLanguage>
+    <ProductSourceFilePath>$(MSBuildThisFileDirectory)Resources\Product.wxs</ProductSourceFilePath>
+    <SetupFilePath Condition="'$(SetupFilePath)' == ''">$(TargetDir)$(AssemblyName).$(PackageVersion).msi</SetupFilePath>
+    <WixInstallPath>$(NuGetPackageRoot)wix\3.14.1\tools\</WixInstallPath>
+    <Heat>$(WixInstallPath)heat.exe</Heat>
+    <Candle>$(WixInstallPath)candle.exe</Candle>
+    <Light>$(WixInstallPath)light.exe</Light>
+    <WixIntermediateDirectory>$(MSBuildProjectDirectory)\$(IntermediateOutputPath)wix\</WixIntermediateDirectory>
+    <HarvestSourceFilePath>$(WixIntermediateDirectory)Harvested.wxs</HarvestSourceFilePath>
+    <HarvestObjectFilePath>$(WixIntermediateDirectory)Harvested.wixobj</HarvestObjectFilePath>
+    <ProductObjectFilePath>$(WixIntermediateDirectory)Product.wixobj</ProductObjectFilePath>
+    <_WindowsFipsEnabled>false</_WindowsFipsEnabled>
+    <_WindowsFipsEnabled Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' And '$([MSBuild]::GetRegistryValue(`HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy`,`Enabled`,`0`))' == '1'">true</_WindowsFipsEnabled>
+    <EnableFipsCompliantWix Condition="'$(EnableFipsCompliantWix)' == ''">$(_WindowsFipsEnabled)</EnableFipsCompliantWix>
+    <WixFipsArg Condition="'$(EnableFipsCompliantWix)' == 'true'">-fips</WixFipsArg>
+  </PropertyGroup>
 
-      <EnableFipsCompliantWix Condition="'$(EnableFipsCompliantWix)'==''">$(_WindowsFipsEnabled)</EnableFipsCompliantWix>
-        
-      <ProductSourceFilePath>$(MSBuildThisFileDirectory)\Resources\Product.wxs</ProductSourceFilePath>
-      <WixInstallPath>$(NuGetPackageRoot)wix\3.14.1\tools\</WixInstallPath>
-      <Heat>$(WixInstallPath)heat.exe</Heat>
-      <Candle>$(WixInstallPath)candle.exe</Candle>
-      <Light>$(WixInstallPath)light.exe</Light>
-      <SetupFilePath>$(TargetDir)$(AssemblyName).$(PackageVersion).msi</SetupFilePath>
-      <WixFipsArg Condition="'$(EnableFipsCompliantWix)'=='true'">-fips</WixFipsArg>
-    </PropertyGroup>
-  </Target>
   <Target Name="Msi" DependsOnTargets="Publish">
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(SetupFilePath)'));$(WixIntermediateDirectory)" />
+
+    <Delete Files="$(PublishDir)tpm_aca_provision.exe" />
+    <Move
+      Condition="Exists('$(PublishDir)$(AssemblyName).exe')"
+      SourceFiles="$(PublishDir)$(AssemblyName).exe"
+      DestinationFiles="$(PublishDir)tpm_aca_provision.exe" />
+
     <PropertyGroup>
-      <WixArguments>-nologo -dPublishDir="$(PublishDir)\" -dSetupProductName="$(SetupProductName)" -dSetupProductManufacturer="HIRS" -dSetupFeatureId="$(SetupFeatureId)" -dSetupFeatureName="$(SetupFeatureName)" -dSetupInstallFolderName="$(SetupInstallFolderName)" -dSetupProductVersion="$(Version)" -dSetupProductLanguage="$(SetupProductLanguage)"</WixArguments>
+      <WixArguments>-nologo -dPublishDir=&quot;$(PublishDir)\&quot; -dSetupProductName=&quot;$(SetupProductName)&quot; -dSetupProductManufacturer=&quot;$(SetupProductManufacturer)&quot; -dSetupFeatureId=&quot;$(SetupFeatureId)&quot; -dSetupFeatureName=&quot;$(SetupFeatureName)&quot; -dSetupInstallFolderName=&quot;$(SetupInstallFolderName)&quot; -dSetupProductVersion=&quot;$(Version)&quot; -dSetupProductLanguage=&quot;$(SetupProductLanguage)&quot;</WixArguments>
     </PropertyGroup>
-    <Message Text="Creating msi package $(SetupFilePath)" Importance="high"/>
-    <Exec Command='"$(Heat)" dir "$(PublishDir)\" -nologo -scom -sreg -sfrag -srd -gg -dr INSTALLFOLDER -cg SourceComponentGroup -var var.PublishDir $(WixFipsArg) -o $(HarvestSourceFilePath)'/>
-    <Exec Command='"$(Candle)" $(WixArguments) $(WixFipsArg) "$(HarvestSourceFilePath)" -o "$(HarvestObjectFilePath)"'/>
-    <Exec Command='"$(Candle)" $(WixArguments) $(WixFipsArg) "$(ProductSourceFilePath)" -o "$(ProductObjectFilePath)"'/>
-    <Exec Command='"$(Light)" $(WixArguments) "$(HarvestObjectFilePath)" "$(ProductObjectFilePath)" -o "$(SetupFilePath)"'/>
+
+    <Message Text="Creating msi package $(SetupFilePath)" Importance="high" />
+    <Exec Command="&quot;$(Heat)&quot; dir &quot;$(PublishDir)\&quot; -nologo -scom -sreg -sfrag -srd -gg -dr INSTALLFOLDER -cg SourceComponentGroup -var var.PublishDir $(WixFipsArg) -o &quot;$(HarvestSourceFilePath)&quot;" />
+    <Exec Command="&quot;$(Candle)&quot; $(WixArguments) $(WixFipsArg) &quot;$(HarvestSourceFilePath)&quot; -o &quot;$(HarvestObjectFilePath)&quot;" />
+    <Exec Command="&quot;$(Candle)&quot; $(WixArguments) $(WixFipsArg) &quot;$(ProductSourceFilePath)&quot; -o &quot;$(ProductObjectFilePath)&quot;" />
+    <Exec Command="&quot;$(Light)&quot; $(WixArguments) &quot;$(HarvestObjectFilePath)&quot; &quot;$(ProductObjectFilePath)&quot; -o &quot;$(SetupFilePath)&quot;" />
   </Target>
-  <Target Name="DeletePDB" AfterTargets="RenameBeforePublishLinux;RenameBeforePublishWindows">
+
+  <Target Name="CopyPaccorPluginAssemblies" AfterTargets="Publish">
     <ItemGroup>
-      <PDBToDelete Include="$(PublishDir)*.pdb"/>
-    </ItemGroup>   
-    <Delete Files="@(PDBToDelete)" />
-    <Message Text="Deleted PDB files." Importance="high" />	
-  </Target>
-  <Target Name="CopyFiles" AfterTargets="DeletePDB">
-    <ItemGroup>
-      <PaccorScriptsDll Include="$(OUTDIR)paccor_scripts.dll"/>
-      <PaccorPcieDll Include="$(OUTDIR)Pcie.dll"/>
-      <PaccorSmbiosDll Include="$(OUTDIR)Smbios.dll"/>
-      <PaccorStorageDll Include="$(OUTDIR)Storage.dll"/>
+      <PaccorPluginAssembly Include="$(OutputPath)paccor_scripts.dll" Condition="Exists('$(OutputPath)paccor_scripts.dll')" />
+      <PaccorPluginAssembly Include="$(OutputPath)Pcie.dll" Condition="Exists('$(OutputPath)Pcie.dll')" />
+      <PaccorPluginAssembly Include="$(OutputPath)Smbios.dll" Condition="Exists('$(OutputPath)Smbios.dll')" />
+      <PaccorPluginAssembly Include="$(OutputPath)Storage.dll" Condition="Exists('$(OutputPath)Storage.dll')" />
+      <PublishPdbFile Include="$(PublishDir)*.pdb" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(PaccorScriptsDll);@(PaccorPcieDll);@(PaccorSmbiosDll);@(PaccorStorageDll)"
-      DestinationFolder="$(PublishDir)plugins"
-    />
+    <MakeDir Directories="$(PublishDir)plugins" Condition="'@(PaccorPluginAssembly)' != ''" />
+    <Copy SourceFiles="@(PaccorPluginAssembly)" DestinationFolder="$(PublishDir)plugins" SkipUnchangedFiles="true" />
+    <Delete Files="@(PublishPdbFile)" />
   </Target>
 </Project>

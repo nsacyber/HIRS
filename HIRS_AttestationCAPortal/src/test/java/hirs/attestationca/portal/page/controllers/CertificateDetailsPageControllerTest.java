@@ -6,6 +6,7 @@ import hirs.attestationca.persist.entity.manager.ReferenceManifestRepository;
 import hirs.attestationca.persist.entity.userdefined.Device;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
+import hirs.attestationca.persist.entity.userdefined.certificate.IDevIDCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestationCertificate;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.enums.AppraisalStatus;
@@ -16,6 +17,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MvcResult;
@@ -29,10 +31,12 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 /**
  * Integration tests that test the URL End Points of CertificateDetailsPageController.
@@ -396,6 +400,34 @@ public class CertificateDetailsPageControllerTest extends PageControllerTest {
         assertEquals(endorsementCredential.getIssuer(), initialData.get("issuer"));
         assertEquals(endorsementCredential.getManufacturer(),
                 initialData.get("manufacturer"));
+    }
+
+    /**
+     * Tests DICE evidence (using Calliptra DPE test certificate) after persistence reload, even
+     * though without DICE EKUs.
+     * @throws Exception if import or page rendering fails
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testDiceEvidenceAfterReload() throws Exception {
+        byte[] bytes = new ClassPathResource("dice/caliptra/golden_cert_p384.pem").getContentAsByteArray();
+        IDevIDCertificate certificate = certificateRepository.save(new IDevIDCertificate(bytes));
+        try {
+            MvcResult result = getMockMvc()
+                    .perform(MockMvcRequestBuilders.get(pagePath)
+                            .param("id", certificate.getId().toString())
+                            .param("type", "idevid"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string(containsString("id=\"diceTcbInfo\"")))
+                    .andExpect(content().string(containsString("DICE Extension: Multi TCB Info\n")))
+                    .andExpect(content().string(containsString("Hash Algorithm: SHA-384\n")))
+                    .andReturn();
+            Map<String, String> data = (Map<String, String>) result.getModelAndView().getModel().get("initialData");
+            assertEquals("1", data.get("diceTcbInfoCount"));
+            assertEquals("UNKNOWN", data.get("diceProfileType"));
+        } finally {
+            certificateRepository.delete(certificate);
+        }
     }
 
     /**

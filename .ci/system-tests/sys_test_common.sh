@@ -68,18 +68,9 @@ docker exec -i $aca_container mysql -u root -proot -e "use hirs_db; set foreign_
 
 # Upload Certs to the ACA DB
 uploadTrustedCerts() {
-  # Create EK Cert from IBMTSS Tools
-#  docker exec $tpm2_container sh -c "pushd /ibmtss/utils > /dev/null \
-#                                     && ./createekcert -rsa 2048 -cakey cakey.pem -capwd rrrr -v 1> /dev/null \
-#                                     && popd > /dev/null"
-  # Upload CA Cert from IBMTSS Tools
   echo "Uploading Trust Certificates to ${HIRS_ACA_HOSTNAME}:${HIRS_ACA_PORTAL_PORT}"
-  echo "Uploading the EK Certificate CA(s)..."
-  docker exec -i $tpm2_container /bin/bash -c "curl -k -F 'file=@/ibmtss/utils/certificates/cacert.pem' $SERVER_CACERT_POST" > /dev/null 2>&1
-  echo "...done"
-  # Upload Trusted Certs from HIRS
-  echo "Uploading the Platform Certificate CA(s)..."
-  docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/ca.crt' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
+  echo "Uploading the EK and Platform Certificate CA..."
+  docker exec -i $aca_container /bin/bash -c "curl -k -f -F 'file=@$HIRS_CI_TPM_EK_CA_CERT_FILE' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
   echo "...done"
   echo "Uploading the RIM CA(s)..."
   docker exec -i $aca_container /bin/bash -c "curl -k -F 'file=@$HIRS_CI_REPO_ROOT/.ci/setup/certs/RIMCaCert.pem' https://localhost:${HIRS_ACA_PORTAL_PORT}/$HIRS_ACA_POST_POINT_TRUST" > /dev/null 2>&1
@@ -87,7 +78,7 @@ uploadTrustedCerts() {
   echo "...done"
 }
 
-# provision_tpm2 takes one parameter which is the expected result of the provion: "pass" or "fail"
+# provision_tpm2 takes one parameter which is the expected result of the provision: "pass" or "fail"
 # updates totalTests and failedTests counts
 # provision_tpm2 <expected_results>
 provisionTpm2() {
@@ -118,7 +109,7 @@ provisionTpm2() {
 }
 
 resetTpmForNewTest() {
-  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert"
+  docker exec -i $tpm2_container /bin/bash -c "source $HIRS_CI_REPO_ROOT/.ci/setup/container/tpm2_common.sh; startFreshTpmServer -f; startupTpm; installEkCert; removeSavedProvisionerKeys"
 }
 
 # Places platform cert(s) held in the test folder(s) in the provisioners tcg folder
