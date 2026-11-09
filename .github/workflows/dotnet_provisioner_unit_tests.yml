@@ -28,7 +28,7 @@ jobs:
         with:
           submodules: true
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Remove problem matcher for now
@@ -57,11 +57,11 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
       - name: Set up JDK for Gradle
@@ -70,7 +70,7 @@ jobs:
           distribution: 'temurin'
           java-version: '25'
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
       - name: Build packages
         run: .\gradlew.bat -p HIRS_Provisioner.NET clean release
       - name: Artifacts SHA256
@@ -79,7 +79,7 @@ jobs:
           sha256sum HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
           ls -go --full-time HIRS_Provisioner.NET/build/distributions/*.{deb,rpm,msi} 2> /dev/null
       - name: Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: HIRS_Provisioner.NET-packages
           retention-days: 5
