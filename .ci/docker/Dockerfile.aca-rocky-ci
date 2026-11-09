@@ -56,6 +56,16 @@ ENV HIRS_DNF_TSS_COMPILE="autoconf automake libtool"
 # Download and install all dependencies at one time
 RUN dnf -y install $(echo "$HIRS_DNF_OS_SETUP") $(echo "$HIRS_DNF_OS_TOOLS") $(echo "$HIRS_DNF_ACA_COMPILE") $(echo "$HIRS_DNF_ACA_RUN") $(echo "$HIRS_DNF_TPM_COMPILE") $(echo "$HIRS_DNF_TSS_COMPILE")
 
+# Install OpenSSL 3.5
+ARG OPENSSL_VERSION=3.5.4
+RUN curl -fsSL https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz \
+    | tar xz -C /tmp && \
+    cd /tmp/openssl-${OPENSSL_VERSION} && \
+    ./Configure --prefix=/opt/openssl-3.5 --libdir=lib64 && \
+    make -j$(nproc) && \
+    make install_sw
+ENV PATH="/opt/openssl-3.5/bin:${PATH}"
+
 # Build IBM TPM Simulator
 RUN git clone https://github.com/kgoldman/ibmswtpm2 /ibmswtpm2
 WORKDIR /ibmswtpm2/src
