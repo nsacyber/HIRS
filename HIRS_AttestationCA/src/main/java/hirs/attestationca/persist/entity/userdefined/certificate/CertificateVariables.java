@@ -33,7 +33,7 @@ public final class CertificateVariables {
     /**
      * Maximum certificate length in bytes.
      */
-    public static final int MAX_CERT_LENGTH_BYTES = 2048;
+    public static final int MAX_CERT_LENGTH_BYTES = 8192;
 
     /**
      * Maximum numeric precision allowed.

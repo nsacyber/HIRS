@@ -79,13 +79,17 @@ public final class TpmPublicHelper {
 
         skipAuthPolicy(in); // Skip authPolicy
 
-        return switch (alg) {
+        ParsedTpmPublic parsed = switch (alg) {
             case RSA -> parsePublicAreaRsa(publicArea, nameAlg, in);
             case ECC -> parsePublicAreaEcc(publicArea, nameAlg, in);
             case MLDSA -> parsePublicAreaMlDsa(publicArea, nameAlg, in);
             case MLKEM -> parsePublicAreaMlKem(publicArea, nameAlg, in);
             default -> throw new UnsupportedOperationException("Unsupported or invalid public key algorithm");
         };
+        if (in.read() != -1) {
+            throw new IOException("Unexpected data after TPMT_PUBLIC");
+        }
+        return parsed;
     }
 
     /**
@@ -347,14 +351,14 @@ public final class TpmPublicHelper {
     }
 
     private static void skipAuthPolicy(final DataInputStream in) throws IOException {
-        int size = in.readShort();
+        int size = in.readUnsignedShort();
         if (size != 0) { // Empty auth policy if zero
             in.skipNBytes(size);
         }
     }
 
     private static byte[] readTpm2b(final DataInputStream in) throws IOException {
-        int size = in.readShort();
+        int size = in.readUnsignedShort();
         byte[] result = new byte[size];
         in.readFully(result);
         return result;
