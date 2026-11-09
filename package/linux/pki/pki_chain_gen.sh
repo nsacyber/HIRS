@@ -242,28 +242,6 @@ create_cert () {
                   -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
           fi
       fi
-   if [ "$ASYM_ALG" == "mldsa" ]; then
-       openssl ca -config ca.conf \
-           -keyfile "$ISSUER_KEY" \
-           -cert "$ISSUER_CERT" \
-           -extensions "$EXTENSION" \
-           -out "$CERT_PATH".pem \
-           -in "$CERT_PATH".csr \
-           -passin pass:"$PASS" \
-           -batch \
-           -notext >> "$LOG_FILE" 2>&1
-   else
-       openssl ca -config ca.conf \
-           -keyfile "$ISSUER_KEY" \
-           -md "$HASH_ALG" \
-           -cert "$ISSUER_CERT" \
-           -extensions "$EXTENSION" \
-           -out "$CERT_PATH".pem \
-           -in "$CERT_PATH".csr \
-           -passin pass:"$PASS" \
-           -batch \
-           -notext >> "$LOG_FILE" 2>&1
-   fi
    # Increment the cert serial number
    SERIAL=$(awk -F',' '{printf("%s\t%d\n",$1,$2+1)}' ./ca/serial.txt)
    echo "Cert Serial Number = $SERIAL" >> "$LOG_FILE";
@@ -304,24 +282,39 @@ create_cert_chain () {
 
    # Create a DB Sever Cert for TLS use
    create_cert "$DB_SERVER" "$PKI_CA3" "$DB_SRV_DN" "server_extensions"
-   
+
    # Create a ACA Sever Cert for TLS use
    create_cert "$DB_CLIENT" "$PKI_CA3" "$DB_CLIENT_DN" "server_extensions"
-   
-   # Create Cert trust store by adding the Intermediate and root certs 
+
+   # Create Cert trust store by adding the Intermediate and root certs
    cat "$PKI_CA1.pem" "$PKI_CA2.pem" "$PKI_CA3.pem" "$PKI_INT.pem" "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
 
-   # echo "Checking signer cert using tust store..." 
+   # echo "Checking signer cert using tust store..."
    openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem | tee -a "$LOG_FILE"
 
-   # Make JKS files for the mysql DB connector. P12 first then JKS...
-   openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key \
-        -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC \
-        -passin pass:$PASS -passout pass:$PASS \
-        -name "mysqlclientkey" -out $DB_CLIENT.p12 >> "$LOG_FILE" 2>&1
+   # Make JKS files for the MySQL DB connector.
+   # Only generate these for algorithms supported by the configured JDBC setup.
+   if [ "$ASYM_ALG" != "mldsa" ]; then
+       openssl pkcs12 -export \
+           -in "$DB_CLIENT.pem" \
+           -inkey "$DB_CLIENT.key" \
+           -aes256 -macalg SHA256 \
+           -keypbe AES-256-CBC -certpbe AES-256-CBC \
+           -passin "pass:$PASS" \
+           -passout "pass:$PASS" \
+           -name "mysqlclientkey" \
+           -out "$DB_CLIENT.p12" >> "$LOG_FILE" 2>&1 || return 1
 
-   keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype PKCS12 \
-         -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS >> "$LOG_FILE" 2>&1
+       keytool -importkeystore \
+           -srckeystore "$DB_CLIENT.p12" \
+           -srcstoretype PKCS12 \
+           -srcstorepass "$PASS" \
+           -destkeystore "$DB_CLIENT.jks" \
+           -deststoretype JKS \
+           -deststorepass "$PASS" >> "$LOG_FILE" 2>&1 || return 1
+   fi
+
+   return 0
 }
 
 # Needed for older versions of openssl
