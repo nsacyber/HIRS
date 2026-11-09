@@ -26,7 +26,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v7
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Install packaging dependencies
         run: |
