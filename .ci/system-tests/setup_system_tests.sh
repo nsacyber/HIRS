@@ -18,9 +18,9 @@ docker compose -f ./.ci/docker/docker-compose-system-test.yml up --pull "always"
 docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                   && echo 'ACA Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
                                   && echo 'ACA Container Current Commit: ' && git rev-parse --short HEAD \
-                                  && /hirs/package/linux/aca/aca_setup.sh --unattended 1> /dev/null \
-                                  && /tmp/hirs_add_aca_tls_path_to_os.sh 1> /dev/null \
-                                  && /hirs/package/linux/aca/aca_bootRun.sh -d 1> /dev/null" &
+                                  && /hirs/package/linux/aca/aca_setup.sh --unattended \
+                                  && /tmp/hirs_add_aca_tls_path_to_os.sh \
+                                  && /hirs/package/linux/aca/aca_bootRun.sh -d
 
 # Switching to current/desired branch in Provisioner Container
 docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
