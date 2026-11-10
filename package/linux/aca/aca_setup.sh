@@ -129,7 +129,7 @@ fi
 #   else
 #   echo "Upgrade detected $1"
 #fi
-
+ 
 # Check for existing installation folders and exist if found
 if [ -z "$ARG_UNATTEND" ]; then
   if [ -d "/etc/hirs" ]; then
