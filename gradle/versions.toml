@@ -1,6 +1,6 @@
 [versions]
 authleteCborVersion = "1.21"
-bouncyCastleVersion = "1.84"
+bouncyCastleVersion = "1.85"
 commonsCodecVersion = "1.22.0"
 commonsIoVersion = "2.22.0"
 commonsLang3Version = "3.21.0"
