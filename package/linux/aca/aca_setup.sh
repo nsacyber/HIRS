@@ -129,7 +129,13 @@ fi
 #   else
 #   echo "Upgrade detected $1"
 #fi
- 
+
+# Check for existing ACA rpm currently installed
+if rpm -qa --qf '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' | grep -qE '^HIRS_AttestationCA-.*\.x86_64$'; then
+  echo "HIRS_AttestationCA RPM is already installed, aborting install."
+  exit 1
+fi
+
 # Check for existing installation folders and exist if found
 if [ -z "$ARG_UNATTEND" ]; then
   if [ -d "/etc/hirs" ]; then
