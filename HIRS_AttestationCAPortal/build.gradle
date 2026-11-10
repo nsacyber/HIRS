@@ -28,7 +28,6 @@ dependencies {
 
     implementation libs.bouncycastle
     implementation libs.commons.lang3
-    implementation libs.httpclient
     implementation libs.jakarta.persistence.api
     implementation libs.mariadb.java.client
     // CertificateStringMapBuilder accesses the PCI database exposed by PciIds.DB.

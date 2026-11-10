@@ -5,6 +5,7 @@ import hirs.utils.specLookups.TcgAlgRegLookups;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -14,10 +15,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 
+
 import static hirs.utils.tpm.eventlog.TCGEventLog.PCR_COUNT;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @Slf4j
@@ -77,20 +76,20 @@ public class TCGEventLogTest {
                     log.error("\ntestTCGEventLogProcessorParser error with PCR " + i);
                 }
             }
-            assertTrue(testPass);
+            Assertions.assertTrue(testPass);
 
             // Test 2 get an individual PCR
             final int pcrIndex = 3;
             String pcr3 = evlog.getExpectedPCRValue(pcrIndex);
-            assertThat(pcrFromLog[pcrIndex], equalTo(pcr3));
+            Assertions.assertEquals(pcrFromLog[pcrIndex], pcr3);
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgName(), equalTo(algStr));
+            Assertions.assertEquals(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgName(), algStr);
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgId(), equalTo(id));
+            Assertions.assertEquals(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgId(), id);
 
             log.debug("OK. Parsing of a Crypto Agile Format Success");
         } catch (Throwable throwable) {
@@ -129,19 +128,19 @@ public class TCGEventLogTest {
                     log.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
                 }
             }
-            assertTrue(testPass);
+            Assertions.assertTrue(testPass);
 
             // Test 2 get an individual PCR
             String pcr0 = evlog.getExpectedPCRValue(0);
-            assertThat(pcrFromLog[0], equalTo(pcr0));
+            Assertions.assertEquals(pcrFromLog[0], pcr0);
 
             // Test 3 check the Algorithm String Identifier used in the log
             String algStr = evlog.getStrongestEvLogHashAlgName();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName(), equalTo(algStr));
+            Assertions.assertEquals(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgName(), algStr);
 
             // Test 4 check the Algorithm # Identifier used in the log
             int id = evlog.getStrongestEvLogHashAlgId();
-            assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgId(), equalTo(id));
+            Assertions.assertEquals(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgId(), id);
 
             log.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
         } catch (Throwable throwable) {
