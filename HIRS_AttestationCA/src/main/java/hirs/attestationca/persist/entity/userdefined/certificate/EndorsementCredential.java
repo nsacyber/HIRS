@@ -13,7 +13,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -63,7 +63,7 @@ import java.util.Set;
  * <p>
  * trustedcomputinggroup.org/wp-content/uploads/Credential_Profiles_V1.2_Level2_Revision8.pdf
  */
-@Log4j2
+@Slf4j
 @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
         justification = "property credentialType is guaranteed to always be non-null/initialized. Warning"
                 + "stems from auto-generated lombok equals and hashcode method doing redundant null checks.")

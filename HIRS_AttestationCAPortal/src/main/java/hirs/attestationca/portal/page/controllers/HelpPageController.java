@@ -9,7 +9,7 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,7 +37,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/help")
-@Log4j2
+@Slf4j
 public class HelpPageController extends PageController<NoPageParams> {
     private final HelpPageService helpPageService;
 

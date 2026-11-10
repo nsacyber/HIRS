@@ -16,7 +16,7 @@ import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +49,7 @@ import java.util.zip.ZipOutputStream;
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/certificate-request/platform-certificates")
-@Log4j2
+@Slf4j
 public class PlatformCertificatePageController extends PageController<NoPageParams> {
     private static final int SUPPORTED_TCG_CREDENTIAL_MAJOR_VERSION = 1; // Currently do not support V2.X certificates
     private final CertificatePageService certificatePageService;

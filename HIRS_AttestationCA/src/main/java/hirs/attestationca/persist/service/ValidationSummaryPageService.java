@@ -17,7 +17,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -39,7 +39,7 @@ import java.util.Set;
  * Service class responsible for encapsulating all business logic related to the Validation Summary Page.
  */
 @Service
-@Log4j2
+@Slf4j
 public class ValidationSummaryPageService {
     private final SupplyChainValidationSummaryRepository supplyChainValidationSummaryRepository;
     private final EntityManager entityManager;

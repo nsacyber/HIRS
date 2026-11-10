@@ -23,7 +23,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -53,8 +53,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * A service layer class responsible for encapsulating all business logic related to all the Certificate pages.
  */
-@Log4j2
 @Service
+@Slf4j
 public class CertificatePageService {
     private final CertificateRepository certificateRepository;
     private final ComponentResultRepository componentResultRepository;

@@ -4,7 +4,7 @@ import hirs.attestationca.persist.service.ReferenceManifestDetailsPageService;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.persist.dto.PageMessages;
 import hirs.attestationca.portal.page.params.ReferenceManifestDetailsPageParams;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +19,7 @@ import java.util.UUID;
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-details")
-@Log4j2
+@Slf4j
 public class ReferenceManifestDetailsPageController extends PageController<ReferenceManifestDetailsPageParams> {
     private final ReferenceManifestDetailsPageService referenceManifestDetailsPageService;
 
@@ -67,7 +67,7 @@ public class ReferenceManifestDetailsPageController extends PageController<Refer
                 messages.addErrorMessage(uuidError);
                 log.error(uuidError, iaEx);
             } catch (Exception ex) {
-                log.error(ex);
+                log.error("Unable to parse reference manifest identifier", ex);
             }
 
             if (data.isEmpty()) {

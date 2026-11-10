@@ -17,7 +17,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.C
 import hirs.attestationca.persist.exceptions.CertificateProcessingException;
 import hirs.attestationca.persist.exceptions.DBManagerException;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ import java.util.List;
  * and assists in generating credentials, including the {@link IssuedAttestationCertificate}.
  */
 @Service
-@Log4j2
+@Slf4j
 public class CredentialManagementService {
     private final PolicyRepository policyRepository;
     private final CertificateRepository certificateRepository;

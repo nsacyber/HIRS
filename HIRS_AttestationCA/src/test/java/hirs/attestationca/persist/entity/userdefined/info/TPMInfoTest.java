@@ -1,9 +1,8 @@
 package hirs.attestationca.persist.entity.userdefined.info;
 
 import hirs.attestationca.persist.entity.userdefined.AbstractUserdefinedEntityTest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import static hirs.utils.enums.DeviceInfoEnums.NOT_SPECIFIED;
@@ -15,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * TPMInfoTest is a unit test class for TPMInfo.
  */
+@Slf4j
 public class TPMInfoTest extends AbstractUserdefinedEntityTest {
 
     private static final String TPM_MAKE = "test tpmMake";
@@ -25,8 +25,6 @@ public class TPMInfoTest extends AbstractUserdefinedEntityTest {
     private static final short VERSION_MINOR = 2;
     private static final short VERSION_REV_MAJOR = 3;
     private static final short VERSION_REV_MINOR = 4;
-
-    private static final Logger LOGGER = LogManager.getLogger(TPMInfoTest.class);
 
     /**
      * Tests instantiation and getters of a TPMInfo object.

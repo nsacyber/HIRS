@@ -2,7 +2,7 @@ package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.manager.EndorsementCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +17,7 @@ import java.util.List;
  * Service class responsible for encapsulating all business logic related to the Endorsement Certificates Page.
  */
 @Service
-@Log4j2
+@Slf4j
 public class EndorsementCertificatePageService {
     private final EndorsementCertificateRepository endorsementCertificateRepository;
 

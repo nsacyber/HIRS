@@ -26,8 +26,8 @@ import hirs.utils.SwidResource;
 import hirs.utils.enums.DeviceInfoEnums;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
-import io.micrometer.common.util.StringUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  * update the {@link Device} and {@link ReferenceManifest} objects.
  */
 @Service
-@Log4j2
+@Slf4j
 public class DeviceInfoProcessorService {
     private static final int MAC_BYTES = 6;
 
@@ -671,7 +671,7 @@ public class DeviceInfoProcessorService {
                     }
                 }
             } catch (IOException ex) {
-                log.error(ex);
+                log.error("Unable to process device information", ex);
             }
         }
     }
@@ -735,7 +735,7 @@ public class DeviceInfoProcessorService {
                         provisionedDeviceInfo.getHw().getProductName());
             }
         } catch (Exception exception) {
-            log.error(exception);
+            log.error("Unable to process device information", exception);
         }
     }
 }

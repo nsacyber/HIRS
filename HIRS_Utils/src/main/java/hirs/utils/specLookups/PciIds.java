@@ -9,7 +9,7 @@ import com.github.marandus.pciid.service.PciIdsDatabase;
 import com.google.common.base.Strings;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1UTF8String;
 import org.bouncycastle.asn1.DERUTF8String;
 
@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Provide Java access to PCI IDs.
  */
-@Log4j2
+@Slf4j
 public final class PciIds {
 
     /**

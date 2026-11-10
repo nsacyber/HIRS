@@ -2,7 +2,7 @@ package hirs.attestationca.persist.util;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateVariables;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.util.encoders.Base64;
@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Helper class that provides various utility methods for handling credential-related tasks.
  */
-@Log4j2
+@Slf4j
 public final class CredentialHelper {
 
     /**

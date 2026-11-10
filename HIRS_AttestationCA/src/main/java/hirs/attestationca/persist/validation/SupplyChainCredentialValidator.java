@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Base class used for supply chain credential validators. This class provides common functionality and
  * structure for validators
  */
-@Log4j2
+@Slf4j
 public class SupplyChainCredentialValidator {
 
     /**

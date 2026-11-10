@@ -16,16 +16,6 @@ import com.authlete.cose.COSEUnprotectedHeader;
 import com.authlete.cose.COSEUnprotectedHeaderBuilder;
 import com.authlete.cose.SigStructure;
 import com.authlete.cose.SigStructureBuilder;
-import hirs.utils.signature.SignatureFormat;
-import hirs.utils.signature.SignatureHelper;
-import hirs.utils.signature.cose.Cbor.CborContentTypes;
-import hirs.utils.signature.cose.Cbor.CborTagProcessor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -35,7 +25,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
+import hirs.utils.signature.SignatureFormat;
+import hirs.utils.signature.SignatureHelper;
+import hirs.utils.signature.cose.Cbor.CborContentTypes;
+import hirs.utils.signature.cose.Cbor.CborTagProcessor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Class for implementing rfc rfc9052 CBOR Object Signing and Encryption (COSE)
@@ -59,8 +56,8 @@ import java.util.Objects;
  * This is the "signature" field of the COSE_Signature or COSE_Sign1 structure.
  */
 @NoArgsConstructor
+@Slf4j
 public class CoseSignature implements SignatureFormat {
-    private static final Logger LOGGER = LogManager.getLogger(CoseSignature.class);
     // COSE Generic Header
     @Setter
     @Getter
@@ -265,7 +262,7 @@ public class CoseSignature implements SignatureFormat {
             } else if (uheader.getKid() != null) {
                 keyId = uheader.getKid();
             } else {
-                LOGGER.warn("Key ID not found in COSE header");
+                log.warn("Key ID not found in COSE header");
             }
             status = "retrieving signature from COSE object";
             signature = signOne.getSignature().getValue();
@@ -374,7 +371,7 @@ public class CoseSignature implements SignatureFormat {
                     validated = true;
                 }
             } catch (Exception e) {
-                LOGGER.warn("Embedded thumbprint failed to validate");
+                log.warn("Embedded thumbprint failed to validate");
             }
         }
         return validated;

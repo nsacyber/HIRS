@@ -1,3 +1,7 @@
+plugins {
+    id 'java-library'
+}
+
 // Get version from main project gradle
 def packVersion = properties.get("packageVersion")
 def jarVersion = properties.get("jarVersion")
@@ -26,7 +30,8 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.spring.boot.starter.log4j2
+    // StringValidator exposes Logger in its public API; consumers choose a provider.
+    api libs.slf4j.api
     implementation libs.minimal.json
     implementation libs.nimbus.jwt
     implementation libs.pci
@@ -34,12 +39,13 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
-    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.hamcrest
+    testImplementation libs.mockito.core
     testImplementation libs.junit.jupiter.api
     testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
 
-    testImplementation project(path: ':HIRS_AttestationCA')
+    testRuntimeOnly libs.slf4j.simple
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

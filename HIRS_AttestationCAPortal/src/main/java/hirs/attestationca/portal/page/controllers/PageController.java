@@ -3,7 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.PageParams;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @param <P> PageParams class used by the subclass.
  */
-@Log4j2
+@Slf4j
 @AllArgsConstructor
 public abstract class PageController<P extends PageParams> {
 

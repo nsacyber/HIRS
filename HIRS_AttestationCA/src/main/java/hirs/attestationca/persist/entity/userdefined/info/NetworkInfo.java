@@ -6,7 +6,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.xml.bind.annotation.XmlElement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -14,7 +14,7 @@ import java.net.InetAddress;
 /**
  * This class is used to represent the network info of a device.
  */
-@Log4j2
+@Slf4j
 @Embeddable
 @EqualsAndHashCode
 public class NetworkInfo implements Serializable {

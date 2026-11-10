@@ -15,9 +15,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -51,7 +51,7 @@ import java.util.Map;
  */
 @Getter
 @Setter
-@Log4j2
+@Slf4j
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -170,15 +170,15 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
     private String platformClass = null;
 
     @Column(length = MAX_MESSAGE_LENGTH)
-    private String componentFailures = Strings.EMPTY;
+    private String componentFailures = StringUtils.EMPTY;
 
     @Column(length = MAX_MESSAGE_LENGTH)
-    private String componentFailureMessage = Strings.EMPTY;
+    private String componentFailureMessage = StringUtils.EMPTY;
 
     @Transient
     private EndorsementCredential endorsementCredential = null;
 
-    private String platformChainType = Strings.EMPTY;
+    private String platformChainType = StringUtils.EMPTY;
 
     private boolean isDeltaChain = false;
 
@@ -494,7 +494,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
                     .getValue().intValue();
         } catch (IOException ex) {
             log.warn("X509 Credential Version not found.");
-            log.error(ex);
+            log.error("Unable to parse platform credential", ex);
             return Integer.MAX_VALUE;
         }
     }

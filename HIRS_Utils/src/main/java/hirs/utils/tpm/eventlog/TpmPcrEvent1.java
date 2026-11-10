@@ -3,7 +3,7 @@ package hirs.utils.tpm.eventlog;
 import hirs.utils.HexUtils;
 import hirs.utils.specLookups.NistLookups;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
@@ -30,7 +30,7 @@ import java.io.IOException;
  * .   Event header = pcrIndex + eventType + digest + eventSize
  * .   Event content = event[1]
  */
-@Log4j2
+@Slf4j
 public class TpmPcrEvent1 extends TpmPcrEvent {
 
     /**

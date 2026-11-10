@@ -9,11 +9,13 @@ dependencies {
     implementation project(':HIRS_Utils')
     implementation libs.commons.io
     implementation libs.jcommander
+    runtimeOnly libs.slf4j.simple // CLI, not HIRS_Utils, selects its logging provider.
 }
 
 ext.configDir = new File(projectDir, 'config')
 
 jar {
+    dependsOn configurations.runtimeClasspath
     // Keep jar clean:
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

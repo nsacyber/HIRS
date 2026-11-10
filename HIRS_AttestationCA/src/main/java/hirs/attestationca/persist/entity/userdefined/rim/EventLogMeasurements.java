@@ -11,7 +11,7 @@ import jakarta.persistence.Enumerated;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-@Log4j2
+@Slf4j
 @Entity
 public class EventLogMeasurements extends SupportReferenceManifest {
 
@@ -81,7 +81,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
         } catch (IOException exception) {
-            log.error(exception);
+            log.error("Unable to parse event log measurements", exception);
         }
 
         return new String[0];
@@ -98,7 +98,7 @@ public class EventLogMeasurements extends SupportReferenceManifest {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
         } catch (IOException exception) {
-            log.error(exception);
+            log.error("Unable to parse event log measurements", exception);
         }
 
         return new ArrayList<>();

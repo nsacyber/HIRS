@@ -2,9 +2,8 @@ package hirs.utils.tpm.eventlog;
 
 
 import hirs.utils.specLookups.TcgAlgRegLookups;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,14 +20,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
+@Slf4j
 public class TCGEventLogTest {
 
     private static final String DEFAULT_EVENT_LOG = "/tcgeventlog/TpmLog.bin";
     private static final String DEFAULT_EXPECTED_PCRS = "/tcgeventlog/TpmLogExpectedPcrs.txt";
     private static final String SHA1_EVENT_LOG = "/tcgeventlog/TpmLogSHA1.bin";
     private static final String SHA1_EXPECTED_PCRS = "/tcgeventlog/TpmLogSHA1ExpectedPcrs.txt";
-    private static final Logger LOGGER
-            = LogManager.getLogger(TCGEventLogTest.class);
 
     /**
      * Initializes a <code>SessionFactory</code>. The factory is used for an in-memory database that
@@ -36,7 +34,7 @@ public class TCGEventLogTest {
      */
     @BeforeAll
     public static final void setup() {
-        LOGGER.debug("retrieving session factory");
+        log.debug("retrieving session factory");
     }
 
     /**
@@ -44,7 +42,7 @@ public class TCGEventLogTest {
      */
     @AfterAll
     public static final void tearDown() {
-        LOGGER.debug("closing session factory");
+        log.debug("closing session factory");
     }
 
     /**
@@ -57,14 +55,14 @@ public class TCGEventLogTest {
     @Test
     public final void testCryptoAgileTCGEventLog() throws IOException, CertificateException,
             NoSuchAlgorithmException {
-        LOGGER.debug("Testing the parsing of a Crypto Agile formatted TCG Event Log");
+        log.debug("Testing the parsing of a Crypto Agile formatted TCG Event Log");
 
 
         try {
             // setup
-            final InputStream log = this.getClass().getResourceAsStream(DEFAULT_EVENT_LOG);
+            final InputStream inlog = this.getClass().getResourceAsStream(DEFAULT_EVENT_LOG);
             final InputStream pcrs = this.getClass().getResourceAsStream(DEFAULT_EXPECTED_PCRS);
-            final byte[] rawLogBytes = IOUtils.toByteArray(log);
+            final byte[] rawLogBytes = IOUtils.toByteArray(inlog);
             final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
             final String[] pcrFromLog = evlog.getExpectedPCRValues();
             final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
@@ -76,7 +74,7 @@ public class TCGEventLogTest {
             for (int i = 0; i < PCR_COUNT; i++) {
                 if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
                     testPass = false;
-                    LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+                    log.error("\ntestTCGEventLogProcessorParser error with PCR " + i);
                 }
             }
             assertTrue(testPass);
@@ -94,7 +92,7 @@ public class TCGEventLogTest {
             int id = evlog.getStrongestEvLogHashAlgId();
             assertThat(TcgAlgRegLookups.TcgHashAlg.SHA256.getAlgId(), equalTo(id));
 
-            LOGGER.debug("OK. Parsing of a Crypto Agile Format Success");
+            log.debug("OK. Parsing of a Crypto Agile Format Success");
         } catch (Throwable throwable) {
             throw throwable;
         }
@@ -110,13 +108,13 @@ public class TCGEventLogTest {
     @Test
     public final void testSHA1TCGEventLog() throws IOException, CertificateException,
             NoSuchAlgorithmException {
-        LOGGER.debug("Testing the parsing of a SHA1 formated TCG Event Log");
+        log.debug("Testing the parsing of a SHA1 formated TCG Event Log");
 
         try {
             // setup
-            final InputStream log = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
+            final InputStream inlog = this.getClass().getResourceAsStream(SHA1_EVENT_LOG);
             final InputStream pcrs = this.getClass().getResourceAsStream(SHA1_EXPECTED_PCRS);
-            final byte[] rawLogBytes = IOUtils.toByteArray(log);
+            final byte[] rawLogBytes = IOUtils.toByteArray(inlog);
             final TCGEventLog evlog = new TCGEventLog(rawLogBytes, false, false, false);
             final String[] pcrFromLog = evlog.getExpectedPCRValues();
             final Object[] pcrObj = IOUtils.readLines(pcrs, "UTF-8").toArray();
@@ -128,7 +126,7 @@ public class TCGEventLogTest {
             for (int i = 0; i < PCR_COUNT; i++) {
                 if (pcrFromLog[i].compareToIgnoreCase(pcrTxt[i]) != 0) {
                     testPass = false;
-                    LOGGER.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
+                    log.error("\ntestTCGEventLogProcessorParser error with PCR {}", i);
                 }
             }
             assertTrue(testPass);
@@ -145,7 +143,7 @@ public class TCGEventLogTest {
             int id = evlog.getStrongestEvLogHashAlgId();
             assertThat(TcgAlgRegLookups.TcgHashAlg.SHA1.getAlgId(), equalTo(id));
 
-            LOGGER.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
+            log.debug("OK. Parsing of a SHA1 formatted TCG Event Log Success");
         } catch (Throwable throwable) {
             throw throwable;
         }

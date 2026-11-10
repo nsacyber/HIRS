@@ -19,8 +19,8 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.BouncyCastleUtils;
-import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.Level;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.bouncycastle.util.encoders.Hex;
 
 import java.io.IOException;
@@ -41,7 +41,7 @@ import java.util.UUID;
  * Service class responsible for validating platform credentials, endorsement credentials, firmware
  * components and other types of data based on what was set in the {@link PolicySettings}.
  */
-@Log4j2
+@Slf4j
 public final class ValidationService {
 
     /**
@@ -306,7 +306,7 @@ public final class ValidationService {
             aeList.add(archivableEntity);
         }
 
-        log.log(logLevel, message);
+        log.atLevel(logLevel).log(message);
         return new SupplyChainValidation(validationType, result, aeList, message);
     }
 

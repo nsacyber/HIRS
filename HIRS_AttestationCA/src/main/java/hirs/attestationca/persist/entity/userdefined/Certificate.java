@@ -13,7 +13,7 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Transient;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -73,9 +73,9 @@ import java.util.Objects;
  * It stores certain attributes separately from the serialized certificate to enable querying on
  * those attributes.
  */
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@Log4j2
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Slf4j
 public abstract class Certificate extends ArchivableEntity {
 
     /**
@@ -676,7 +676,7 @@ public abstract class Certificate extends ArchivableEntity {
             return getX509Certificate().getVersion() - 1;
         } catch (IOException ex) {
             log.warn("X509 Credential Version not found.");
-            log.error(ex);
+            log.error("Unable to process certificate", ex);
             return Integer.MAX_VALUE;
         }
     }
@@ -703,7 +703,7 @@ public abstract class Certificate extends ArchivableEntity {
                         isIssuer = "";
                     } catch (CertificateException | NoSuchAlgorithmException | InvalidKeyException
                              | NoSuchProviderException | SignatureException e) {
-                        log.error(e);
+                        log.error("Unable to process certificate", e);
                     }
                     break;
                 case ATTRIBUTE_CERTIFICATE:
@@ -718,7 +718,7 @@ public abstract class Certificate extends ArchivableEntity {
                     } catch (NoSuchAlgorithmException
                              | InvalidKeyException
                              | SignatureException sigEx) {
-                        log.error(sigEx);
+                        log.error("Unable to verify certificate signature", sigEx);
                     }
                     break;
                 default:
@@ -838,7 +838,7 @@ public abstract class Certificate extends ArchivableEntity {
                 asn1InputStream = new ASN1InputStream(oct.getOctets());
                 asn1Primitive = asn1InputStream.readObject();
             } catch (IOException ioEx) {
-                log.error(ioEx);
+                log.error("Unable to read certificate information", ioEx);
             } finally {
                 if (asn1InputStream != null) {
                     asn1InputStream.close();
@@ -864,7 +864,7 @@ public abstract class Certificate extends ArchivableEntity {
                         .getInstance(JcaX509ExtensionUtils.parseExtensionValue(authInfoAccess))));
             }
         } catch (IOException ioEx) {
-            log.error(ioEx);
+            log.error("Unable to read certificate information", ioEx);
         }
 
         return sb.toString();

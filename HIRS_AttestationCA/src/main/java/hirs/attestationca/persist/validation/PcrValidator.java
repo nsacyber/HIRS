@@ -9,7 +9,7 @@ import hirs.attestationca.persist.tpm.PcrSelection;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -26,7 +26,7 @@ import static hirs.attestationca.persist.tpm.PcrSelection.ALL_PCRS_ON;
 /**
  * The class handles the flags that ignore certain PCRs for validation.
  */
-@Log4j2
+@Slf4j
 public class PcrValidator {
 
     private static final int NUM_TO_SKIP = 1;
@@ -258,7 +258,7 @@ public class PcrValidator {
                 }
             }
         } catch (DecoderException deEx) {
-            log.error(deEx);
+            log.error("Unable to decode PCR digest", deEx);
         }
 
         PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
@@ -284,7 +284,7 @@ public class PcrValidator {
                 log.warn(calculatedString + " not found in " + quoteString);
             }
         } catch (NoSuchAlgorithmException naEx) {
-            log.error(naEx);
+            log.error("Unable to validate PCR digest", naEx);
         }
 
         return validated;

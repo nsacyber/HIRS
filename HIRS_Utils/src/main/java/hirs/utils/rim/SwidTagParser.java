@@ -5,7 +5,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * This class handles parsing and validation Swidtag files.
  */
-@Log4j2
+@Slf4j
 public final class SwidTagParser {
 
     /**

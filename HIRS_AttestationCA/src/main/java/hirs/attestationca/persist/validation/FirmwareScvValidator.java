@@ -16,7 +16,7 @@ import hirs.utils.SwidResource;
 import hirs.utils.rim.ReferenceManifestValidator;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +38,7 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 /**
  * Validator class responsible for validating firmware-related information.
  */
-@Log4j2
+@Slf4j
 public class FirmwareScvValidator extends SupplyChainCredentialValidator {
 
     private ReferenceManifest supportReferenceManifest;

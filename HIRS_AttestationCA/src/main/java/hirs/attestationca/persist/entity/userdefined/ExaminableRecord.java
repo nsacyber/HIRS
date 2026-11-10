@@ -11,12 +11,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Specifies properties for an object that can be examined.
  */
-@Log4j2
+@Slf4j
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @MappedSuperclass
 @Access(AccessType.FIELD)

@@ -27,7 +27,7 @@ import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
 import hirs.utils.specLookups.PciIds;
 import jakarta.persistence.NonUniqueResultException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
@@ -54,7 +54,7 @@ import static hirs.utils.specLookups.TcgPlatClassLookups.getPlatClassFromId;
  * Utility class for mapping certificate information in to string maps. These are used to display
  * information on a web page, as X509 cert classes do not serialize to JSON
  */
-@Log4j2
+@Slf4j
 public final class CertificateStringMapBuilder {
 
     // Extended Key Usage (TCG KP) OIDs
@@ -255,7 +255,7 @@ public final class CertificateStringMapBuilder {
                             break;
                         }
                     } catch (IOException e) {
-                        log.error(e);
+                        log.error("Unable to read certificate information", e);
                     }
                 }
             }
@@ -342,7 +342,7 @@ public final class CertificateStringMapBuilder {
                     return containsAllChain(issuerCert, caCredentialRepository, embeddedCertificates);
                 }
             } catch (IOException ioEx) {
-                log.error(ioEx);
+                log.error("Unable to read certificate information", ioEx);
                 return certificate;
             }
         }
