@@ -1,9 +1,11 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
+import hirs.utils.dice.DiceTcbInfo;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,6 +20,8 @@ public final class DiceCertificateInfo {
     private DiceProfileType profileType;
     /** The DICE key purposes of the certificate. */
     private Set<DiceKeyPurpose> diceKeyPurposes;
+    /** Decoded measurement records. */
+    private List<DiceTcbInfo> tcbInfo;
     /** The CA flag of the certificate. */
     private boolean isCa;
     /** The keyCertSign flag of the certificate. */

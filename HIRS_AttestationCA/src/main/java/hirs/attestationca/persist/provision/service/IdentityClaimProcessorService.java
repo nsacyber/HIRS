@@ -17,6 +17,8 @@ import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmMakeCredentialHelper;
+import hirs.attestationca.persist.provision.helper.TpmMakeCredentialHelper.TpmCredential;
+import hirs.attestationca.persist.provision.helper.TpmObjectAttributes;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import hirs.utils.HexUtils;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Service class responsible for processing the Provisioner's Identity Claim.
@@ -118,18 +121,23 @@ public class IdentityClaimProcessorService {
             log.error(ex.getMessage());
         }
 
-        ByteString blobStr = ByteString.copyFrom(new byte[]{});
+        TpmCredential tpmCredential = new TpmCredential(ByteString.empty(), ByteString.empty());
 
+        ParsedTpmPublic akPub = null;
+        Optional<String> keyRefusal = Optional.empty();
         if (validationResult == AppraisalStatus.Status.PASS) {
-            ParsedTpmPublic akPub;
             try {
                 akPub = TpmPublicHelper.parseTpmPublicArea(identityClaim.getAkPublicArea().toByteArray());
             } catch (Exception e) {
                 log.error("Could not parse AK pub: {}", e.getMessage());
                 throw new IllegalStateException(e.getMessage());
             }
+            keyRefusal = checkIdentityClaimKeys(identityClaim, akPub);
+        }
+
+        if (validationResult == AppraisalStatus.Status.PASS && keyRefusal.isEmpty()) {
             byte[] nonce = ProvisionUtils.generateRandomBytes(NONCE_LENGTH);
-            blobStr = TpmMakeCredentialHelper.makeCredential(ekPub, akPub, nonce);
+            tpmCredential = TpmMakeCredentialHelper.makeCredential(ekPub, akPub, nonce);
 
             String pcrQuoteMask = PCR_QUOTE_MASK;
 
@@ -147,8 +155,9 @@ public class IdentityClaimProcessorService {
             // Package response
             ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr).setPcrMask(pcrQuoteMask)
+                    .setCredentialBlob(tpmCredential.credentialBlobTpm2b()).setPcrMask(pcrQuoteMask)
                     .setStatus(ProvisionerTpm2.ResponseStatus.PASS)
+                    .setEncryptedSecret(tpmCredential.secretTpm2b())
                     .build();
 
             String identityClaimResponseJsonStringAfterSuccess = "";
@@ -180,13 +189,19 @@ public class IdentityClaimProcessorService {
 
             return identityClaimResponse.toByteArray();
         } else {
-            log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
+            if (keyRefusal.isPresent()) {
+                log.error(keyRefusal.get());
+            } else {
+                log.error("Supply chain validation did not succeed. Result is: {}", validationResult);
+            }
             // empty response
-            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse
+            ProvisionerTpm2.IdentityClaimResponse.Builder failedResponse
                     = ProvisionerTpm2.IdentityClaimResponse.newBuilder()
-                    .setCredentialBlob(blobStr)
+                    .setCredentialBlob(tpmCredential.credentialBlobTpm2b())
                     .setStatus(ProvisionerTpm2.ResponseStatus.FAIL)
-                    .build();
+                    .setEncryptedSecret(tpmCredential.secretTpm2b());
+            keyRefusal.ifPresent(failedResponse::setStatusDetails);
+            ProvisionerTpm2.IdentityClaimResponse identityClaimResponse = failedResponse.build();
 
             String identityClaimResponseJsonStringAfterFailure = "";
             try {
@@ -216,6 +231,26 @@ public class IdentityClaimProcessorService {
             }
 
             return identityClaimResponse.toByteArray();
+        }
+    }
+
+    /**
+     * Check AK and LDevID have expected parameters or attributes.
+     * @param identityClaim the identity claim
+     * @param akPub         the parsed AK public area
+     * @return why a key is refused, or empty if both are acceptable
+     */
+    private static Optional<String> checkIdentityClaimKeys(final ProvisionerTpm2.IdentityClaim identityClaim,
+                                                           final ParsedTpmPublic akPub) {
+        Optional<String> akRefusal = TpmObjectAttributes.checkAttestationKey(akPub);
+        if (akRefusal.isPresent() || !identityClaim.hasLdevidPublicArea()) {
+            return akRefusal;
+        }
+        try {
+            return TpmObjectAttributes.checkDeviceIdentityKey(
+                    TpmPublicHelper.parseTpmPublicArea(identityClaim.getLdevidPublicArea().toByteArray()));
+        } catch (IOException e) {
+            return Optional.of("The LDevID public area could not be parsed: " + e.getMessage());
         }
     }
 

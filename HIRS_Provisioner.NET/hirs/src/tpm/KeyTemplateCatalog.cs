@@ -1,0 +1,1082 @@
+﻿using Google.Protobuf;
+using Hirs.Pb;
+using System.Security.Cryptography;
+using Tpm2Lib;
+
+namespace hirs;
+
+/**
+ * Translates key into templates and handles.
+ */
+public static class KeyTemplateCatalog {
+    /**
+     * TPMA_OBJECT Bit 8 firmwareLimited
+     * NOTE: Not in ObjectAttr in the 2.1.1 version of TSS.MSR
+     * SET (1): The object exists only within a firmware-limited hierarchy.
+     * CLEAR (0): The object can exist outside a firmware-limited hierarchy
+     */
+    private const uint FirmwareLimitedBit = 1u << 8;
+
+    /**
+     * TCG EK Credential Profile defines indicies for each template. This enables translation.
+     */
+    private static readonly IReadOnlyDictionary<EkTemplate, uint> EkCertificateNvIndices =
+        new Dictionary<EkTemplate, uint> {
+            // Low Range (original v2.0 templates)
+            [EkTemplate.EkL1] = 0x01c00002,
+            [EkTemplate.EkL2] = 0x01c0000a,
+            // Classical storage
+            [EkTemplate.EkH1] = 0x01c00012,
+            [EkTemplate.EkH2] = 0x01c00014,
+            [EkTemplate.EkH3] = 0x01c00016,
+            [EkTemplate.EkH4] = 0x01c00018,
+            [EkTemplate.EkH5] = 0x01c0001a,
+            [EkTemplate.EkH6] = 0x01c0001c,
+            [EkTemplate.EkH7] = 0x01c0001e,
+            [EkTemplate.EkH18] = 0x01c00040,
+            [EkTemplate.EkH19] = 0x01c00042,
+            [EkTemplate.EkH20] = 0x01c00044,
+            [EkTemplate.EkH21] = 0x01c00046,
+            // Classical signing
+            [EkTemplate.EkH8] = 0x01c00032,
+            [EkTemplate.EkH9] = 0x01c00034,
+            [EkTemplate.EkH10] = 0x01c00036,
+            [EkTemplate.EkH11] = 0x01c00038,
+            [EkTemplate.EkH12] = 0x01c0003a,
+            [EkTemplate.EkH13] = 0x01c0003c,
+            [EkTemplate.EkH14] = 0x01c0003e,
+            [EkTemplate.EkH15] = 0x01c00050,
+            [EkTemplate.EkH16] = 0x01c00052,
+            [EkTemplate.EkH17] = 0x01c00054,
+            [EkTemplate.EkH22] = 0x01c00056,
+            [EkTemplate.EkH23] = 0x01c00058,
+            [EkTemplate.EkH24] = 0x01c0005a,
+            [EkTemplate.EkH25] = 0x01c0005c,
+            // ML-KEM
+            [EkTemplate.EkH26] = 0x01c00060,
+            [EkTemplate.EkH27] = 0x01c00062,
+            [EkTemplate.EkH28] = 0x01c00064,
+            [EkTemplate.EkH29] = 0x01c00066,
+            [EkTemplate.EkH30] = 0x01c00068,
+            [EkTemplate.EkH31] = 0x01c0006a,
+            // ML-DSA
+            [EkTemplate.EkH32] = 0x01c00070,
+            [EkTemplate.EkH33] = 0x01c00072,
+            [EkTemplate.EkH34] = 0x01c00074,
+            [EkTemplate.EkH35] = 0x01c00076,
+            [EkTemplate.EkH36] = 0x01c00078,
+            [EkTemplate.EkH37] = 0x01c0007a,
+        };
+
+    /**
+     * Returns the NV index holding the EK certificate for the template, or
+     * null for EkTemplate.Unspecified / unknown templates.
+     */
+    public static uint? GetEkCertificateNvIndex(EkTemplate template) {
+        return EkCertificateNvIndices.TryGetValue(template, out uint index) ? index : null;
+    }
+
+    /**
+     * Low Range templates L-1 and L-2 uses the authPolicy of PolicyA
+     * (TPM2_PolicySecret(TPM_RH_ENDORSEMENT) aka PolicyASha256)
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private static readonly byte[] PolicyASha256 = [ 
+        0x83, 0x71, 0x97, 0x67, 0x44, 0x84,
+        0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D,
+        0x46, 0xA5, 0xD7, 0x24, 0xFD, 0x52,
+        0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64,
+        0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14,
+        0x69, 0xAA
+    ];
+        
+    /**
+     * PolicyBSha256 for High range templates
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private static readonly byte[] PolicyBSha256 = [ 
+        0xCA, 0x3D, 0x0A, 0x99, 0xA2, 0xB9, 0x39, 0x06, 
+        0xF7, 0xA3, 0x34, 0x24, 0x14, 0xEF, 0xCF, 0xB3, 
+        0xA3, 0x85, 0xD4, 0x4C, 0xD1, 0xFD, 0x45, 0x90, 
+        0x89, 0xD1, 0x9B, 0x50, 0x71, 0xC0, 0xB7, 0xA0
+    ];
+
+    /**
+     * PolicyBSha384 for High range templates
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private static readonly byte[] PolicyBSha384 = [
+        0xB2, 0x6E, 0x7D, 0x28, 0xD1, 0x1A, 0x50, 0xBC, 
+        0x53, 0xD8, 0x82, 0xBC, 0xF5, 0xFD, 0x3A, 0x1A, 
+        0x07, 0x41, 0x48, 0xBB, 0x35, 0xD3, 0xB4, 0xE4, 
+        0xCB, 0x1C, 0x0A, 0xD9, 0xBD, 0xE4, 0x19, 0xCA, 
+        0xCB, 0x47, 0xBA, 0x09, 0x69, 0x96, 0x46, 0x15, 
+        0x0F, 0x9F, 0xC0, 0x00, 0xF3, 0xF8, 0x0E, 0x12
+    ];
+
+    /**
+     * PolicyBSha512 for High range templates
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private static readonly byte[] PolicyBSha512 = [
+        0xB8, 0x22, 0x1C, 0xA6, 0x9E, 0x85, 0x50, 0xA4, 
+        0x91, 0x4D, 0xE3, 0xFA, 0xA6, 0xA1, 0x8C, 0x07, 
+        0x2C, 0xC0, 0x12, 0x08, 0x07, 0x3A, 0x92, 0x8D, 
+        0x5D, 0x66, 0xD5, 0x9E, 0xF7, 0x9E, 0x49, 0xA4, 
+        0x29, 0xC4, 0x1A, 0x6B, 0x26, 0x95, 0x71, 0xD5, 
+        0x7E, 0xDB, 0x25, 0xFB, 0xDB, 0x18, 0x38, 0x42, 
+        0x56, 0x08, 0xB4, 0x13, 0xCD, 0x61, 0x6A, 0x5F, 
+        0x6D, 0xB5, 0xB6, 0x07, 0x1A, 0xF9, 0x9B, 0xEA
+    ];
+
+    /**
+     * PolicyBSm3256 for High range templates
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private static readonly byte[] PolicyBSm3256 = [
+        0x16, 0x78, 0x60, 0xA3, 0x5F, 0x2C, 0x5C, 0x35, 
+        0x67, 0xF9, 0xC9, 0x27, 0xAC, 0x56, 0xC0, 0x32, 
+        0xF3, 0xB3, 0xA6, 0x46, 0x2F, 0x8D, 0x03, 0x79, 
+        0x98, 0xE7, 0xA1, 0x0F, 0x77, 0xFA, 0x45, 0x4A
+    ];
+    
+    /**
+     * Object Attributes for L-1 and L-2 EK Template
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private const ObjectAttr AttributesStorageLow =  ObjectAttr.FixedTPM
+            | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin
+            | ObjectAttr.AdminWithPolicy
+            | ObjectAttr.Restricted | ObjectAttr.Decrypt;
+    
+    /**
+     * Object Attributes for Storage EK High Range Template
+     * attributes-storage
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private const ObjectAttr AttributesStorage = ObjectAttr.FixedTPM
+            | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin
+            | ObjectAttr.UserWithAuth | ObjectAttr.AdminWithPolicy
+            | ObjectAttr.Restricted | ObjectAttr.Decrypt;
+    
+    /**
+     * Object Attributes for Signing EK High Range Template
+     * attributes-signing
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private const ObjectAttr AttributesSigning = ObjectAttr.FixedTPM
+            | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin
+            | ObjectAttr.UserWithAuth | ObjectAttr.AdminWithPolicy
+            | ObjectAttr.Restricted | ObjectAttr.Sign;
+    
+    /**
+     * Object Attributes for Firmware-limited Storage EK High Range Template
+     * attributes-fwl-storage
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private const ObjectAttr AttributesFwlStorage = AttributesStorage
+            | (ObjectAttr)FirmwareLimitedBit; // Current version of TSS does not have the firmwareLimited object attribute
+    
+    /**
+     * Object Attributes for Firmware-limited Signing EK High Range Template
+     * attributes-fwl-signing
+     * From Endorsement Key Credential Profile 2.7
+     */
+    private const ObjectAttr AttributesFwlSigning = AttributesSigning
+            | (ObjectAttr)FirmwareLimitedBit; // Current version of TSS does not have the firmwareLimited object attribute
+    
+    /**
+     *
+     * Low-range attributes: userWithAuth is clear and the authPolicy is PolicyA. Both are visible
+     * in the created object's public area.
+     * Test the TPM_PUBLIC for whether it is a key in the low range.
+     */
+    private static bool IsLowRange(TpmPublic pub) {
+        return (pub.objectAttributes & ObjectAttr.UserWithAuth) == 0
+               && (pub.objectAttributes & ObjectAttr.AdminWithPolicy) != 0
+               && pub.authPolicy != null
+               && pub.authPolicy.AsSpan().SequenceEqual(PolicyASha256);
+    }
+
+    private static EkTemplate ClassifyLowRangeEk(TpmPublic pub, bool firmwareLimited, bool decrypt, bool sign) {
+        // L-1/L-2 are restricted storage (decrypt) keys and never firmware-limited.
+        if (firmwareLimited || !decrypt || sign) {
+            return EkTemplate.Unspecified;
+        }
+
+        return pub.parameters switch {
+            RsaParms { keyBits: 2048 } => EkTemplate.EkL1,
+            EccParms { curveID: EccCurve.TpmEccNistP256 } => EkTemplate.EkL2,
+            _ => EkTemplate.Unspecified
+        };
+    }
+
+    public static EkTemplate ClassifyEk(TpmPublic pub) {
+        if (pub == null) {
+            return EkTemplate.Unspecified;
+        }
+        bool firmwareLimited = ((uint)pub.objectAttributes & FirmwareLimitedBit) != 0;
+        bool decrypt = (pub.objectAttributes & ObjectAttr.Decrypt) != 0;
+        bool sign = (pub.objectAttributes & ObjectAttr.Sign) != 0;
+        // Storage EKs decrypt, signing EKs sign; anything else is not a TCG EK.
+        if (decrypt == sign) {
+            return EkTemplate.Unspecified;
+        }
+        if (IsLowRange(pub)) {
+            return ClassifyLowRangeEk(pub, firmwareLimited, decrypt, sign);
+        }
+        bool signing = sign;
+
+        if (pub.parameters is RsaParms rsa) {
+            // The profile defines no firmware-limited RSA EKs.
+            if (firmwareLimited) {
+                return EkTemplate.Unspecified;
+            }
+            if (!signing) {
+                return rsa.keyBits switch {
+                    2048 => EkTemplate.EkH1,
+                    3072 => EkTemplate.EkH6,
+                    4096 => EkTemplate.EkH7,
+                    _ => EkTemplate.Unspecified
+                };
+            }
+            bool pss = rsa.scheme is SchemeRsapss;
+            if (!pss && rsa.scheme is not SchemeRsassa) {
+                return EkTemplate.Unspecified;
+            }
+            return (pss, rsa.keyBits) switch {
+                (false, 2048) => EkTemplate.EkH8,
+                (true, 2048) => EkTemplate.EkH9,
+                (false, 3072) => EkTemplate.EkH14,
+                (true, 3072) => EkTemplate.EkH15,
+                (false, 4096) => EkTemplate.EkH16,
+                (true, 4096) => EkTemplate.EkH17,
+                _ => EkTemplate.Unspecified
+            };
+        }
+        if (pub.parameters is EccParms ecc) {
+            return (signing, firmwareLimited, ecc.curveID) switch {
+                (false, false, EccCurve.TpmEccNistP256) => EkTemplate.EkH2,
+                (false, false, EccCurve.TpmEccNistP384) => EkTemplate.EkH3,
+                (false, false, EccCurve.TpmEccNistP521) => EkTemplate.EkH4,
+                (false, false, EccCurve.TpmEccSm2P256) => EkTemplate.EkH5,
+                (false, true, EccCurve.TpmEccNistP256) => EkTemplate.EkH18,
+                (false, true, EccCurve.TpmEccNistP384) => EkTemplate.EkH19,
+                (false, true, EccCurve.TpmEccNistP521) => EkTemplate.EkH20,
+                (false, true, EccCurve.TpmEccSm2P256) => EkTemplate.EkH21,
+                (true, false, EccCurve.TpmEccNistP256) => EkTemplate.EkH10,
+                (true, false, EccCurve.TpmEccNistP384) => EkTemplate.EkH11,
+                (true, false, EccCurve.TpmEccNistP521) => EkTemplate.EkH12,
+                (true, false, EccCurve.TpmEccSm2P256) => EkTemplate.EkH13,
+                (true, true, EccCurve.TpmEccNistP256) => EkTemplate.EkH22,
+                (true, true, EccCurve.TpmEccNistP384) => EkTemplate.EkH23,
+                (true, true, EccCurve.TpmEccNistP521) => EkTemplate.EkH24,
+                (true, true, EccCurve.TpmEccSm2P256) => EkTemplate.EkH25,
+                _ => EkTemplate.Unspecified
+            };
+        }
+            
+        return EkTemplate.Unspecified;
+    }
+
+    public static AsymmetricKeyTemplate ClassifyAsymmetric(TpmPublic pub) {
+        if (pub == null) {
+            return AsymmetricKeyTemplate.Unspecified;
+        }
+        bool restricted = (pub.objectAttributes & ObjectAttr.Restricted) != 0;
+
+        return pub.parameters switch {
+            RsaParms rsa => (restricted, rsa.keyBits) switch {
+                (true, 2048) => AsymmetricKeyTemplate.Rsa2048Quote,
+                (true, 3072) => AsymmetricKeyTemplate.Rsa3072Quote,
+                (false, 2048) => AsymmetricKeyTemplate.Rsa2048Sign,
+                (false, 3072) => AsymmetricKeyTemplate.Rsa3072Sign,
+                _ => AsymmetricKeyTemplate.Unspecified,
+            },
+            EccParms ecc => (restricted, ecc.curveID) switch {
+                (true, EccCurve.TpmEccNistP256) => AsymmetricKeyTemplate.EccP256Quote,
+                (true, EccCurve.TpmEccNistP384) => AsymmetricKeyTemplate.EccP384Quote,
+                (true, EccCurve.TpmEccNistP521) => AsymmetricKeyTemplate.EccP521Quote,
+                (false, EccCurve.TpmEccNistP256) => AsymmetricKeyTemplate.EccP256Sign,
+                (false, EccCurve.TpmEccNistP384) => AsymmetricKeyTemplate.EccP384Sign,
+                (false, EccCurve.TpmEccNistP521) => AsymmetricKeyTemplate.EccP521Sign,
+                _ => AsymmetricKeyTemplate.Unspecified,
+            },
+            _ => AsymmetricKeyTemplate.Unspecified
+        };
+    }
+
+    /**
+     * Helper to derive the key_id.
+     */
+    public static byte[] DeriveKeyId(KeyRole role, ProvisioningOrigin origin, byte[]? publicArea) {
+        byte[] input = new byte[2 + (publicArea?.Length ?? 0)];
+        input[0] = (byte)role;
+        input[1] = (byte)origin;
+        publicArea?.CopyTo(input, 2);
+        return SHA256.HashData(input);
+    }
+
+    /**
+     * EK templates that can be the configured EK: restricted decryption (Storage) keys, so they can decrypt a
+     * credential and be the AK's parent. Not included:
+     *   SM2/SM3 templates (H-5, H-13, H-21, H-25): the ACA does not support them
+     *   Signing EKs (H-8 to H-17, H-22 to H-24): they cannot decrypt a credential
+     *   Firmware-limited EKs (H-18 to H-20): they are created in the firmware-limited endorsement hierarchy
+     */
+    public static readonly IReadOnlyList<EkTemplate> SupportedEkTemplates = [
+        EkTemplate.EkL1,
+        EkTemplate.EkL2,
+        EkTemplate.EkH1,
+        EkTemplate.EkH2,
+        EkTemplate.EkH3,
+        EkTemplate.EkH4,
+        EkTemplate.EkH6,
+        EkTemplate.EkH7,
+    ];
+
+    // AK templates (restricted signing keys)
+    public static readonly IReadOnlyList<AsymmetricKeyTemplate> SupportedAkTemplates = [
+        AsymmetricKeyTemplate.Rsa2048Quote,
+        AsymmetricKeyTemplate.Rsa3072Quote,
+        AsymmetricKeyTemplate.EccP256Quote,
+        AsymmetricKeyTemplate.EccP384Quote,
+        AsymmetricKeyTemplate.EccP521Quote,
+    ];
+
+    // Low-range EKs have conventional persistent handles; high-range EKs do not
+    public static bool IsLowRange(EkTemplate template) {
+        return GetConventionalEkHandle(template) != null;
+    }
+
+    public static uint? GetConventionalEkHandle(EkTemplate template) {
+        return template switch {
+            EkTemplate.EkL1 => CommandTpm.DefaultL1EkHandle,
+            EkTemplate.EkL2 => CommandTpm.DefaultL2EkHandle,
+            _ => null
+        };
+    }
+
+    public static KeyCandidate BuildEkCandidate(byte[] publicArea, TpmPublic pub, uint? persistentHandle,
+        byte[]? certificate = null) {
+        KeyCandidate candidate = new();
+        candidate.Role.Add(KeyRole.Endorsement);
+        EkTemplate template = ClassifyEk(pub);
+        candidate.KeyId = ByteString.CopyFrom(DeriveKeyId(KeyRole.Endorsement,
+            ProvisioningOrigin.Manufacturer, publicArea));
+        candidate.Tpm = new TpmKeyMaterial {
+            PublicArea = ByteString.CopyFrom(publicArea),
+            EkTemplate = template,
+        };
+        if (persistentHandle is { } handle) {
+            candidate.Tpm.PersistentHandle = handle;
+        }
+        if (certificate is not null and not []) {
+            candidate.Tpm.Certificate = ByteString.CopyFrom(certificate);
+        }
+        if (GetEkCertificateNvIndex(template) is { } nvIndex) {
+            candidate.Tpm.CertificateNvIndex = nvIndex;
+        }
+        return candidate;
+    }
+
+    /**
+     * @param persistentHandle the key's persistent handle, or null for a key saved to files
+     */
+    public static KeyCandidate BuildAsymmetricCandidate(byte[] publicArea, TpmPublic pub, uint? persistentHandle,
+        KeyRole role, ProvisioningOrigin origin) {
+        KeyCandidate candidate = new();
+        candidate.Role.Add(role);
+        AsymmetricKeyTemplate template = ClassifyAsymmetric(pub);
+        candidate.KeyId = ByteString.CopyFrom(DeriveKeyId(role, origin, publicArea));
+        candidate.Tpm = new TpmKeyMaterial {
+            PublicArea = ByteString.CopyFrom(publicArea),
+            AsymmetricTemplate = template,
+            ProvisioningOrigin = origin,
+        };
+        if (persistentHandle is { } handle) {
+            candidate.Tpm.PersistentHandle = handle;
+        }
+        return candidate;
+    }
+
+    public static TpmPublic GenerateEkTemplateL1() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesStorageLow;
+        byte[] authPolicy = PolicyASha256;
+        // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            keyBits = 2048,
+            exponent = 0
+        };
+        // unique buffer must be filled with 0 for the EK Template L-1.
+        byte[] buffer = new byte[256];
+        Array.Fill<byte>(buffer, 0x00);
+        Tpm2bPublicKeyRsa unique = new() {
+            buffer = buffer
+        };
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateL2() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesStorageLow;
+        byte[] authPolicy = PolicyASha256;
+        // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers must be filled with 0 for the EK Template L-2.
+        byte[] buffer = new byte[32];
+        Array.Fill<byte>(buffer, 0x00);
+        EccPoint unique = new() {
+            x = buffer,
+            y = buffer
+        };
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH1() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: RSA 2048 with NULL scheme, SYM: AES-128 with CFB mode
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            keyBits = 2048,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-1.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH2() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH3() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: ECC NIST P384 with NULL scheme, SYM: AES-256 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP384,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH4() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha512;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha512;
+        // ASYM: ECC NIST P521 with NULL scheme, SYM: AES-256 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP521,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH5() {
+        const TpmAlgId nameAlg = TpmAlgId.Sm3256;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSm3256;
+        // ASYM: ECC SM2 P256 with NULL scheme, SYM: AES-128 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Sm4,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccSm2P256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH6() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 3072 with NULL scheme, SYM: AES-256 with CFB mode
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            keyBits = 3072,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-6.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH7() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesStorage;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 4096 with NULL scheme, SYM: AES-256 with CFB mode
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            keyBits = 4096,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-7.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH8() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: RSA 2048 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsassa() {
+                hashAlg = TpmAlgId.Sha256,
+            },
+            keyBits = 2048,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-8.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH9() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: RSA 2048 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsapss() {
+                hashAlg = TpmAlgId.Sha256,
+            },
+            keyBits = 2048,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-8.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH10() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: ECC NIST P256 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha256,
+            },
+            curveID = EccCurve.TpmEccNistP256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH11() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: ECC NIST P384 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            curveID = EccCurve.TpmEccNistP384,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH12() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha512;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha512;
+        // ASYM: ECC NIST P512 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha512,
+            },
+            curveID = EccCurve.TpmEccNistP521,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH13() {
+        const TpmAlgId nameAlg = TpmAlgId.Sm3256;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSm3256;
+        // ASYM: ECC SM2 P256 with SM2 scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeSm2() {
+                hashAlg = TpmAlgId.Sm3256,
+            },
+            curveID = EccCurve.TpmEccSm2P256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH14() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 3072 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsassa() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            keyBits = 3072,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-14.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH15() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 3072 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsapss() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            keyBits = 3072,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-15.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH16() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 4096 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsassa() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            keyBits = 4096,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-16.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH17() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: RSA 4096 with RSA-SSA scheme, SYM: Null
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeRsapss() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            keyBits = 4096,
+            exponent = 0
+        };
+        // unique size 0 and empty buffer for the EK Template H-17.
+        Tpm2bPublicKeyRsa unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH18() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesFwlStorage;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: ECC NIST P256 with NULL scheme, SYM: AES-128 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH19() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesFwlStorage;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: ECC NIST P384 with NULL scheme, SYM: AES-256 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP384,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH20() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha512;
+        const ObjectAttr objectAttributes = AttributesFwlStorage;
+        byte[] authPolicy = PolicyBSha512;
+        // ASYM: ECC NIST P521 with NULL scheme, SYM: AES-256 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Aes,
+                KeyBits = 256,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccNistP521,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+
+    public static TpmPublic GenerateEkTemplateH21() {
+        const TpmAlgId nameAlg = TpmAlgId.Sm3256;
+        const ObjectAttr objectAttributes = AttributesFwlStorage;
+        byte[] authPolicy = PolicyBSm3256;
+        // ASYM: ECC SM2 P256 with NULL scheme, SYM: AES-128 with CFB mode
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Sm4,
+                KeyBits = 128,
+                Mode = TpmAlgId.Cfb
+            },
+            scheme = new NullAsymScheme(),
+            curveID = EccCurve.TpmEccSm2P256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH22() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha256;
+        const ObjectAttr objectAttributes = AttributesFwlSigning;
+        byte[] authPolicy = PolicyBSha256;
+        // ASYM: ECC NIST P256 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha256,
+            },
+            curveID = EccCurve.TpmEccNistP256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH23() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha384;
+        const ObjectAttr objectAttributes = AttributesFwlSigning;
+        byte[] authPolicy = PolicyBSha384;
+        // ASYM: ECC NIST P384 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha384,
+            },
+            curveID = EccCurve.TpmEccNistP384,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    public static TpmPublic GenerateEkTemplateH24() {
+        const TpmAlgId nameAlg = TpmAlgId.Sha512;
+        const ObjectAttr objectAttributes = AttributesFwlSigning;
+        byte[] authPolicy = PolicyBSha512;
+        // ASYM: ECC NIST P512 with ECDSA scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeEcdsa() {
+                hashAlg = TpmAlgId.Sha512,
+            },
+            curveID = EccCurve.TpmEccNistP521,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    private static TpmPublic GenerateEkTemplateH25() {
+        const TpmAlgId nameAlg = TpmAlgId.Sm3256;
+        const ObjectAttr objectAttributes = AttributesFwlSigning;
+        byte[] authPolicy = PolicyBSm3256;
+        // ASYM: ECC SM2 P256 with SM2 scheme, SYM: Null
+        EccParms parameters = new() {
+            symmetric = new SymDefObject {
+                Algorithm = TpmAlgId.Null
+            },
+            scheme = new SchemeSm2() {
+                hashAlg = TpmAlgId.Sm3256,
+            },
+            curveID = EccCurve.TpmEccSm2P256,
+            kdf = new NullKdfScheme()
+        };
+        // unique buffers are size 0 and empty for the High range ECC EK Template.
+        EccPoint unique = new();
+        TpmPublic inPublic = new(nameAlg, objectAttributes, authPolicy, parameters, unique);
+        return inPublic;
+    }
+    
+    /**
+     * The TPM object template for an EK template this provisioner can generate, or null.
+     * See KeyTemplateCatalog.SupportedEkTemplates
+     */
+    public static TpmPublic? GenerateEkTemplate(EkTemplate template) {
+        return template switch {
+            EkTemplate.EkL1 => GenerateEkTemplateL1(),
+            EkTemplate.EkL2 => GenerateEkTemplateL2(),
+            EkTemplate.EkH1 =>  GenerateEkTemplateH1(),
+            EkTemplate.EkH2 => GenerateEkTemplateH2(),
+            EkTemplate.EkH3 => GenerateEkTemplateH3(),
+            EkTemplate.EkH4 => GenerateEkTemplateH4(),
+            EkTemplate.EkH5 => GenerateEkTemplateH5(),
+            EkTemplate.EkH6 => GenerateEkTemplateH6(),
+            EkTemplate.EkH7 => GenerateEkTemplateH7(),
+            EkTemplate.EkH8 => GenerateEkTemplateH8(),
+            EkTemplate.EkH9 => GenerateEkTemplateH9(),
+            EkTemplate.EkH10 => GenerateEkTemplateH10(),
+            EkTemplate.EkH11 => GenerateEkTemplateH11(),
+            EkTemplate.EkH12 => GenerateEkTemplateH12(),
+            EkTemplate.EkH13 => GenerateEkTemplateH13(),
+            EkTemplate.EkH14 => GenerateEkTemplateH14(),
+            EkTemplate.EkH15 => GenerateEkTemplateH15(),
+            EkTemplate.EkH16 => GenerateEkTemplateH16(),
+            EkTemplate.EkH17 => GenerateEkTemplateH17(),
+            EkTemplate.EkH18 => GenerateEkTemplateH18(),
+            EkTemplate.EkH19 => GenerateEkTemplateH19(),
+            EkTemplate.EkH20 => GenerateEkTemplateH20(),
+            EkTemplate.EkH21 => GenerateEkTemplateH21(),
+            EkTemplate.EkH22 => GenerateEkTemplateH22(),
+            EkTemplate.EkH23 => GenerateEkTemplateH23(),
+            EkTemplate.EkH24 => GenerateEkTemplateH24(),
+            EkTemplate.EkH25 => GenerateEkTemplateH25(),
+            _ => null
+        };
+    }
+
+    /**
+     * A restricted signing key that can be certified as an AK and used for TPM2_Quote.
+     * Each key size uses a hash of matching strength for its name and signatures.
+     */
+    public static TpmPublic GenerateAkTemplate(AsymmetricKeyTemplate template) {
+        return template switch {
+            AsymmetricKeyTemplate.Rsa2048Quote => RsaAkTemplate(2048, TpmAlgId.Sha256),
+            AsymmetricKeyTemplate.Rsa3072Quote => RsaAkTemplate(3072, TpmAlgId.Sha384),
+            AsymmetricKeyTemplate.EccP256Quote => EccAkTemplate(EccCurve.TpmEccNistP256, TpmAlgId.Sha256),
+            AsymmetricKeyTemplate.EccP384Quote => EccAkTemplate(EccCurve.TpmEccNistP384, TpmAlgId.Sha384),
+            AsymmetricKeyTemplate.EccP521Quote => EccAkTemplate(EccCurve.TpmEccNistP521, TpmAlgId.Sha512),
+            _ => throw new ArgumentException("Not an AK template: " + template)
+        };
+    }
+
+    private const ObjectAttr AttributesAk = ObjectAttr.Restricted | ObjectAttr.Sign | ObjectAttr.FixedParent
+        | ObjectAttr.FixedTPM | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
+
+    private static TpmPublic RsaAkTemplate(ushort keyBits, TpmAlgId hashAlg) {
+        RsaParms parameters = new() {
+            symmetric = new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null),
+            scheme = new SchemeRsassa(hashAlg),
+            keyBits = keyBits,
+            exponent = 0
+        };
+        return new TpmPublic(hashAlg, AttributesAk, null, parameters, new Tpm2bPublicKeyRsa());
+    }
+
+    private static TpmPublic EccAkTemplate(EccCurve curve, TpmAlgId hashAlg) {
+        EccParms parameters = new() {
+            symmetric = new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null),
+            scheme = new SchemeEcdsa(hashAlg),
+            curveID = curve,
+            kdf = new NullKdfScheme()
+        };
+        return new TpmPublic(hashAlg, AttributesAk, null, parameters, new EccPoint());
+    }
+
+    public static TpmPublic GenerateLDevIdTemplate(TpmAlgId nameAlg) {
+        const ObjectAttr objectAttributes = ObjectAttr.Sign | ObjectAttr.FixedParent | ObjectAttr.FixedTPM | ObjectAttr.SensitiveDataOrigin | ObjectAttr.UserWithAuth;
+        RsaParms parameters = new() { 
+            symmetric = new SymDefObject(TpmAlgId.Null, 0, TpmAlgId.Null),
+            scheme = null,
+            keyBits = 2048,
+            exponent = 0
+        };
+        TpmPublic inPublic = new(nameAlg, objectAttributes, null, parameters, new Tpm2bPublicKeyRsa());
+        return inPublic;
+    }
+
+    public const TpmAlgId StorageRootKeyType = TpmAlgId.Rsa;
+
+    private const ObjectAttr AttributesSrk = ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin
+        | ObjectAttr.UserWithAuth | ObjectAttr.Restricted | ObjectAttr.Decrypt | ObjectAttr.NoDA;
+
+    public static TpmPublic GenerateSrkTemplate(TpmAlgId keyType = StorageRootKeyType) {
+        // AES-128 in CFB mode protects the SRK's children
+        SymDefObject symmetric = new(TpmAlgId.Aes, 128, TpmAlgId.Cfb);
+        return keyType switch {
+            TpmAlgId.Rsa => new TpmPublic(TpmAlgId.Sha256, AttributesSrk, null,
+                new RsaParms(symmetric, new NullAsymScheme(), 2048, 0), new Tpm2bPublicKeyRsa()),
+            TpmAlgId.Ecc => new TpmPublic(TpmAlgId.Sha256, AttributesSrk, null,
+                new EccParms(symmetric, new NullAsymScheme(), EccCurve.TpmEccNistP256, new NullKdfScheme()), new EccPoint()),
+            _ => throw new ArgumentException("No SRK template for " + keyType)
+        };
+    }
+}

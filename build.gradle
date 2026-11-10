@@ -57,14 +57,11 @@ subprojects {
     }
 
     dependencyCheck {
-        def cmdApiKey = System.getProperty("nvd.apiKey") ?: ""
-        if (cmdApiKey) {
-            println ">>>> [OWASP] NVD API Key detected for project: ${project.name}: [${cmdApiKey}]"
-        }
+        // Read API key from a system property 'nvd.apiKey'
         nvd {
-            apiKey=cmdApiKey
+            apiKey = System.getProperty("nvd.apiKey") ?: ""
             delay = 16000
-            }
+        }
     }
 
 //    Uncomment the lines right after this comment, if you wish to see all the places

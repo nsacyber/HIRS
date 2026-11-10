@@ -30,8 +30,9 @@ The directory the command should be run from is included in each section below.
 
 1. Checkout HIRS from Github
    ```shell
-   git clone https://github.com/nsacyber/HIRS.git 
+   git clone --recurse-submodules https://github.com/nsacyber/HIRS.git 
    ```
+   For an existing clone, run `git submodule update --init` from the repository root.
 2. `restore` to retrieve all dependencies required for building or testing source code
    ```shell
    cd <HIRS repository>/HIRS_Provisioner.NET/
@@ -81,3 +82,4 @@ The Provisioner is installed to the following directory:
     /usr/share/hirs
 === "Windows"
     C:\Program Files\(x86)\HIRS_Provisioner.NET
+
