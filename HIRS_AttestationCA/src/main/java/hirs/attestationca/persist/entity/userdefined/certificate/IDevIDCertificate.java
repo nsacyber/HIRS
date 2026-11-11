@@ -9,7 +9,7 @@ import jakarta.persistence.Transient;
 import jakarta.persistence.PostLoad;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -42,7 +42,7 @@ import java.util.Map;
 @Entity
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@Log4j2
+@Slf4j
 public class IDevIDCertificate extends Certificate {
 
     // Undefined expiry date, as specified in 802.1AR

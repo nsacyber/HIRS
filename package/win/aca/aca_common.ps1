@@ -153,11 +153,11 @@ $global:HIRS_RELEASE_VERSION_FILE = (Join-Path -Resolve $global:HIRS_REL_PACKAGE
 #           ACA Properties Files
 $HIRS_PORTAL_PATH = (Resolve-Path "$global:HIRS_REL_PACKAGE_HOME\..\HIRS_AttestationCAPortal\src\main\resources").Path
 
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.xml"
+$global:HIRS_REL_PORTAL_LOGBACK_SPRING_XML = Join-Path $HIRS_PORTAL_PATH "logback-spring.xml"
 $global:HIRS_REL_PORTAL_APPLICATION_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.properties"
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_LINUX_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.linux.xml"
+$global:HIRS_REL_PORTAL_LOGBACK_SPRING_LINUX_XML = Join-Path $HIRS_PORTAL_PATH "logback-spring.linux.xml"
 $global:HIRS_REL_PORTAL_APPLICATION_LINUX_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.linux.properties"
-$global:HIRS_REL_PORTAL_LOG4J_SPRING_WIN_XML = Join-Path $HIRS_PORTAL_PATH "log4j2-spring.win.xml"
+$global:HIRS_REL_PORTAL_LOGBACK_SPRING_WIN_XML = Join-Path $HIRS_PORTAL_PATH "logback-spring.win.xml"
 $global:HIRS_REL_PORTAL_APPLICATION_WIN_SPRING_PROPERTIES = Join-Path $HIRS_PORTAL_PATH "application.win.properties"
 $global:HIRS_REL_WIN_PKI_CA_CONF = Join-Path $global:HIRS_REL_WIN_PKI_HOME "ca.conf"
 

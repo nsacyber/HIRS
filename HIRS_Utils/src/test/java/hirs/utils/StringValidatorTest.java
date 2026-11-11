@@ -1,6 +1,6 @@
 package hirs.utils;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,11 +19,11 @@ import java.util.Collection;
 /**
  * Sub class that will just focus on PCR Values and Events.
  */
-@Log4j2
+@Entity
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
-@Entity
+@Slf4j
 public class SupportReferenceManifest extends ReferenceManifest {
 
     @Column
@@ -88,7 +88,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
             this.pcrHash = Arrays.hashCode(logProcessor.getExpectedPCRValues());
             return logProcessor.getExpectedPCRValues();
         } catch (IOException exception) {
-            log.error(exception);
+            log.error("Unable to parse support reference manifest", exception);
         }
 
         return new String[0];
@@ -105,7 +105,7 @@ public class SupportReferenceManifest extends ReferenceManifest {
             logProcessor = new TCGEventLog(this.getRimBytes());
             return logProcessor.getEventList();
         } catch (IOException exception) {
-            log.error(exception);
+            log.error("Unable to parse support reference manifest", exception);
         }
 
         return new ArrayList<>();

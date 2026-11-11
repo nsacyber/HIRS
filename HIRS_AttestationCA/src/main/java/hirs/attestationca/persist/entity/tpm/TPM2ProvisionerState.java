@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import lombok.NoArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Arrays;
 
 import java.io.ByteArrayInputStream;
@@ -19,7 +19,7 @@ import java.util.Date;
  */
 @Entity
 @NoArgsConstructor
-@Log4j2
+@Slf4j
 public class TPM2ProvisionerState {
 
     private static final int MAX_BLOB_SIZE = 16777215;

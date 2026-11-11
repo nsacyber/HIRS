@@ -2,7 +2,7 @@ package hirs.attestationca.persist.provision.service;
 
 import hirs.attestationca.persist.entity.manager.TPM2ProvisionerStateRepository;
 import hirs.attestationca.persist.entity.tpm.TPM2ProvisionerState;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.io.IOException;
  * Service class responsible for handling and processing the TPM2 Provisioner State.
  */
 @Service
-@Log4j2
+@Slf4j
 public class Tpm2ProvisionerStateService {
     private final TPM2ProvisionerStateRepository tpm2ProvisionerStateRepository;
 

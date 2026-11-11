@@ -3,7 +3,7 @@ package hirs.attestationca.persist.util;
 import hirs.attestationca.persist.entity.userdefined.certificate.ComponentResult;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.DERUTF8String;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import static hirs.utils.specLookups.PciIds.translateVendor;
 /**
  * Provide Java access to PCI IDs.
  */
-@Log4j2
+@Slf4j
 public final class AcaPciIds {
 
     /**

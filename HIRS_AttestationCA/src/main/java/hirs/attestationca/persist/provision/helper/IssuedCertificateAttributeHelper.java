@@ -2,7 +2,7 @@ package hirs.attestationca.persist.provision.helper;
 
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -33,7 +33,7 @@ import java.util.Collection;
  * Builds extensions based on Platform and Endorsement credentials to provide in an issued
  * certificate.
  */
-@Log4j2
+@Slf4j
 public final class IssuedCertificateAttributeHelper {
 
     /**

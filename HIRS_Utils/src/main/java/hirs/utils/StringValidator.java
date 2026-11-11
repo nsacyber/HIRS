@@ -1,15 +1,15 @@
 package hirs.utils;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 /**
  * A simple utility that exposes a fluent way to validate Strings.  Can easily be generalized to
  * any type of data.  See example usage in StringValidationTest.
  */
-@Log4j2
+@Slf4j
 public final class StringValidator {
 
     @Getter

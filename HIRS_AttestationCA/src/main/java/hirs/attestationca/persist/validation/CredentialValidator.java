@@ -10,7 +10,7 @@ import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509AttributeCertificateHolder;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 /**
  * Validator class responsible for validating certificates.
  */
-@Log4j2
+@Slf4j
 public class CredentialValidator extends SupplyChainCredentialValidator {
 
     /**

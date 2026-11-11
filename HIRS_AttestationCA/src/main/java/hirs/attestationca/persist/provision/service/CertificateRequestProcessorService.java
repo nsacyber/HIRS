@@ -20,7 +20,7 @@ import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -58,7 +58,7 @@ import java.util.Objects;
  * Service class responsible for processing the Provisioner's Certificate Request.
  */
 @Service
-@Log4j2
+@Slf4j
 public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;

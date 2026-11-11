@@ -1,9 +1,9 @@
 package hirs.utils.digest;
 
 import jakarta.xml.bind.DatatypeConverter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.core.util.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  * TPMBaseline for reference.)  To persist nullable entries,
  * use {@link hirs.utils.digest.OptionalDigest} (see ImaBlacklistRecord for reference.)
  */
-@Log4j2
+@Slf4j
 public abstract class AbstractDigest {
 
     /**
@@ -84,7 +84,7 @@ public abstract class AbstractDigest {
         try {
             return getDigestAlgorithm(Hex.decodeHex(digest.toCharArray()));
         } catch (Exception deEx) {
-            log.error(deEx);
+            log.error("Unable to decode digest", deEx);
         }
 
         return DigestAlgorithm.UNSPECIFIED;

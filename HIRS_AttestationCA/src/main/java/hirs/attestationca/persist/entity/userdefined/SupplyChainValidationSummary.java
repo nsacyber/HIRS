@@ -19,7 +19,6 @@ import jakarta.persistence.criteria.Root;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Arrays;
@@ -67,7 +66,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
         this.device = null;
         overallValidationResult = AppraisalStatus.Status.FAIL;
         validations = Collections.emptySet();
-        this.message = Strings.EMPTY;
+        this.message = StringUtils.EMPTY;
     }
 
     /**
@@ -169,7 +168,7 @@ public class SupplyChainValidationSummary extends ArchivableEntity {
                     failureMsg.toString());
         }
         return new AppraisalStatus(AppraisalStatus.Status.PASS,
-                Strings.EMPTY);
+                StringUtils.EMPTY);
     }
 
     /**

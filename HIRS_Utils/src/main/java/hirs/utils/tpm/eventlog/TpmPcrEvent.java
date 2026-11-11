@@ -20,7 +20,7 @@ import hirs.utils.tpm.eventlog.uefi.UefiVariable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
@@ -53,7 +53,7 @@ import static hirs.utils.tpm.eventlog.uefi.UefiConstants.FILESTATUS_FROM_FILESYS
  * } TCG_PCR_EVENT;
  * </pre>
  */
-@Log4j2
+@Slf4j
 public class TpmPcrEvent {
 
     /**
@@ -415,7 +415,7 @@ public class TpmPcrEvent {
                         specErrataVersion = noAction.getSpecErrataVersion();
                     }
                 } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
+                    log.error("Unable to decode TPM event content", ueEx);
                     sb.append(ueEx);
                 }
                 break;
@@ -436,7 +436,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvSCrtmVersion(eventContent));
                 } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
+                    log.error("Unable to decode TPM event content", ueEx);
                     sb.append(ueEx);
                 }
                 break;
@@ -444,7 +444,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvCompactHash(eventContent));
                 } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
+                    log.error("Unable to decode TPM event content", ueEx);
                     sb.append(ueEx);
                 }
                 break;
@@ -459,7 +459,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new UefiVariable((int) eventType, eventContent));
                 } catch (IOException ie) {
-                    log.error(ie);
+                    log.error("Unable to decode TPM event content", ie);
                     sb.append(ie);
                 }
                 break;
@@ -468,7 +468,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvEfiBootServicesApp(eventContent));
                 } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
+                    log.error("Unable to decode TPM event content", ueEx);
                     sb.append(ueEx);
                 }
                 break;
@@ -476,7 +476,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvEfiGptPartition(eventContent));
                 } catch (UnsupportedEncodingException ueEx) {
-                    log.error(ueEx);
+                    log.error("Unable to decode TPM event content", ueEx);
                     sb.append(ueEx);
                 }
                 break;
@@ -494,7 +494,7 @@ public class TpmPcrEvent {
                 try {
                     sb.append(new EvEfiHandoffTable(eventContent));
                 } catch (IOException ie) {
-                    log.error(ie);
+                    log.error("Unable to decode TPM event content", ie);
                     sb.append(ie);
                 }
                 break;

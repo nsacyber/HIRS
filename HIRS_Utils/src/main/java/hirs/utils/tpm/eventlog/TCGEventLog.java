@@ -9,12 +9,9 @@ import hirs.utils.tpm.eventlog.events.EvEfiSpecIdEvent;
 import hirs.utils.tpm.eventlog.events.EvNoAction;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -28,7 +25,7 @@ import java.util.Objects;
 /**
  * Class for handling different formats of TCG Event logs.
  */
-@Log4j2
+@Slf4j
 public final class TCGEventLog {
 
     // The TCG PC Client Platform TPM Profile Specification for TPM 2.0 defines 5 localities
@@ -105,10 +102,6 @@ public final class TCGEventLog {
      * Used for NO_ACTION_EVENT with "StartupLocality" in the signature.
      */
     private static final int STARTUP_LOCALITY4 = 0x04;
-    /**
-     * Logger.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(TCGEventLog.class);
     /**
      * List of parsed events within the log.
      */
@@ -371,7 +364,7 @@ public final class TCGEventLog {
         if (startupLocality == STARTUP_LOCALITY3) {
             pcrList[0][pcrLength - 1] = (byte) STARTUP_LOCALITY3;
         } else if (startupLocality == STARTUP_LOCALITY4) {
-            LOGGER.error("Error Processing TGC Event Log: "
+            log.error("Error Processing TGC Event Log: "
                     + "Event of type EV_NO_ACTION with a Startup Locality 4 with an H-CRTM "
                     + "encountered, but no support is currently provided by this application");
         }
@@ -395,7 +388,7 @@ public final class TCGEventLog {
                                 0, pcrLength);
                     }
                 } catch (NoSuchAlgorithmException e) {
-                    LOGGER.error(e);
+                    log.error("Unable to calculate PCR digest", e);
                 }
             }
         }
@@ -425,7 +418,7 @@ public final class TCGEventLog {
         try {
             md.update(Hex.decodeHex(sb.toString().toCharArray()));
         } catch (DecoderException deEx) {
-            LOGGER.error(deEx);
+            log.error("Unable to decode PCR digest", deEx);
         }
         return md.digest();
     }

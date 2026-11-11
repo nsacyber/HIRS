@@ -24,8 +24,8 @@ import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.attestationca.persist.exceptions.DBManagerException;
-import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.Level;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +45,8 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 /**
  * A service layer class responsible for validating the supply chain based on the policy settings.
  */
-@Log4j2
 @Service
+@Slf4j
 public class SupplyChainValidationService {
 
     private final CACredentialRepository caCredentialRepository;
@@ -353,7 +353,7 @@ public class SupplyChainValidationService {
                     this.referenceManifestRepository.save(eventLog);
                 }
             } catch (Exception ex) {
-                log.error(ex);
+                log.error("Unable to validate supply chain", ex);
             }
 
             BaseReferenceManifest bRim = null;

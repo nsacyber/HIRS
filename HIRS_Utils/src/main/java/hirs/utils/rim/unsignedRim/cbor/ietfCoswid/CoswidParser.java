@@ -7,12 +7,6 @@ import hirs.utils.rim.unsignedRim.common.IanaHashAlg;
 import hirs.utils.rim.unsignedRim.common.measurement.Measurement;
 import hirs.utils.rim.unsignedRim.common.measurement.MeasurementType;
 import hirs.utils.signature.cose.Cbor.CborTagProcessor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import static hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems.FS_NAME_INT;
 
@@ -33,8 +31,8 @@ import static hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidItems.FS_NAME_INT
  * </p>
  */
 @NoArgsConstructor
+@Slf4j
 public class CoswidParser {
-    private static final Logger LOGGER = LogManager.getLogger(CoswidParser.class);
     private static final int COSWID_MAP = 0;
     private static final int ENTITY_MAP = CoswidItems.ENTITY_INT;
     private final List<String> path = new ArrayList<>();
@@ -74,7 +72,7 @@ public class CoswidParser {
         }
         ObjectMapper mapper = new ObjectMapper(new CBORFactory());
         parsedData = mapper.readValue(new ByteArrayInputStream(untaggedCbor), Map.class);
-        LOGGER.info("CoswidParser's parsed data: {}", parsedData);
+        log.info("CoswidParser's parsed data: {}", parsedData);
         rootNode = mapper.readTree(untaggedCbor);
         initParser(untaggedCbor);
     }

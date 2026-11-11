@@ -1,8 +1,7 @@
 package hirs.data.persist;
 
 import hirs.attestationca.persist.entity.Policy;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -10,9 +9,8 @@ import org.junit.jupiter.api.Test;
  * <code>PolicyTest</code> is a unit test class for the <code>Policy</code>
  * class.
  */
+@Slf4j
 public final class PolicyTest {
-
-    private static final Logger LOGGER = LogManager.getLogger(PolicyTest.class);
 
     /**
      * Empty constructor that does nothing.
@@ -26,7 +24,7 @@ public final class PolicyTest {
      */
     @Test
     public void testPolicy() {
-        LOGGER.debug("testPolicy test started");
+        log.debug("testPolicy test started");
         final String name = "myPolicy";
         new TestPolicy(name);
     }
@@ -37,7 +35,7 @@ public final class PolicyTest {
      */
     @Test
     public void testPolicyNullName() {
-        LOGGER.debug("testPolicyNullName test started");
+        log.debug("testPolicyNullName test started");
         Assertions.assertThrows(NullPointerException.class, () -> new TestPolicy(null));
     }
 
@@ -46,7 +44,7 @@ public final class PolicyTest {
      */
     @Test
     public void testGetName() {
-        LOGGER.debug("testGetName test started");
+        log.debug("testGetName test started");
         final String name = "myPolicy";
         Policy p = new TestPolicy(name);
         Assertions.assertEquals(name, p.getName());
@@ -58,7 +56,7 @@ public final class PolicyTest {
      */
     @Test
     public void testPolicyNullDescription() {
-        LOGGER.debug("testPolicyNullDescription test started");
+        log.debug("testPolicyNullDescription test started");
         final String name = "myPolicy";
         Assertions.assertThrows(NullPointerException.class, () -> new TestPolicy(name, null));
     }
@@ -68,7 +66,7 @@ public final class PolicyTest {
      */
     @Test
     public void testGetDescription() {
-        LOGGER.debug("testGetDescription test started");
+        log.debug("testGetDescription test started");
         final String name = "myPolicy";
         final String description = "myDescription";
         Policy p = new TestPolicy(name, description);
@@ -81,7 +79,7 @@ public final class PolicyTest {
      */
     @Test
     public void testEquals() {
-        LOGGER.debug("testEquals test started");
+        log.debug("testEquals test started");
         final String name1 = "myPolicy";
         Policy p1 = new TestPolicy(name1);
         final String name2 = "myPolicy";
@@ -98,7 +96,7 @@ public final class PolicyTest {
      */
     @Test
     public void testNotEquals() {
-        LOGGER.debug("testNotEquals test started");
+        log.debug("testNotEquals test started");
         final String name1 = "myPolicy1";
         Policy p1 = new TestPolicy(name1);
         final String name2 = "myPolicy2";
@@ -112,7 +110,7 @@ public final class PolicyTest {
      */
     @Test
     public void testHashCode() {
-        LOGGER.debug("testHashCode test started");
+        log.debug("testHashCode test started");
         final String name = "myPolicy";
         Policy p = new TestPolicy(name);
         Assertions.assertEquals(p.hashCode(), name.hashCode());
@@ -124,7 +122,7 @@ public final class PolicyTest {
      */
     @Test
     public void testHashCodeEquals() {
-        LOGGER.debug("testHashCodeEquals test started");
+        log.debug("testHashCodeEquals test started");
         final String name1 = "myPolicy";
         Policy p1 = new TestPolicy(name1);
         final String name2 = "myPolicy";
@@ -138,7 +136,7 @@ public final class PolicyTest {
      */
     @Test
     public void testHashCodeNotEquals() {
-        LOGGER.debug("testHashCodeNotEquals test started");
+        log.debug("testHashCodeNotEquals test started");
         final String name1 = "myPolicy1";
         Policy p1 = new TestPolicy(name1);
         final String name2 = "myPolicy2";
@@ -151,7 +149,7 @@ public final class PolicyTest {
      */
     @Test
     public void setName() {
-        LOGGER.debug("setName test started");
+        log.debug("setName test started");
         final String name = "myPolicy";
         Policy p = new TestPolicy(name);
         final String newName = "newPolicy";
@@ -165,7 +163,7 @@ public final class PolicyTest {
      */
     @Test
     public void setDescription() {
-        LOGGER.debug("setDescription test started");
+        log.debug("setDescription test started");
         final String name = "myPolicy";
         final String description = "myDescription";
         Policy p = new TestPolicy(name, description);
@@ -179,7 +177,7 @@ public final class PolicyTest {
      */
     @Test
     public void setNameNull() {
-        LOGGER.debug("setNameNull test started");
+        log.debug("setNameNull test started");
         final String name = "myPolicy";
         Policy p = new TestPolicy(name);
         Assertions.assertThrows(NullPointerException.class, () -> p.setName(null));
@@ -190,11 +188,10 @@ public final class PolicyTest {
      */
     @Test
     public void setDescriptionNull() {
-        LOGGER.debug("setDescriptionNull test started");
+        log.debug("setDescriptionNull test started");
         final String name = "myPolicy";
         final String description = "myDescription";
         Policy p = new TestPolicy(name, description);
         Assertions.assertThrows(NullPointerException.class, () -> p.setDescription(null));
     }
 }
-

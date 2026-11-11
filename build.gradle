@@ -99,13 +99,11 @@ subprojects {
 
     // Global dependency resolution strategy for all subprojects
     configurations.configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        // Boot's logging starter includes a Log4j-to-SLF4J bridge. HIRS uses SLF4J
+        // directly, so neither the bridge nor any other Log4j artifact is needed.
+        exclude group: 'org.apache.logging.log4j'
 
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.apache.logging.log4j') {
-                details.useVersion '2.26.1' // Force patched Log4j version
-            }
-
             if (details.requested.group == 'org.apache.commons' &&
                     details.requested.name == 'commons-lang3') {
                 details.useVersion '3.20.0'  // Force patched Commons Lang version
@@ -121,6 +119,35 @@ subprojects {
                 details.useVersion '3.27.7'  // Force patched Assert Core version
             }
         }
+    }
+
+    tasks.register('verifyLoggingDependencies') {
+        group = 'verification'
+        description = 'Verify Log4j is absent and library dependencies stay scoped to their modules.'
+        doLast {
+            ['compileClasspath', 'runtimeClasspath', 'testCompileClasspath', 'testRuntimeClasspath'].each { name ->
+                def dependencies = configurations.getByName(name).resolvedConfiguration.resolvedArtifacts
+                dependencies.each { artifact ->
+                    def id = artifact.moduleVersion.id
+                    if (id.group == 'org.apache.logging.log4j' || id.group == 'log4j') {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                    if (project.name == 'HIRS_Utils' &&
+                            (id.group.startsWith('org.springframework') || id.group.startsWith('org.apache.tomcat'))) {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                    if (name in ['compileClasspath', 'runtimeClasspath'] &&
+                            project.name in ['HIRS_Utils', 'HIRS_AttestationCA'] &&
+                            (id.group == 'ch.qos.logback' || id.name == 'slf4j-simple' ||
+                                    id.group.startsWith('org.apache.tomcat'))) {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                }
+            }
+        }
+    }
+    tasks.named('check') {
+        dependsOn tasks.named('verifyLoggingDependencies')
     }
 }
 

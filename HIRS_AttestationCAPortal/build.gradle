@@ -27,19 +27,19 @@ dependencies {
     implementation project(':HIRS_AttestationCA')
 
     implementation libs.bouncycastle
-    implementation libs.commons.io
-    implementation libs.gson
-    implementation libs.guava
+    implementation libs.commons.lang3
     implementation libs.jakarta.persistence.api
-    implementation libs.jakarta.xml
     implementation libs.mariadb.java.client
+    // CertificateStringMapBuilder accesses the PCI database exposed by PciIds.DB.
     implementation libs.pci
+    implementation libs.slf4j.api
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.thymeleaf
     implementation libs.thymeleaf.layout.dialect
     implementation libs.spring.boot.starter.validation
     implementation libs.spring.boot.starter.data.jpa
-    implementation libs.spring.boot.starter.log4j2
+    implementation libs.spring.boot.starter.logging
+    implementation libs.spring.boot.starter.actuator
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

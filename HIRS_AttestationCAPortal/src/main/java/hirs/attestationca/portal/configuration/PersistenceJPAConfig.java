@@ -1,7 +1,7 @@
 package hirs.attestationca.portal.configuration;
 
 import jakarta.annotation.PostConstruct;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ import java.util.Set;
  * defined previously. In other words, the 'defaults.properties' file provides a
  * basic standard of properties that can be overrode by the
  */
-@Log4j2
+@Slf4j
 @Configuration
 @EnableTransactionManagement
 @PropertySources({

@@ -2,7 +2,7 @@ package hirs.utils.tpm.eventlog;
 
 import hirs.utils.HexUtils;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +54,7 @@ import java.util.ArrayList;
  * define TPM_ALG_SHA384         (TPM_ALG_ID)(0x000C)
  * define TPM_ALG_SHA512         (TPM_ALG_ID)(0x000D)
  */
-@Log4j2
+@Slf4j
 public class TpmPcrEvent2 extends TpmPcrEvent {
     private static final int EVENT_SIZE_MIN = 50;
     /**

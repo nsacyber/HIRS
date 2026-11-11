@@ -9,7 +9,7 @@ The following dependencies are also licensed under Apache 2.0: ActiveMq,
 Apache Commons CLI, Apache Commons Codec, Apache Commons CSV, Apache Commons 
 Exec, Apache Commons http, Apache Commons IO, Apache Commons Lang, Apache 
 Commons Upload, Apache Commons Validator, Apache http client, authlete-cbor, Java Native Access,  
-j2obc, jandex, javassist, jboss-logging, log4j2, Embedded tomcat, byte-buddy, caffeine, 
+j2obc, jandex, javassist, jboss-logging, Embedded tomcat, byte-buddy, caffeine,
 Micrometer, mysema-commons-lang, xml_rpc_client, taglibs, error-prone, gson, guava, 
 Json-simple, HikariCP, Jackson-core, Jcommander, powermock, Selenium, Spring, Spring Boot, 
 Spring Framework, usertype, validation-api, Querydsl, ws-commons-util, nimbus-jwt, gluecose-test-vectors, caliptra-dpe, 
@@ -194,7 +194,7 @@ Serilog.Settings.Configuration, Serilog.Sinks.Console, and Serilog.Sinks.File.
    END OF TERMS AND CONDITIONS
 
 The following dependencies are licensed under LGPL V2.1: FindBugs, Hibernate,
-and mariadb.
+Logback (also available under EPL 1.0), and mariadb.
 
                  GNU LESSER GENERAL PUBLIC LICENSE
                        Version 2.1, February 1999

@@ -32,7 +32,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import jakarta.xml.bind.UnmarshalException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,8 +61,8 @@ import java.util.regex.Pattern;
  * A service layer class responsible for encapsulating all business logic related to the Reference Manifest Details
  * Page.
  */
-@Log4j2
 @Service
+@Slf4j
 public class ReferenceManifestDetailsPageService {
 
     private static final int SKID_LENGTH = 20;

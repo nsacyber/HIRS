@@ -1,7 +1,7 @@
 package hirs.utils;
 
 import com.google.common.io.Resources;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 /**
  * Utility class to get the current version from the VERSION file.
  */
-@Log4j2
+@Slf4j
 public final class VersionHelper {
     private static final String VERSION = "VERSION";
 
@@ -129,4 +129,3 @@ public final class VersionHelper {
         return Resources.toString(url, StandardCharsets.UTF_8).trim();
     }
 }
-
