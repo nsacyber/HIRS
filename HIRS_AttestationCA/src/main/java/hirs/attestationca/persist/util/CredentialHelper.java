@@ -9,6 +9,7 @@ import org.bouncycastle.util.encoders.Base64;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,6 +103,34 @@ public final class CredentialHelper {
         }
         strippedFile = strippedFile.replaceAll("\\s", "");
         return Base64.decode(strippedFile);
+    }
+
+    /**
+     * Isolates the attribute certificate block from PEM content that may also contain other PEM
+     * blocks, such as the issuing CA certificate. Some OEMs place the platform certificate and its
+     * intermediate CA certificate in the same PEM file, in either order. Without isolating the
+     * attribute certificate, {@link #stripPemHeaderFooter(String)} would select the X.509 block
+     * and the platform certificate would fail to parse.
+     *
+     * @param certificateBytes the raw contents of a certificate file
+     * @return only the first attribute certificate PEM block (header through footer) if the
+     * content is PEM containing one; otherwise the original bytes unchanged
+     */
+    public static byte[] isolateAttributeCertificatePem(final byte[] certificateBytes) {
+        if (certificateBytes == null) {
+            return null;
+        }
+        String possiblePem = new String(certificateBytes, StandardCharsets.UTF_8);
+        int beginIndex = possiblePem.indexOf(CertificateVariables.PEM_ATTRIBUTE_HEADER);
+        if (beginIndex < 0) {
+            return certificateBytes;
+        }
+        int endIndex = possiblePem.indexOf(CertificateVariables.PEM_ATTRIBUTE_FOOTER, beginIndex);
+        if (endIndex < 0) {
+            return certificateBytes;
+        }
+        endIndex += CertificateVariables.PEM_ATTRIBUTE_FOOTER.length();
+        return possiblePem.substring(beginIndex, endIndex).getBytes(StandardCharsets.UTF_8);
     }
 
     /**
