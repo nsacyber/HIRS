@@ -81,36 +81,56 @@ public final class CredentialHelper {
     }
 
     /**
-     * Method to remove header footer information from PEM.
+     * Method to remove header footer information from PEM. Only the first complete PEM block is
+     * decoded; any text before or after it, and any additional PEM blocks, are ignored. If the
+     * content contains an X.509 certificate block, the first one is used. Otherwise the first
+     * attribute certificate block is used.
      *
      * @param pemFile string representation of the file
      * @return a cleaned up raw byte object
      */
     public static byte[] stripPemHeaderFooter(final String pemFile) {
-        String strippedFile = pemFile;
-        int beginIndex = strippedFile.indexOf(CertificateVariables.PEM_HEADER);
-        int endIndex = strippedFile.lastIndexOf(CertificateVariables.PEM_FOOTER);
-        if (beginIndex >= 0 && endIndex > beginIndex) {
-            endIndex += CertificateVariables.PEM_FOOTER.length();
-            strippedFile = strippedFile.substring(beginIndex, endIndex);
+        String pemBody = extractFirstPemBody(pemFile,
+                CertificateVariables.PEM_HEADER, CertificateVariables.PEM_FOOTER);
+        if (pemBody == null) {
+            pemBody = extractFirstPemBody(pemFile,
+                    CertificateVariables.PEM_ATTRIBUTE_HEADER, CertificateVariables.PEM_ATTRIBUTE_FOOTER);
         }
-        strippedFile = strippedFile.replace(CertificateVariables.PEM_HEADER, "");
-        strippedFile = strippedFile.replace(CertificateVariables.PEM_FOOTER, "");
-        strippedFile = strippedFile.replace(CertificateVariables.PEM_ATTRIBUTE_HEADER, "");
-        int attrFooterPos = strippedFile.indexOf(CertificateVariables.PEM_ATTRIBUTE_FOOTER);
-        if (attrFooterPos >= 0) {
-            strippedFile = strippedFile.substring(0, attrFooterPos);
+        if (pemBody == null) {
+            // no complete PEM block was found; remove any markers and decode what remains
+            pemBody = pemFile.replace(CertificateVariables.PEM_HEADER, "")
+                    .replace(CertificateVariables.PEM_FOOTER, "")
+                    .replace(CertificateVariables.PEM_ATTRIBUTE_HEADER, "")
+                    .replace(CertificateVariables.PEM_ATTRIBUTE_FOOTER, "");
         }
-        strippedFile = strippedFile.replaceAll("\\s", "");
-        return Base64.decode(strippedFile);
+        return Base64.decode(pemBody.replaceAll("\\s", ""));
     }
 
     /**
-     * Isolates the attribute certificate block from PEM content that may also contain other PEM
-     * blocks, such as the issuing CA certificate. Some OEMs place the platform certificate and its
-     * intermediate CA certificate in the same PEM file, in either order. Without isolating the
-     * attribute certificate, {@link #stripPemHeaderFooter(String)} would select the X.509 block
-     * and the platform certificate would fail to parse.
+     * Returns the base64 body (between the header and its matching footer) of the first PEM
+     * block of the given type.
+     *
+     * @param pemFile string representation of the file
+     * @param header  PEM header marking the start of the block
+     * @param footer  PEM footer marking the end of the block
+     * @return the body of the first complete block, or null if there is no complete block
+     */
+    private static String extractFirstPemBody(final String pemFile, final String header,
+                                              final String footer) {
+        int beginIndex = pemFile.indexOf(header);
+        if (beginIndex < 0) {
+            return null;
+        }
+        beginIndex += header.length();
+        int endIndex = pemFile.indexOf(footer, beginIndex);
+        if (endIndex < 0) {
+            return null;
+        }
+        return pemFile.substring(beginIndex, endIndex);
+    }
+
+    /**
+     * Isolates the attribute certificate block from PEM content.
      *
      * @param certificateBytes the raw contents of a certificate file
      * @return only the first attribute certificate PEM block (header through footer) if the
