@@ -9,7 +9,7 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +40,7 @@ import java.util.List;
  *   &lt;/PcrValue&gt;
  * </pre>
  */
-@Log4j2
+@Slf4j
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PcrComposite",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"

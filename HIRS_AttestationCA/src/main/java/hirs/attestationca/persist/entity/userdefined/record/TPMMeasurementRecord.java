@@ -12,7 +12,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -23,7 +23,7 @@ import org.apache.commons.codec.binary.Hex;
  * to TPM PCR 0. Each PCRMeasurementRecord also contains a cryptographic hash
  * which represents the value stored at the associated TPM PCR location.
  */
-@Log4j2
+@Slf4j
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper = false)
@@ -106,7 +106,7 @@ public final class TPMMeasurementRecord extends ExaminableRecord {
     /**
      * Default constructor necessary for Hibernate.
      */
-    private TPMMeasurementRecord() {
+    protected TPMMeasurementRecord() {
         super();
         this.pcrId = -1;
         this.hash = null;

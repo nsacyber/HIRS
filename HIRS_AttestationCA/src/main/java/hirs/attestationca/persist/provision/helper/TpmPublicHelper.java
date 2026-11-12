@@ -5,7 +5,7 @@ import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.enums.TpmMlDsaParameterSet;
 import hirs.attestationca.persist.enums.TpmMlKemParameterSet;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
 import org.bouncycastle.jcajce.interfaces.MLKEMPublicKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
@@ -38,7 +38,7 @@ import java.util.Optional;
  *  @see <a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">
  *  Trusted Platform Module Library Part 2: Structures (TPM 2.0)</a>
  */
-@Log4j2
+@Slf4j
 public final class TpmPublicHelper {
     /** Hexadecimal radix used for parsing the RSA public exponent. */
     public static final int RADIX = 16;

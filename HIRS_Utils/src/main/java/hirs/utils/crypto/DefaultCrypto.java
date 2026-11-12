@@ -23,6 +23,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.PSSParameterSpec;
 import java.util.Arrays;
 
+import hirs.utils.specLookups.SpecTranslations;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -149,13 +150,13 @@ public class DefaultCrypto implements CryptoEngine {
                 JWKSet jwkSet = JWKSet.load(new File(pathTokey));
                 JWK jwKey = jwkSet.getKeys().get(0);
                 com.nimbusds.jose.Algorithm  joseAlg = jwKey.getAlgorithm();
-                if (AlgorithmsIds.isEcc(AlgorithmsIds.SPEC_COSE_ALG, joseAlg.getName())) {
+                if (SpecTranslations.SigAlg.isEcc(SpecTranslations.SigAlg.Format.COSE, joseAlg.getName())) {
                     privateKey = jwKey.toECKey().toPrivateKey();
                     keyPair = jwKey.toECKey().toKeyPair();
                     publicKey = jwKey.toECKey().toPublicKey();
                     algorithm = joseAlg.getName();
                     kid = jwKey.getKeyID();
-                } else if (AlgorithmsIds.isRsa(AlgorithmsIds.SPEC_COSE_ALG, joseAlg.getName())) {
+                } else if (SpecTranslations.SigAlg.isRsa(SpecTranslations.SigAlg.Format.COSE, joseAlg.getName())) {
                     privateKey = jwKey.toRSAKey().toPrivateKey();
                     keyPair = jwKey.toRSAKey().toKeyPair();
                     publicKey = jwKey.toRSAKey().toPublicKey();
@@ -188,8 +189,11 @@ public class DefaultCrypto implements CryptoEngine {
      */
     private String getAlgorithmFromCert(final X509Certificate cert) throws NoSuchAlgorithmException {
         final String x509Alg = cert.getSigAlgName();
-        final String alg = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_SIG,
-                AlgorithmsIds.SPEC_X509_ALG, x509Alg, AlgorithmsIds.SPEC_COSE_ALG);
+        final String alg = SpecTranslations.translate(
+                SpecTranslations.SigAlg.class,
+                SpecTranslations.SigAlg.Format.X509,
+                x509Alg,
+                SpecTranslations.SigAlg.Format.COSE);
         return alg;
     }
 
@@ -313,14 +317,18 @@ public class DefaultCrypto implements CryptoEngine {
         if (alg.isEmpty()) {
             if (cert != null) {
                 alg = cert.getSigAlgName();
-                // AlgorithmsIds algIds = new AlgorithmsIds();
-                alg = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_SIG, AlgorithmsIds.SPEC_X509_ALG,
-                        alg, AlgorithmsIds.SPEC_COSE_ALG);
+                alg = SpecTranslations.translate(
+                        SpecTranslations.SigAlg.class,
+                        SpecTranslations.SigAlg.Format.X509,
+                        alg,
+                        SpecTranslations.SigAlg.Format.COSE);
             } else if (pk != null) {
                 final String x509Alg = pk.getAlgorithm();
-                // AlgorithmsIds algIds = new AlgorithmsIds();
-                alg = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_SIG, AlgorithmsIds.SPEC_X509_ALG,
-                        x509Alg, AlgorithmsIds.SPEC_COSE_ALG);
+                alg = SpecTranslations.translate(
+                        SpecTranslations.SigAlg.class,
+                        SpecTranslations.SigAlg.Format.X509,
+                        x509Alg,
+                        SpecTranslations.SigAlg.Format.COSE);
             }
             if (alg.isEmpty()) {
                 alg = sigAlgorithm;

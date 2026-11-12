@@ -9,7 +9,7 @@ import hirs.attestationca.persist.tpm.PcrSelection;
 import hirs.utils.tpm.eventlog.TCGEventLog;
 import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
@@ -26,7 +26,7 @@ import static hirs.attestationca.persist.tpm.PcrSelection.ALL_PCRS_ON;
 /**
  * The class handles the flags that ignore certain PCRs for validation.
  */
-@Log4j2
+@Slf4j
 public class PcrValidator {
 
     private static final int NUM_TO_SKIP = 1;
@@ -131,7 +131,7 @@ public class PcrValidator {
         StringBuilder sb = new StringBuilder();
         String failureMsg = "PCR %d does not match%n";
         if (storedPcrs[0] == null || storedPcrs[0].isEmpty()) {
-            sb.append("failureMsg");
+            sb.append(failureMsg);
         } else {
             for (int i = 0; i <= TPMMeasurementRecord.MAX_PCR_ID; i++) {
                 if (policySettings.isIgnoreImaEnabled() && i == IMA_PCR) {
@@ -160,7 +160,7 @@ public class PcrValidator {
     }
 
     /**
-     * Checks that the expected FM events occurring. There are policy options that
+     * Checks that the expected FW events occurring. There are policy options that
      * will ignore certin PCRs, Event Types and Event Variables present.
      *
      * @param tcgMeasurementLog Measurement log from the client
@@ -175,11 +175,14 @@ public class PcrValidator {
         // log firmware policy settings
         if (policySettings.isIgnoreImaEnabled()) {
             log.info("IMA Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoretBootEnabled()) {
+        }
+        if (policySettings.isIgnoretBootEnabled()) {
             log.info("TBOOT Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoreGptEnabled()) {
+        }
+        if (policySettings.isIgnoreGptEnabled()) {
             log.info("GPT Ignored - any associated events will not be checked");
-        } else if (policySettings.isIgnoreOsEvtEnabled()) {
+        }
+        if (policySettings.isIgnoreOsEvtEnabled()) {
             log.info("OS Ignored - any associated events will not be checked");
         }
 
@@ -187,26 +190,36 @@ public class PcrValidator {
         // not configured to be ignored), add it to a list of not-expected events
         List<TpmPcrEvent> tpmPcrEventsNotExpected = new LinkedList<>();
         for (TpmPcrEvent tpe : tcgMeasurementLog.getEventList()) {
-            if (policySettings.isIgnoreImaEnabled() && tpe.getPcrIndex() == IMA_PCR) {
+            int pcrIndex = tpe.getPcrIndex();
+            boolean isFirmwarePcr = pcrIndex >= 0 && pcrIndex <= FIRMWARE_PCR_END;
+            if (policySettings.isIgnoreImaEnabled() && pcrIndex == IMA_PCR) {
                 log.debug(String.format("IMA Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoretBootEnabled() && (tpe.getPcrIndex() >= TBOOT_PCR_START
-                    && tpe.getPcrIndex() <= TBOOT_PCR_END)) {
+            } else if (policySettings.isIgnoretBootEnabled() && (pcrIndex >= TBOOT_PCR_START
+                    && pcrIndex <= TBOOT_PCR_END)) {
                 log.debug(String.format("TBOOT Ignored -> %s", tpe));
-            } else if (policySettings.isIgnoreOsEvtEnabled() && (tpe.getPcrIndex() > FIRMWARE_PCR_END)) {
+            } else if ((policySettings.isIgnoreOsEvtEnabled()
+                    || policySettings.isIgnoreOsEvtPxeBootEnabled()) && tpe.getPcrIndex() > FIRMWARE_PCR_END) {
                 log.debug(String.format("OS Evt Ignored -> %s", tpe));
+            } else if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
+                log.debug(String.format("GPT Ignored -> %s", tpe));
+            } else if (policySettings.isIgnoreOsEvtPxeBootEnabled()
+                    && tpe.getEventType() == EvConstants.EV_EFI_BOOT_SERVICES_APPLICATION
+                    && tpe.getEventContentStr().contains("PIWG Firmware Volume Path")) {
+                log.debug(String.format("Boot event ignored during PXE Boot -> %s", tpe));
+                String eventDigest = tpe.getEventDigestStr();
+                if (eventLogRecords.containsKey(eventDigest)) {
+                    log.debug(String.format("%s found in the Support RIM", eventDigest));
+                }
+            } else if (policySettings.isIgnoreOsEvtEnabled()
+                    && isFirmwarePcr
+                    && firmwareBootFinished[pcrIndex]) {
+                log.debug(String.format("Firmware boot finished -> %s", tpe));
             } else {
-                if (policySettings.isIgnoreGptEnabled() && tpe.getEventTypeStr().contains(EVT_EFI_GPT)) {
-                    log.debug(String.format("GPT Ignored -> %s", tpe));
-                } else if (policySettings.isIgnoreOsEvtEnabled()
-                        && firmwareBootFinished[tpe.getPcrIndex()]) {
-                    log.debug(String.format("Firmware boot finished -> %s", tpe));
-                } else {
-                    if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
-                        tpmPcrEventsNotExpected.add(tpe);
-                    }
-                    if (tpe.getEventType() == EvConstants.EV_SEPARATOR) {
-                        firmwareBootFinished[tpe.getPcrIndex()] = true;
-                    }
+                if (!eventLogRecords.containsKey(tpe.getEventDigestStr())) {
+                    tpmPcrEventsNotExpected.add(tpe);
+                }
+                if (tpe.getEventType() == EvConstants.EV_SEPARATOR && isFirmwarePcr) {
+                    firmwareBootFinished[pcrIndex] = true;
                 }
             }
         }
@@ -245,7 +258,7 @@ public class PcrValidator {
                 }
             }
         } catch (DecoderException deEx) {
-            log.error(deEx);
+            log.error("Unable to decode PCR digest", deEx);
         }
 
         PcrSelection pcrSelection = new PcrSelection(pcrMaskSelection);
@@ -271,7 +284,7 @@ public class PcrValidator {
                 log.warn(calculatedString + " not found in " + quoteString);
             }
         } catch (NoSuchAlgorithmException naEx) {
-            log.error(naEx);
+            log.error("Unable to validate PCR digest", naEx);
         }
 
         return validated;

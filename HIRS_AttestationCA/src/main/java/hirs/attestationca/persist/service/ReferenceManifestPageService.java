@@ -22,7 +22,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -50,7 +50,7 @@ import java.util.zip.ZipOutputStream;
  * Service class responsible for encapsulating all business logic related to the Reference Manifest Page.
  */
 @Service
-@Log4j2
+@Slf4j
 public class ReferenceManifestPageService {
     private final ReferenceManifestRepository referenceManifestRepository;
     private final ReferenceDigestValueRepository referenceDigestValueRepository;
@@ -400,7 +400,8 @@ public class ReferenceManifestPageService {
 
             final boolean isBaseRim = baseRimPattern.matcher(fileName).matches();
             final boolean isSupportRim = !isBaseRim && supportRimPattern.matcher(fileName).matches();
-            final boolean isComponentRim = !isBaseRim && !isSupportRim && componentRimPattern.matcher(fileName).matches();
+            final boolean isComponentRim = !isBaseRim && !isSupportRim
+                    && componentRimPattern.matcher(fileName).matches();
 
             if (isBaseRim) {
                 final BaseReferenceManifest baseReferenceManifest =
@@ -469,6 +470,7 @@ public class ReferenceManifestPageService {
      * @param errorMessages contains any error messages that will be displayed on the page
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
+     * @param componentRims   list of component reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
                           final List<String> errorMessages,
@@ -811,5 +813,4 @@ public class ReferenceManifestPageService {
         }
     }
 }
-
 

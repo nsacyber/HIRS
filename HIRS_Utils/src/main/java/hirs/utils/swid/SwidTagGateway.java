@@ -132,7 +132,7 @@ public class SwidTagGateway {
     private String rimEventLog;
 
     /**
-     * hashing algorithm for paylod file(s)
+     * hashing algorithm for paylod file(s).
      */
     @Setter
     private String hashAlgorithm;
@@ -189,9 +189,8 @@ public class SwidTagGateway {
     public void generateSwidTag(final String filename) {
         Document swidtag = builder.newDocument();
         SoftwareIdentity softwareIdentity = null;
-        try {
-            InputStream is = new FileInputStream(attributesFile);
-            JsonReader reader = Json.createReader(is);
+        try (InputStream is = new FileInputStream(attributesFile);
+             JsonReader reader = Json.createReader(is);) {
             JsonObject configProperties = reader.readObject();
             reader.close();
             //SoftwareIdentity
@@ -228,7 +227,7 @@ public class SwidTagGateway {
             }
         } catch (JsonException e) {
             throw new RuntimeException("Error reading JSON attributes: " + e.getMessage());
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException("File does not exist or cannot be read: " + e.getMessage());
         }
     }
@@ -296,10 +295,14 @@ public class SwidTagGateway {
             if (output.isEmpty()) {
                 transformer.transform(source, new StreamResult(System.out));
             } else {
-                transformer.transform(source, new StreamResult(new FileOutputStream(output)));
+                try (FileOutputStream fos = new FileOutputStream(output);) {
+                    transformer.transform(source, new StreamResult(fos));
+                } catch (IOException e) {
+                    throw new FileNotFoundException("Unable to write to file: " + e.getMessage());
+                }
             }
         } catch (FileNotFoundException e) {
-            System.out.println("Unable to write to file: " + e.getMessage());
+            System.out.println(e.getMessage());
         } catch (TransformerConfigurationException e) {
             System.out.println("Error instantiating TransformerFactory class: " + e.getMessage());
         } catch (TransformerException e) {
@@ -550,7 +553,7 @@ public class SwidTagGateway {
                     break;
                 default:
                     throw new NoSuchAlgorithmException("Unexpected value: " + hashAlgorithm);
-            };
+            }
         }
         addNonNullAttribute(attributes, hashKey, fileHash, true);
         String supportRimFormat = jsonObject.getString(SwidTagConstants.SUPPORT_RIM_FORMAT,

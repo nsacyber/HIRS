@@ -1,15 +1,15 @@
 package hirs.utils.tpm.eventlog.events;
 
 import hirs.utils.HexUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import lombok.Getter;
 
 import java.util.List;
 
-import static hirs.utils.PciIds.translateDevice;
-import static hirs.utils.PciIds.translateDeviceClass;
-import static hirs.utils.PciIds.translateVendor;
+import static hirs.utils.specLookups.PciIds.translateDevice;
+import static hirs.utils.specLookups.PciIds.translateDeviceClass;
+import static hirs.utils.specLookups.PciIds.translateVendor;
 
 /**
  * Class to process the DEVICE_SECURITY_EVENT_DATA_PCI_CONTEXT event per PFP.

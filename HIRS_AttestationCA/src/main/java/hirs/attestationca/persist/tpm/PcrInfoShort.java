@@ -13,7 +13,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 
 import java.nio.ByteBuffer;
@@ -34,7 +34,7 @@ import java.util.List;
  * thus PcrComposite is included to provide the data necessary to compute and
  * validate CompositeHash.
  */
-@Log4j2
+@Slf4j
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PcrInfoShort",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"

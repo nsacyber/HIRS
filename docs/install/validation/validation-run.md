@@ -8,7 +8,7 @@ Running the Provisioner is the same thing as running the Validation.
 If you are new to HIRS and want a step-by-step tutorial, it is best to start with
 the [Getting Started](../../started/index.md) page.
 
-!!! note
+!!! tip
 
     Before running the Provisioner, make sure to check the ACA Web Portal:
 

@@ -2,7 +2,7 @@ package hirs.utils.tpm.eventlog.uefi;
 
 import hirs.utils.HexUtils;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.security.cert.CertificateException;
  * So the Signature Data depends upon the Signature Type from the EFI Signature List.
  * </p>
  */
-@Log4j2
+@Slf4j
 public class UefiSignatureData {
     /**
      * UEFI Certificate GUID.

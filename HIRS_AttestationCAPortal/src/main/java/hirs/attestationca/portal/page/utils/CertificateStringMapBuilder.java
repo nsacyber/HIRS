@@ -25,9 +25,9 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import jakarta.persistence.NonUniqueResultException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
@@ -48,13 +48,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
+import static hirs.utils.specLookups.TcgPlatClassLookups.getPlatClassFromId;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
  * information on a web page, as X509 cert classes do not serialize to JSON
  */
-@Log4j2
+@Slf4j
 public final class CertificateStringMapBuilder {
 
     // Extended Key Usage (TCG KP) OIDs
@@ -255,7 +255,7 @@ public final class CertificateStringMapBuilder {
                             break;
                         }
                     } catch (IOException e) {
-                        log.error(e);
+                        log.error("Unable to read certificate information", e);
                     }
                 }
             }
@@ -342,7 +342,7 @@ public final class CertificateStringMapBuilder {
                     return containsAllChain(issuerCert, caCredentialRepository, embeddedCertificates);
                 }
             } catch (IOException ioEx) {
-                log.error(ioEx);
+                log.error("Unable to read certificate information", ioEx);
                 return certificate;
             }
         }
@@ -538,12 +538,13 @@ public final class CertificateStringMapBuilder {
      * @return certificate information
      * @throws IOException when parsing the certificate
      */
-    public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-                                                                 final CertificateRepository certificateRepository,
-                                                                 final ComponentResultRepository componentResultRepository,
-                                                                 final ComponentAttributeRepository componentAttributeRepository,
-                                                                 final CACredentialRepository caCertificateRepository,
-                                                                 final String provisionSessionId)
+    public static HashMap<String, Object> getPlatformInformation(
+                                                final UUID uuid,
+                                                final CertificateRepository certificateRepository,
+                                                final ComponentResultRepository componentResultRepository,
+                                                final ComponentAttributeRepository componentAttributeRepository,
+                                                final CACredentialRepository caCertificateRepository,
+                                                final String provisionSessionId)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
@@ -617,9 +618,17 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
+            UUID sessionId = null;
             if (componentAttributeRepository != null && provisionSessionId != null
                     && !provisionSessionId.isBlank()) {
-                UUID sessionId = UUID.fromString(provisionSessionId);
+                try {
+                    sessionId = UUID.fromString(provisionSessionId);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Ignoring invalid provision session ID for {}: {}",
+                            uuid, provisionSessionId);
+                }
+            }
+            if (sessionId != null) {
                 List<ComponentAttributeResult> attributeResults = componentAttributeRepository
                         .findByProvisionSessionId(sessionId);
                 List<UUID> failedComponentIds = attributeResults.stream()

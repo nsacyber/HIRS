@@ -1,7 +1,7 @@
 package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.userdefined.HIRSLogger;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.logging.LoggersEndpoint;
 import org.springframework.boot.logging.LogLevel;
@@ -24,7 +24,7 @@ import java.util.zip.ZipOutputStream;
  * Service class that handles HIRS application logging and supports various Help page-related operations.
  */
 @Service
-@Log4j2
+@Slf4j
 public class HelpPageService {
     private static final String MAIN_HIRS_LOGGER_NAME = "hirs.attestationca";
 

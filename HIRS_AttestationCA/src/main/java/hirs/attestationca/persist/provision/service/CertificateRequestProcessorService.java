@@ -20,7 +20,7 @@ import hirs.attestationca.persist.provision.helper.ParsedTpmPublic;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -44,6 +44,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPrivateKey;
@@ -57,7 +58,7 @@ import java.util.Objects;
  * Service class responsible for processing the Provisioner's Certificate Request.
  */
 @Service
-@Log4j2
+@Slf4j
 public class CertificateRequestProcessorService {
     private final SupplyChainValidationService supplyChainValidationService;
     private final CredentialManagementService credentialManagementService;
@@ -67,6 +68,7 @@ public class CertificateRequestProcessorService {
     private final X509Certificate acaCertificate;
     private final int certificateValidityInDays;
     private final PrivateKey privateKey;
+    private static final int CERT_SERIAL_SIZE = 159;
 
     /**
      * Constructor.
@@ -241,7 +243,7 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateResponse);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key exists, could not be parsed "
@@ -296,7 +298,7 @@ public class CertificateRequestProcessorService {
 
                     String certResponseJsonStringAfterSuccess = "";
                     try {
-                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateRequest);
+                        certResponseJsonStringAfterSuccess = JsonFormat.printer().print(certificateResponse);
                     } catch (InvalidProtocolBufferException exception) {
                         log.error("Certificate response object after a successful validation, "
                                 + "assuming the LDevId public key does not exist, could not be parsed "
@@ -338,7 +340,7 @@ public class CertificateRequestProcessorService {
 
                 String certResponseJsonStringAfterFailure = "";
                 try {
-                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(certificateRequest);
+                    certResponseJsonStringAfterFailure = JsonFormat.printer().print(certificateResponse);
                 } catch (InvalidProtocolBufferException exception) {
                     log.error("Certificate response object after a failed validation could not be parsed"
                             + " properly into a JSON string");
@@ -488,8 +490,10 @@ public class CertificateRequestProcessorService {
             X500Name issuer = new X509CertificateHolder(acaCertificate.getEncoded()).getSubject();
             Date notBefore = new Date();
             Date notAfter = expiry.getTime();
-            BigInteger serialNumber = BigInteger.valueOf(System.currentTimeMillis());
-
+            BigInteger serialNumber;
+            do {
+                serialNumber = new BigInteger(CERT_SERIAL_SIZE, new SecureRandom());
+            } while (serialNumber.signum() == 0);
             SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
 
             // The subject should be left blank, per spec

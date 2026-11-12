@@ -140,7 +140,8 @@ public final class CredentialParser {
      */
     private List<X509Certificate> parsePEMCertificates(final String filename) {
         List<X509Certificate> certificates = null;
-        try (FileInputStream fis = new FileInputStream(filename); BufferedInputStream bis = new BufferedInputStream(fis)) {
+        try (FileInputStream fis = new FileInputStream(filename);
+             BufferedInputStream bis = new BufferedInputStream(fis)) {
             try {
                 CertificateFactory certificateFactory = CertificateFactory.getInstance(X509);
 

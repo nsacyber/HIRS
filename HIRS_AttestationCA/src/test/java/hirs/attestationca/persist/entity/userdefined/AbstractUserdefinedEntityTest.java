@@ -12,7 +12,7 @@ import hirs.attestationca.persist.entity.userdefined.info.OSInfo;
 import hirs.attestationca.persist.entity.userdefined.info.TPMInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * Class with definitions and functions common to multiple Userdefined Entity object tests.
  */
-@Log4j2
+@Slf4j
 public class AbstractUserdefinedEntityTest {
 
     /**

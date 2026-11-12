@@ -5,7 +5,7 @@ import hirs.utils.swid.SwidTagConstants;
 import jakarta.xml.bind.UnmarshalException;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -62,7 +62,7 @@ import java.util.stream.Stream;
  * Currently supports validation of support RIM hashes and
  * base RIM signatures.
  */
-@Log4j2
+@Slf4j
 public class ReferenceManifestValidator {
     private static final String SHA256 = "SHA-256";
     private static final int EIGHT_BIT_MASK = 0xff;

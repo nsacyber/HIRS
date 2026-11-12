@@ -397,6 +397,42 @@
                                 </div>
                             </form>
                         </li>
+                        <li>
+                            <form method="POST"
+                                  th:action="@{/HIRS_AttestationCAPortal/portal/policy/update-os-events-pxe-boot-ignore}"
+                                  th:object="${initialData}">
+                                Ignore OS Events for PXE Boot:
+                                <span th:text="${initialData.ignoreOsEvtPxeBootEnabled ? 'Enabled' : 'Disabled'}"></span>
+
+                                <!-- trigger to open the modal -->
+                                <a data-bs-toggle="modal" th:href="'#' + ignoreOSPxeBootPolicyModal">
+                                    <img class="action-icons" alt="Editor Icon"
+                                         th:src="@{/icons//svg/pencil-deep-sky-blue-fill-18dp.svg}"
+                                         title="Click here to edit the Ignore OS Events for PXE Boot Policy"
+                                         data-bs-toggle="tooltip" />
+                                </a>
+
+                                <!-- modal fragment -->
+                                <div
+                                        th:replace="~{fragments/modal :: modal( id='ignoreOSPxeBootPolicyModal',  label='Edit Ignore OS Events for PXE Boot Policy Setting', bodyContent=~{this::#osIgnoredPxeBootPolicyBody}, customFooterButtons=${null})}">
+                                    <!-- Define the content of the modal -->
+                                    <div id="osIgnoredPxeBootPolicyBody">
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreOsEvtPxeBootEnabled}" type="radio" value="true" />
+                                                Ignore OS Events for PXE Boot enabled
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input th:field="*{ignoreOsEvtPxeBootEnabled}" type="radio" value="false" />
+                                                Ignore OS Events for PXE Boot disabled
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </li>
                     </ul>
                 </div>
             </li>

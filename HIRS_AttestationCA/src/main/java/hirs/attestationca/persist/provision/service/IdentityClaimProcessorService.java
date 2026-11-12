@@ -22,7 +22,7 @@ import hirs.attestationca.persist.provision.helper.TpmObjectAttributes;
 import hirs.attestationca.persist.provision.helper.TpmPublicHelper;
 import hirs.attestationca.persist.validation.SupplyChainValidationService;
 import hirs.utils.HexUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ import java.util.Optional;
  * Service class responsible for processing the Provisioner's Identity Claim.
  */
 @Service
-@Log4j2
+@Slf4j
 public class IdentityClaimProcessorService {
     /**
      * Number of bytes to include in the TPM2.0 nonce.

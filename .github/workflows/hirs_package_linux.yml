@@ -5,10 +5,15 @@ on:
     branches:
       - 'development'
       - 'main'
+    paths-ignore:
+      - '**/*.md'       # Ignores all Markdown files
+      - '**/*.png'      # Ignores all PNG images
+      - '**/*.jpg'      # Ignores all JPG images
+      - 'mkdocs.yml'    # Ignores the MkDocs config
   workflow_dispatch:
 
 jobs:
-  # run the package script for HIRS ACA, Provisioners, tcg_rim_tool, and tcg_eventlog_tool
+  # run the package script for HIRS ACA, Provisioners, and tcg_eventlog_tool
   Package_linux:
     runs-on: ubuntu-latest
     permissions:
@@ -16,15 +21,15 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
       - name: Set up JDK 25
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           java-version: '25'
           distribution: 'temurin'
@@ -40,7 +45,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install git curl nano cron mariadb-server
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
+        uses: gradle/actions/setup-gradle@v6
       - name: Execute Gradle build
         run: |
           ./gradlew clean;
@@ -51,41 +56,41 @@ jobs:
           cp HIRS_AttestationCAPortal/build/libs/*.jar artifacts/jars/. 
           cp HIRS_AttestationCA/build/libs/*.jar artifacts/jars/.
           cp HIRS_Utils/build/libs/*.jar artifacts/jars/.
-          cp tools/tcg_rim_tool/build/distributions/*.zip artifacts/win
+          cp tools/tcg_eventlog_tool/build/libs/*.jar artifacts/jars/.
           cp tools/tcg_eventlog_tool/build/distributions/*.zip artifacts/win
           cp package/win/tcg-rim-tool/* artifacts/win/hirstools
       - name: Archive RPM files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: RPM_Files
           path: |
             HIRS_AttestationCAPortal/build/distributions/*.rpm
             HIRS_Provisioner.NET/build/distributions/*.rpm
-            tools/tcg_rim_tool/build/distributions/*.rpm
             tools/tcg_eventlog_tool/build/distributions/*.rpm
           if-no-files-found: error
       - name: Archive DEB files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: DEB_Files
           path: |
             HIRS_AttestationCAPortal/build/distributions/*.deb
             HIRS_Provisioner.NET/build/distributions/*.deb
+            tools/tcg_eventlog_tool/build/distributions/*.deb
           if-no-files-found: error
       - name: War files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: WAR_Files
           path: HIRS_AttestationCAPortal/build/libs/HIRS_AttestationCAPortal.war
           if-no-files-found: error
       - name: JAR_Files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: JAR_Files
           path: artifacts/jars/
           if-no-files-found: error
       - name: ZIP_Files
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ZIP_Files
           path: artifacts/win/
@@ -108,7 +113,7 @@ jobs:
 
     steps:
       - name: Download packages
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: ${{ matrix.artifact }}
           path: dist

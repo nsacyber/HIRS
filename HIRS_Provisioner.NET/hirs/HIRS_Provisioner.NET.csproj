@@ -33,7 +33,7 @@
         <PrivateAssets>all</PrivateAssets> <!-- These assets will be consumed but won't flow to the parent project -->
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.12" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.401" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.402" PrivateAssets="All" />
     <ProjectReference Include="..\TSS.MSR\TSS.NET\TSS.Net\TSS.Net.csproj" /> <!--Use ProjectReference until an updated nuget package is available-->
     <PackageReference Include="Mono.Posix.NETStandard" Version="1.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

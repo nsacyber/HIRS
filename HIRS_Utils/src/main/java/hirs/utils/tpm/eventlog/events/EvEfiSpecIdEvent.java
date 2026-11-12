@@ -130,7 +130,7 @@ public class EvEfiSpecIdEvent {
         for (int i = 0; i < numberOfAlg; i++) {
             System.arraycopy(efiSpecId, algLocation + UefiConstants.OFFSET_4 * i, algorithmIDBytes,
                     0, UefiConstants.SIZE_2);
-            String alg = TcgTpmtHa.tcgAlgIdToString(HexUtils.leReverseInt(algorithmIDBytes));
+            String alg = TcgTpmtHa.tcgAlgIdToName(HexUtils.leReverseInt(algorithmIDBytes));
             algList.add(alg);
         }
     }

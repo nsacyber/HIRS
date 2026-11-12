@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -35,7 +35,7 @@ import java.net.InetAddress;
                 + "null checks.")
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-@Log4j2
+@Slf4j
 @Entity
 public class DeviceInfoReport extends AbstractEntity implements Serializable {
 
@@ -227,5 +227,4 @@ public class DeviceInfoReport extends AbstractEntity implements Serializable {
         this.hardwareInfo = hardwareInfo;
     }
 }
-
 

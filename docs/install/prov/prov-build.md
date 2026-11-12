@@ -4,22 +4,29 @@ title: Provisioner Build from Source
 
 # Build Provisioner From Source
 
+## Install .NET SDK
+
 The HIRS .NET Provisioner requires the
 [.NET SDK :fontawesome-solid-external-link:](https://learn.microsoft.com/en-us/dotnet/core/install/){:target="_blank"}
 version 10 or later. Please follow the instructions from Microsoft for installing the .NET SDK on your system.
 
-!!! note
+!!! tip
+
+    If you are on a RHEL or Rocky, you can use:<br>
+    ```shell
+    sudo dnf install dotnet-sdk-10.0
+    ```
+
+!!! tip
 
     After installing the .NET SDK, you must restart your terminal for the 
     environment variables to get updated.
 
 ## Build the Provisioner Packages
 
-Most of the build commands work the same way whether they are run from Windows or Linux.
-Location of where these commands are run matters. The directory the command should be run
-from is included in each section below.
-
-## Steps to Build
+Most of the build commands for HIRS .NET Provisioner work the same way whether
+they are run from Windows or Linux. Location of where these commands are run matters.
+The directory the command should be run from is included in each section below.
 
 1. Checkout HIRS from Github
    ```shell
@@ -55,19 +62,24 @@ from is included in each section below.
     ```
     On Windows, the same command will build the provisioner MSI.
 
-!!! note
+!!! info
 
     After building, you'll find package files under the provisioner project folder.
     ```shell
     cd HIRS_Provisioner.NET/build/distributions/
     ```
 
+## Install the Provisioner Package
+
+To install the Provisioner package, see the
+[Provisioner install](prov-install.md/#package-installation) section.
+
 ## Installation Directory
 
 The Provisioner is installed to the following directory:
 
-=== "Windows"
-    C:\Program Files\(x86)\HIRS_Provisioner.NET
 === "Linux"
     /usr/share/hirs
+=== "Windows"
+    C:\Program Files\(x86)\HIRS_Provisioner.NET
 

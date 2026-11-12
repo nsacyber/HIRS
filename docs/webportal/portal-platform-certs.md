@@ -7,7 +7,7 @@ title: Platform Certificates
 The **Platform Certificates** page is used to upload, download, delete, and view 
 [Platform Certificates](../background/inputs/platform-cert.md).
 
-<img src= "../../images/portal-plat.png" alt="Portal Platform Cert page" style="border: 2px solid grey;">
+<img src= "../../images/portal-plat.png" alt="Portal Platform Cert page" style="border: 2px solid grey;" class="portal-wide">
 
 Just as the TPM uses an EK Credential to establish trust, the Platform Certificate is used
 to validate the platform itself. The ACA requires that the Platform Certificate's certificate
@@ -18,7 +18,7 @@ The user can view the uploaded Platform Certificate by clicking the
 icon under the `Options` tab, which will give the user a variety of details about the 
 manufacturer of the device and the components contained within:
 
-<img src= "../../images/portal-plat-cert.png" alt="v" style="border: 2px solid grey;">
+<img src= "../../images/portal-plat-cert.png" alt="Portal Platform Cert details" style="border: 2px solid grey;" class="portal-wide">
 
 !!! note
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hirs.attestationca.persist.entity.userdefined.info.ComponentInfo;
 import hirs.attestationca.persist.exceptions.SupplyChainValidatorException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.CertException;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Base class used for supply chain credential validators. This class provides common functionality and
  * structure for validators
  */
-@Log4j2
+@Slf4j
 public class SupplyChainCredentialValidator {
 
     /**
@@ -185,11 +185,16 @@ public class SupplyChainCredentialValidator {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
+        if (additionalCerts.isEmpty()) {
+            return "No certificates available for chain validation";
+        }
         final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
         X509Certificate nextInChain = null;
+        Set<X509Certificate> visitedCerts = new HashSet<>();
 
         do {
+            foundRootOfCertChain = "";
             for (X509Certificate trustedCert : additionalCerts) {
                 boolean issuerMatchesSubject = false;
                 boolean signatureMatchesPublicKey = false;
@@ -207,6 +212,10 @@ public class SupplyChainCredentialValidator {
                         log.info("CA Root found while validating the X509 Attribute Certificate Holder.");
                         return "";
                     } else {
+                        if (!visitedCerts.add(trustedCert)) {
+                            log.warn("Circular certificate chain detected");
+                            return "Circular certificate chain detected";
+                        }
                         foundRootOfCertChain = intCAError;
                         nextInChain = trustedCert;
                         break;
@@ -246,11 +255,16 @@ public class SupplyChainCredentialValidator {
             throw new SupplyChainValidatorException(
                     "Certificate or validation certificates are null");
         }
+        if (additionalCerts.isEmpty()) {
+            return "No certificates available for chain validation";
+        }
         final String intCAError = "Intermediate signing cert found, check for CA cert";
         String foundRootOfCertChain = "";
         X509Certificate startOfChain = cert;
+        Set<X509Certificate> visitedCerts = new HashSet<>();
 
         do {
+            foundRootOfCertChain = "";
             for (X509Certificate trustedCert : additionalCerts) {
                 boolean issuerMatchesSubject = issuerMatchesSubjectDN(startOfChain, trustedCert);
                 boolean signatureMatchesPublicKey = signatureMatchesPublicKey(startOfChain,
@@ -260,6 +274,10 @@ public class SupplyChainCredentialValidator {
                         log.info("CA Root found while validating X509 Certificate.");
                         return "";
                     } else {
+                        if (!visitedCerts.add(trustedCert)) {
+                            log.warn("Circular certificate chain detected");
+                            return "Circular certificate chain detected";
+                        }
                         foundRootOfCertChain = intCAError;
                         startOfChain = trustedCert;
                         break;

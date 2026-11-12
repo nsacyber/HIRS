@@ -580,7 +580,14 @@ function getValidationDisplayHtml(full, validationType) {
           }
 
           if (certType) {
-            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}&provisionSessionId=${full.provisionSessionId}">`;
+            let sessionParameter = "";
+            if (typeof full.provisionSessionId === "string") {
+              const sessionId = full.provisionSessionId.trim();
+              if (sessionId && !["null", "undefined"].includes(sessionId.toLowerCase())) {
+                sessionParameter = `&provisionSessionId=${encodeURIComponent(sessionId)}`;
+              }
+            }
+            html += `<a href="certificate-details?id=${currentValidation.certificatesUsed[0].id}&type=${certType}${sessionParameter}">`;
           }
         }
 
