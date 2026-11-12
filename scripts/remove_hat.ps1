@@ -4,7 +4,8 @@
 
 .DESCRIPTION
     Removes the aca and hat containers (and with them the ACA database), the HAT network, the
-    localhost:8443 mapping, the "ACA HTTPS" firewall rule and the desktop shortcuts.
+    localhost:8443 mapping, the "ACA HTTPS" firewall rule, the trusted portal certificate and
+    the desktop shortcuts.
 
 .PARAMETER KeepFiles
     Never delete the install folder.
@@ -24,6 +25,10 @@ param(
 
 $ErrorActionPreference = 'Continue'
 $ComposeProject = 'hirs'      # the same fixed project name start_hat.ps1 uses
+# Where start_hat.ps1 trusts the portal's TLS certificate, and the label it gives the entry.
+$CertStoreName     = 'TrustedPeople'
+$CertStoreLocation = 'LocalMachine'
+$CertLabel         = 'HIRS ACA portal (added by start_hat.ps1)'
 
 # The compose file next to this script (a plain install folder), else where the HIRS repository keeps it.
 $LocalCompose = Join-Path $PSScriptRoot 'compose-acceptance-test-windows.yml'
@@ -122,6 +127,19 @@ try {
     Write-Ok 'Firewall rule "ACA HTTPS" removed.'
 }
 catch { Write-Note "Could not remove the firewall rule: $($_.Exception.Message)" }
+
+# Only entries carrying start_hat.ps1's label are removed; anything added by hand stays.
+try {
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($CertStoreName, $CertStoreLocation)
+    $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+    try {
+        $ours = @($store.Certificates | Where-Object { $_.FriendlyName -eq $CertLabel })
+        foreach ($cert in $ours) { $store.Remove($cert) }
+    }
+    finally { $store.Close() }
+    if ($ours.Count -gt 0) { Write-Ok 'Trusted portal certificate removed.' }
+}
+catch { Write-Note "Could not remove the trusted portal certificate: $($_.Exception.Message)" }
 
 $desktop = [Environment]::GetFolderPath('Desktop')
 foreach ($shortcut in 'Start HAT.lnk', 'start_hat.lnk') {

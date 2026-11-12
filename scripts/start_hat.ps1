@@ -17,7 +17,8 @@
       4. Makes sure the HAT's PXE services came up and stay up.
       5. Points https://localhost:8443 at the ACA container. The container's address changes
          whenever it restarts, so this is redone on every run.
-      6. Waits until the ACA portal answers.
+      6. Waits until the ACA portal answers, and makes this PC trust the portal's own TLS
+         certificate (that one certificate only), so Edge and Chrome show no warning for it.
       7. If the ACA container was created during this run, its database is empty, so
          reset_hat.ps1 is run to set the test policy and load the trust certificates.
          Otherwise the policy and the number of trust certificates are only checked and shown.
@@ -59,6 +60,10 @@
     Skip step 7: do not load policy and trust certificates into a new ACA, and do not check
     them on an existing one.
 
+.PARAMETER SkipCertTrust
+    Do not add the portal's TLS certificate to this PC's trusted certificates. The browser
+    then shows a certificate warning for https://localhost:8443, as it always did.
+
 .PARAMETER NoBrowser
     Do not open the ACA portal when finished.
 
@@ -86,6 +91,7 @@ param(
     [switch] $Force,
     [switch] $SkipCableCheck,
     [switch] $SkipAcaSetup,
+    [switch] $SkipCertTrust,
     [switch] $NoBrowser,
     [switch] $CreateShortcut,
     [switch] $Pause,
@@ -106,6 +112,11 @@ $AdapterOption = 'com.docker.network.windowsshim.interface'
 $ComposeProject = 'hirs'
 $FirewallRule = 'ACA HTTPS'
 $ShortcutName = 'Start HAT.lnk'
+# Where the portal's TLS certificate is trusted, and the label that marks the entry as ours.
+# remove_hat.ps1 uses the same three values.
+$CertStoreName     = 'TrustedPeople'
+$CertStoreLocation = 'LocalMachine'
+$CertLabel         = 'HIRS ACA portal (added by start_hat.ps1)'
 $PortalPort   = 8443
 $PortalPath   = '/HIRS_AttestationCAPortal/portal/index'
 $PortalUrl    = "https://localhost:$PortalPort$PortalPath"
@@ -522,6 +533,105 @@ function Wait-Aca {
 }
 
 # ---------------------------------------------------------------------------------------------
+# Portal certificate (so the browser shows no warning for https://localhost:8443)
+# ---------------------------------------------------------------------------------------------
+# Only the portal's own server certificate is trusted, in the "Trusted People" store: that
+# trusts this one certificate and nothing signed by anyone. The ACA's CA certificates are NOT
+# installed on purpose. The Windows ACA image creates its keys when the image is built, so
+# everyone who has the image has the CA's private keys; a PC that trusted that CA would accept
+# a forged certificate for any web site.
+
+# The certificate the portal presents on localhost, exactly as a browser receives it.
+function Get-PortalCertificate {
+    $client = New-Object System.Net.Sockets.TcpClient
+    try {
+        # Every step is time-limited: something that accepts the connection and then stays
+        # silent must not hang this script.
+        $pending = $client.BeginConnect('127.0.0.1', $PortalPort, $null, $null)
+        if (-not $pending.AsyncWaitHandle.WaitOne(5000) -or -not $client.Connected) { return $null }
+        $client.EndConnect($pending)
+        $client.ReceiveTimeout = 10000
+        $client.SendTimeout    = 10000
+        $acceptAny = [System.Net.Security.RemoteCertificateValidationCallback] { param($s, $c, $ch, $e) $true }
+        $ssl = New-Object System.Net.Security.SslStream($client.GetStream(), $false, $acceptAny)
+        try {
+            $ssl.AuthenticateAsClient('localhost', $null, [System.Security.Authentication.SslProtocols]::Tls12, $false)
+            return (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($ssl.RemoteCertificate))
+        }
+        finally { $ssl.Dispose() }
+    }
+    catch { return $null }
+    finally { $client.Close() }
+}
+
+# Why a certificate must not be trusted, or $null when it is fine.
+function Get-PortalCertificateProblem {
+    param($Certificate)
+    $basic = $Certificate.Extensions | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509BasicConstraintsExtension] }
+    if ($basic -and $basic.CertificateAuthority) { return 'it is a CA certificate, which this script never trusts' }
+    $now = Get-Date
+    if ($now -lt $Certificate.NotBefore -or $now -gt $Certificate.NotAfter) {
+        return ('it is only valid from {0:yyyy-MM-dd} to {1:yyyy-MM-dd}' -f $Certificate.NotBefore, $Certificate.NotAfter)
+    }
+    $names = $Certificate.Extensions | Where-Object { $_.Oid.Value -eq '2.5.29.17' }
+    if (-not $names -or $names.Format($false) -notmatch '(^|[^A-Za-z0-9.-])localhost($|[^A-Za-z0-9.-])') { return 'it is not issued for the name localhost' }
+    return $null
+}
+
+function Open-PortalCertStore {
+    param([string] $Access)
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($CertStoreName, $CertStoreLocation)
+    $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags] $Access)
+    return $store
+}
+
+# Trusts the portal's current certificate and drops one this script added for an earlier ACA.
+# Never stops the start: on any problem the browser simply shows its warning, as before.
+function Update-PortalCertificateTrust {
+    try {
+        $cert = Get-PortalCertificate
+        if (-not $cert) {
+            Write-Note "Could not read the portal's certificate, so the browser may show a certificate warning."
+            return
+        }
+        $problem = Get-PortalCertificateProblem $cert
+        if ($problem) {
+            Write-Note "The portal's certificate was not added to this PC's trusted certificates, because $problem. The browser will show a certificate warning."
+            return
+        }
+
+        $store = Open-PortalCertStore 'ReadWrite'
+        try {
+            $present = @($store.Certificates | Where-Object { $_.Thumbprint -eq $cert.Thumbprint }).Count -gt 0
+            $stale   = @($store.Certificates | Where-Object { $_.FriendlyName -eq $CertLabel -and $_.Thumbprint -ne $cert.Thumbprint })
+            foreach ($old in $stale) { $store.Remove($old) }
+            if (-not $present) {
+                $cert.FriendlyName = $CertLabel
+                $store.Add($cert)
+                if ($stale.Count -gt 0) { Write-Ok 'The ACA has a new portal certificate. This PC now trusts the new one in place of the old one.' }
+                else { Write-Ok "This PC now trusts the portal's certificate. Edge and Chrome should open the portal without a certificate warning." }
+            }
+        }
+        finally { $store.Close() }
+    }
+    catch { Write-Note "Could not update the trusted portal certificate: $($_.Exception.Message)" }
+}
+
+# For -StatusOnly: reports, changes nothing.
+function Show-PortalCertificateTrust {
+    try {
+        $cert = Get-PortalCertificate
+        if (-not $cert) { return }
+        $store = Open-PortalCertStore 'ReadOnly'
+        try { $present = @($store.Certificates | Where-Object { $_.Thumbprint -eq $cert.Thumbprint }).Count -gt 0 }
+        finally { $store.Close() }
+        if ($present) { Write-Ok "The portal's certificate is trusted on this PC." }
+        else { Write-Note "The portal's certificate is not trusted on this PC, so the browser shows a certificate warning. Running this script without -StatusOnly adds it." }
+    }
+    catch { }
+}
+
+# ---------------------------------------------------------------------------------------------
 # Compose file helpers (best effort; used only for warnings)
 # ---------------------------------------------------------------------------------------------
 function Get-ComposeService {
@@ -656,6 +766,7 @@ if (-not (Get-Command 'docker' -ErrorAction SilentlyContinue)) {
 
 if ($StatusOnly) {
     Show-Status
+    if ((Get-ContainerStatus $AcaContainer) -eq 'running') { Show-PortalCertificateTrust }
     if (-not $SkipAcaSetup -and (Test-Path -LiteralPath $ResetScript) -and (Get-ContainerStatus $AcaContainer) -eq 'running') {
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ResetScript -CheckOnly 2>&1 | ForEach-Object { Write-Host "$_" }
     }
@@ -672,6 +783,7 @@ if (-not (Test-IsAdmin)) {
     if ($Force)          { $forward += '-Force' }
     if ($SkipCableCheck) { $forward += '-SkipCableCheck' }
     if ($SkipAcaSetup)   { $forward += '-SkipAcaSetup' }
+    if ($SkipCertTrust)  { $forward += '-SkipCertTrust' }
     if ($NoBrowser)      { $forward += '-NoBrowser' }
     try {
         Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $forward -ErrorAction Stop
@@ -843,6 +955,7 @@ if (-not $mapped) {
 Write-Line 'Waiting for the ACA portal to answer...'
 if (-not (Wait-Aca)) { Exit-Script 1 }
 Write-Ok "ACA portal is up: $PortalUrl"
+if (-not $SkipCertTrust) { Update-PortalCertificateTrust }
 
 # --- 7. Policy and trust certificates ----------------------------------------------------------
 # A new ACA has an empty trust store and the default policy, which validates nothing: devices
