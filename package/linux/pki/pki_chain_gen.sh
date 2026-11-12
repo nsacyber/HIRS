@@ -48,9 +48,48 @@ if ! { [ "$ASYM_ALG" == "rsa" ] || \
     exit 1
 fi
 
-if [ -z ${LOG_FILE} ]; then
+if [ -z "${LOG_FILE}" ]; then
        LOG_FILE="/dev/null"
 fi
+
+
+# Diagnostic mode: stop on the first failed command, including failures in pipelines.
+# Do not enable shell xtrace (-x): PKI passwords are supplied as command arguments.
+set -Ee -o pipefail
+
+PKI_STAGE="initialization"
+pki_debug() {
+    printf '[PKI DEBUG] %s | %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" | tee -a "$LOG_FILE"
+}
+pki_file_debug() {
+    local file="$1"
+    if [ -f "$file" ]; then
+        pki_debug "FILE: $file (size=$(stat -c %s "$file") bytes)"
+    else
+        pki_debug "FILE MISSING: $file"
+    fi
+}
+pki_error() {
+    local status="$1" line="$2" func="$3"
+    trap - ERR
+    pki_debug "FAILED: stage=$PKI_STAGE, function=$func, line=$line, exit=$status"
+    pki_debug "See installation log for command stderr: $LOG_FILE"
+    exit "$status"
+}
+trap 'pki_error "$?" "$LINENO" "${FUNCNAME[0]:-main}"' ERR
+
+pki_debug "Environment: actor=$ACTOR, algorithm=$ASYM_ALG, size=$ASYM_SIZE, hash=$HASH_ALG"
+pki_debug "Working directory: $(pwd)"
+pki_debug "Java executable: $(readlink -f "$(command -v java)")"
+pki_debug "Keytool executable: $(readlink -f "$(command -v keytool)")"
+pki_debug "OpenSSL executable: $(readlink -f "$(command -v openssl)")"
+java -version 2>&1 | tee -a "$LOG_FILE"
+PKI_STAGE="keytool -J-version"
+pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
+keytool -J-version 2>&1 | tee -a "$LOG_FILE"
+PKI_STAGE="openssl version"
+pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
+openssl version -a 2>&1 | tee -a "$LOG_FILE"
 
 if [ "$ASYM_ALG" == "mldsa" ]; then
     case "$ASYM_SIZE" in
@@ -152,13 +191,20 @@ add_to_stores () {
    KEY_ALIAS=$ALIAS"_key"
    echo "Adding $ALIAS to the $TRUSTSTORE and $KEYSTORE" | tee -a "$LOG_FILE"
    # Add the cert and key to the key store. make a p12 file to import into te keystore
+   PKI_STAGE="openssl pkcs12"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:"$PASS" -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
+   PKI_STAGE="keytool -importkeystore"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$KEY_ALIAS" >> "$LOG_FILE" 2>&1
    # Import the cert into a java trust store via keytool
+   PKI_STAGE="keytool -import"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
    #echo "key with alias of $ALIAS stored"
+   pki_debug "SUCCESS: Root keystore operations for $CERT_PATH"
    rm tmpkey.p12
 }
 
@@ -183,27 +229,39 @@ create_cert () {
    # Database doesnt support encypted key so create DB without passwords
    if [[ "$SUBJ_DN" = *"DB"* ]]; then
        if [ "$ASYM_ALG" == "rsa" ]; then
+           PKI_STAGE="openssl genrsa"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl genrsa \
                -out "$CERT_PATH".key \
                "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
+           PKI_STAGE="openssl req"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl req -new \
                -key "$CERT_PATH".key \
                -out "$CERT_PATH".csr \
                -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
        elif [ "$ASYM_ALG" == "ecc" ]; then
+           PKI_STAGE="openssl ecparam"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl ecparam \
                -genkey \
                -name "$ECC_NAME" \
                -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+           PKI_STAGE="openssl req"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl req -new \
                -key "$CERT_PATH".key \
                -out "$CERT_PATH".csr \
                -"$HASH_ALG" \
                -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
        elif [ "$ASYM_ALG" == "mldsa" ]; then
+           PKI_STAGE="openssl genpkey"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl genpkey \
                -algorithm "$MLDSA_NAME" \
                -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+           PKI_STAGE="openssl req"
+           pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
            openssl req -new \
                -key "$CERT_PATH".key \
                -out "$CERT_PATH".csr \
@@ -211,18 +269,24 @@ create_cert () {
        fi
       else
           if [ "$ASYM_ALG" == "rsa" ]; then
+              PKI_STAGE="openssl req"
+              pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
               openssl req -newkey rsa:"$ASYM_SIZE" \
                   -keyout "$CERT_PATH".key \
                   -out "$CERT_PATH".csr \
                   -subj "$SUBJ_DN" \
                   -passout pass:"$PASS" >> "$LOG_FILE" 2>&1
           elif [ "$ASYM_ALG" == "ecc" ]; then
+              PKI_STAGE="openssl genpkey"
+              pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
               openssl genpkey \
                   -algorithm EC \
                   -pkeyopt ec_paramgen_curve:P-521 \
                   -aes256 \
                   -pass "pass:$PASS" \
                   -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+              PKI_STAGE="openssl req"
+              pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
               openssl req -new \
                   -key "$CERT_PATH".key \
                   -passin "pass:$PASS" \
@@ -230,11 +294,15 @@ create_cert () {
                   -"$HASH_ALG" \
                   -subj "$SUBJ_DN" >> "$LOG_FILE" 2>&1
           elif [ "$ASYM_ALG" == "mldsa" ]; then
+              PKI_STAGE="openssl genpkey"
+              pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
               openssl genpkey \
                   -algorithm "$MLDSA_NAME" \
                   -aes256 \
                   -pass "pass:$PASS" \
                   -out "$CERT_PATH".key >> "$LOG_FILE" 2>&1
+              PKI_STAGE="openssl req"
+              pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
               openssl req -new \
                   -key "$CERT_PATH".key \
                   -passin "pass:$PASS" \
@@ -243,6 +311,8 @@ create_cert () {
           fi
       fi
    if [ "$ASYM_ALG" == "mldsa" ]; then
+       PKI_STAGE="openssl ca"
+       pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
        openssl ca -config ca.conf \
            -keyfile "$ISSUER_KEY" \
            -cert "$ISSUER_CERT" \
@@ -253,6 +323,8 @@ create_cert () {
            -batch \
            -notext >> "$LOG_FILE" 2>&1
    else
+       PKI_STAGE="openssl ca"
+       pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
        openssl ca -config ca.conf \
            -keyfile "$ISSUER_KEY" \
            -md "$HASH_ALG" \
@@ -270,13 +342,20 @@ create_cert () {
    # remove csr file
    rm -f "$CERT_PATH".csr
    # Add the cert and key to the key store. make a p12 file to import into te keystore
+   PKI_STAGE="openssl pkcs12"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl pkcs12 -export -in "$CERT_PATH".pem -inkey "$CERT_PATH".key -out tmpkey.p12 -passin pass:$PASS -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC -passout pass:$PASS  >> "$LOG_FILE" 2>&1
    # Use the p12 file to import into a java keystore via keytool
+   PKI_STAGE="keytool -importkeystore"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    keytool -importkeystore -srckeystore tmpkey.p12 -destkeystore $KEYSTORE -srcstoretype pkcs12 -srcstorepass $PASS -deststoretype jks -deststorepass $PASS -noprompt -alias 1 -destalias "$KEY_ALIAS" >> "$LOG_FILE" 2>&1
    # Import the cert into a java trust store via keytool
+   PKI_STAGE="keytool -import"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    keytool -import -keystore $TRUSTSTORE -storepass $PASS -file "$CERT_PATH".pem  -noprompt -alias "$ALIAS" >> "$LOG_FILE" 2>&1
    # Remove the temp p1 file.
    #echo "Key with alias of $ALIAS stored in jks"
+   pki_debug "SUCCESS: Certificate keystore operations for $CERT_PATH"
    rm -f tmpkey.p12 &>/dev/null
 }
 
@@ -312,16 +391,25 @@ create_cert_chain () {
    cat "$PKI_CA1.pem" "$PKI_CA2.pem" "$PKI_CA3.pem" "$PKI_INT.pem" "$PKI_ROOT.pem" >  "$TRUST_STORE_FILE"
 
    # echo "Checking signer cert using tust store..."
+   PKI_STAGE="openssl verify"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl verify -CAfile "$TRUST_STORE_FILE" $RIM_SIGNER.pem | tee -a "$LOG_FILE"
 
    # Make JKS files for the mysql DB connector. P12 first then JKS...
+   PKI_STAGE="openssl pkcs12"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl pkcs12 -export -in $DB_CLIENT.pem -inkey $DB_CLIENT.key \
         -aes256 -macalg SHA256 -keypbe AES-256-CBC -certpbe AES-256-CBC \
         -passin pass:$PASS -passout pass:$PASS \
         -name "mysqlclientkey" -out $DB_CLIENT.p12 >> "$LOG_FILE" 2>&1
 
+   PKI_STAGE="keytool -importkeystore"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    keytool -importkeystore -srckeystore $DB_CLIENT.p12 -srcstoretype PKCS12 \
          -srcstorepass $PASS -destkeystore $DB_CLIENT.jks -deststoretype JKS -deststorepass $PASS >> "$LOG_FILE" 2>&1
+   pki_file_debug "$DB_CLIENT.p12"
+   pki_file_debug "$DB_CLIENT.jks"
+   pki_debug "SUCCESS: Completed certificate chain for $CERT_PREFIX"
 }
 
 # Needed for older versions of openssl
@@ -331,9 +419,13 @@ if [ "$ASYM_ALG" == "rsa" ]; then
    # Create Root CA key pair and self signed cert
    echo "Generating RSA Root CA ...." | tee -a "$LOG_FILE"
    #openssl genrsa -out "$PKI_ROOT".key -aes256 -passout pass:"$PASS" "$ASYM_SIZE" >> "$LOG_FILE" 2>&1
+   PKI_STAGE="openssl genpkey"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
 
    # Create a self signed CA certificate
+   PKI_STAGE="openssl req"
+   pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
    openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT".key -subj "$ROOT_DN" \
           -extensions ca_extensions -out "$PKI_ROOT".pem \
           -passin pass:"$PASS" >> "$LOG_FILE" 2>&1
@@ -347,9 +439,13 @@ if [ "$ASYM_ALG" == "ecc" ]; then
     # Create Root CA key pair and self signed cert
     echo "Generating Ecc Root CA ...." | tee -a "$LOG_FILE"
     #openssl ecparam -genkey -name "$ECC_NAME" -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
+    PKI_STAGE="openssl genpkey"
+    pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
     openssl genpkey -algorithm "EC" -pkeyopt ec_paramgen_curve:P-521 -aes256 --pass "pass:$PASS" -out "$PKI_ROOT".key
 
     # Create a self signed CA certificate
+    PKI_STAGE="openssl req"
+    pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
     openssl req -new -config ca.conf -x509 -days 3650 -key "$PKI_ROOT".key -subj "$ROOT_DN" \
           -extensions ca_extensions -out "$PKI_ROOT".pem \
           -passin pass:"$PASS" >> "$LOG_FILE" 2>&1
@@ -362,6 +458,8 @@ fi
 if [ "$ASYM_ALG" == "mldsa" ]; then
     # Create Root CA key pair and self signed cert
     echo "Generating ML-DSA Root CA ...." | tee -a "$LOG_FILE"
+    PKI_STAGE="openssl genpkey"
+    pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
     openssl genpkey \
         -algorithm "$MLDSA_NAME" \
         -aes256 \
@@ -369,6 +467,8 @@ if [ "$ASYM_ALG" == "mldsa" ]; then
         -out "$PKI_ROOT".key >> "$LOG_FILE" 2>&1
 
     # Create a self signed CA certificate
+    PKI_STAGE="openssl req"
+    pki_debug "START: $PKI_STAGE | algorithm=$ASYM_ALG size=$ASYM_SIZE cert=${CERT_PATH:-$PKI_ROOT}"
     openssl req \
         -new \
         -config ca.conf \
