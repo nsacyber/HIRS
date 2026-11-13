@@ -1,63 +1,167 @@
-#Requires -RunAsAdministrator
-# Powershell script to install the HIRS Acceptance Test on Windows
+<#
+.SYNOPSIS
+    Removes the HIRS Acceptance Test (HAT) from this PC.
 
-$Service = Get-Service -Name Docker
-if ($Service.Status -ne 'Running') {
-  Write-Host "Docker is either NOT running or NOT installed." 
-  Write-Host "Please start Docker Desktop."
-  Write-Host "Exiting without removing the HAT. Hit Any Key to exit"
-  $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-  Exit;
-} else {
-      Write-Host "Docker is running, continuing HAT removal..."
-}
-$CurrentDir = Split-Path -Path (Get-Location) -Leaf
+.DESCRIPTION
+    Removes the aca and hat containers (and with them the ACA database), the HAT network, the
+    localhost:8443 mapping, the "ACA HTTPS" firewall rule, the trusted portal certificate and
+    the desktop shortcuts.
 
-if ($CurrentDir -ne 'hirs') {
-	Write-Host "Please run this script from the hirs directory"
-	Write-Host "Exiting without removing the HAT. Hit Any Key to exit"
-  $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-  Exit;
-}
-# remove Firewall Rules
-Write-Host "Removing HAT FW Rule ACA HTTPS"
-netsh advfirewall firewall delete rule name="ACA HTTPS"
+.PARAMETER KeepFiles
+    Never delete the install folder.
 
-# remove HAT Docker containers and images
-$IsAcaRunning = docker container inspect -f '{{.State.Running}}' aca 2>&1 | out-null
-$IsHatRunning = docker container inspect -f '{{.State.Running}}' hat 2>&1 | out-null
+.PARAMETER Force
+    Do not ask for confirmation.
 
-if ($IsHatRunning -eq "true") {
-  Write-Host "Shutting down the HAT container"
-  docker stop hat
-}
+.PARAMETER Pause
+    Keep the window open at the end. Set automatically after elevation.
+#>
+[CmdletBinding()]
+param(
+    [switch] $KeepFiles,
+    [switch] $Force,
+    [switch] $Pause
+)
 
-if ($IsAcaRunning -eq "true") {
-  Write-Host "Shutting down the ACA container"
-  docker stop aca
-}
-Write-Host "Removing HAT Containers"
-docker stop aca
-docker stop hat
-docker rm aca
-docker rm hat
+$ErrorActionPreference = 'Continue'
+$ComposeProject = 'hirs'      # the same fixed project name start_hat.ps1 uses
+# Where start_hat.ps1 trusts the portal's TLS certificate, and the label it gives the entry.
+$CertStoreName     = 'TrustedPeople'
+$CertStoreLocation = 'LocalMachine'
+$CertLabel         = 'HIRS ACA portal (added by start_hat.ps1)'
 
-Write-Host "Remove HAT docker network"
-docker network rm hat_network
+# The compose file next to this script (a plain install folder), else where the HIRS repository keeps it.
+$LocalCompose = Join-Path $PSScriptRoot 'compose-acceptance-test-windows.yml'
+$ComposeFile  = $LocalCompose
+$inRepo = Join-Path $PSScriptRoot '..\.ci\docker\compose-acceptance-test-windows.yml'
+if (-not (Test-Path -LiteralPath $ComposeFile) -and (Test-Path -LiteralPath $inRepo)) { $ComposeFile = $inRepo }
 
-Write-Host "Removing HAT images"
+function Write-Ok   { param([string] $Text) Write-Host "    [ OK ] $Text" -ForegroundColor Green }
+function Write-Note { param([string] $Text) Write-Host "    [NOTE] $Text" -ForegroundColor Yellow }
+function Write-Line { param([string] $Text) Write-Host "    $Text" }
 
-#docker image rm ghcr.io/nsacyber/hirs/aca:latest
-#docker image rm ghcr.io/nsacyber/hirs/hat:latest
-
-Write-Host "Removing local HAT folder and files"
-cd ..
-
-if (Test-Path -LiteralPath hirs) {
-  Remove-Item -LiteralPath hirs -Recurse
+function Exit-Script {
+    param([int] $Code)
+    if ($Pause) { Write-Host ''; Read-Host 'Press Enter to close this window' | Out-Null }
+    exit $Code
 }
 
-Write-Host "Removing HAT Deskstop Shortcut"
-Remove-Item "$Home\Desktop\start_hat.lnk" -Force
+function Invoke-Native {
+    param([string] $Exe, [string[]] $Arguments)
+    $out = & $Exe @Arguments 2>&1 | ForEach-Object { "$_" }
+    return [pscustomobject]@{ Code = $LASTEXITCODE; Out = @($out) }
+}
 
-Write-Host "HAT has been removed from the system"
+function Test-IsAdmin {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    return (New-Object Security.Principal.WindowsPrincipal $identity).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+if (-not (Test-IsAdmin)) {
+    $forward = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"{0}"' -f $PSCommandPath), '-Pause')
+    if ($KeepFiles) { $forward += '-KeepFiles' }
+    if ($Force)     { $forward += '-Force' }
+    try { Start-Process -FilePath 'powershell.exe' -Verb RunAs -ArgumentList $forward -ErrorAction Stop }
+    catch {
+        Write-Host '    [FAIL] Administrator rights are needed and were not granted. Nothing was removed.' -ForegroundColor Red
+        Exit-Script 1
+    }
+    exit 0
+}
+
+Write-Host 'Removing the HIRS Acceptance Test (HAT)' -ForegroundColor White
+
+# Only a folder that is clearly a HAT install is ever deleted.
+$deleteFolder = (-not $KeepFiles) -and ((Split-Path -Leaf $PSScriptRoot) -ieq 'hirs') -and (Test-Path -LiteralPath $LocalCompose)
+
+if (-not $Force) {
+    Write-Host ''
+    Write-Host '    This removes the ACA and HAT containers. The ACA database (trust certificates, policy,' -ForegroundColor Yellow
+    Write-Host '    validation reports) is erased and cannot be recovered.' -ForegroundColor Yellow
+    if ($deleteFolder) { Write-Host "    The folder $PSScriptRoot is deleted as well." -ForegroundColor Yellow }
+    if ((Read-Host '    Type y to continue') -ne 'y') {
+        Write-Line 'Nothing was removed.'
+        Exit-Script 0
+    }
+}
+
+# --- Containers and network --------------------------------------------------------------------
+$dockerOk = $false
+if (Get-Command 'docker' -ErrorAction SilentlyContinue) {
+    $dockerOk = ((Invoke-Native 'docker' @('version', '--format', '{{.Server.Os}}')).Code -eq 0)
+}
+if ($dockerOk) {
+    if (Test-Path -LiteralPath $ComposeFile) {
+        & docker compose -p $ComposeProject -f $ComposeFile down 2>&1 | ForEach-Object { Write-Line "  $_" }
+    }
+    # Whatever is left (for example containers that were created by hand).
+    foreach ($name in 'aca', 'hat') {
+        if ((Invoke-Native 'docker' @('container', 'inspect', '-f', '{{.Name}}', $name)).Code -eq 0) {
+            Invoke-Native 'docker' @('rm', '-f', $name) | Out-Null
+        }
+    }
+    if ((Invoke-Native 'docker' @('network', 'inspect', '-f', '{{.Name}}', 'hat_network')).Code -eq 0) {
+        Invoke-Native 'docker' @('network', 'rm', 'hat_network') | Out-Null
+    }
+
+    $left = @()
+    foreach ($name in 'aca', 'hat') {
+        if ((Invoke-Native 'docker' @('container', 'inspect', '-f', '{{.Name}}', $name)).Code -eq 0) { $left += "container $name" }
+    }
+    if ((Invoke-Native 'docker' @('network', 'inspect', '-f', '{{.Name}}', 'hat_network')).Code -eq 0) { $left += 'network hat_network' }
+    if ($left.Count -eq 0) { Write-Ok 'Containers and HAT network removed. The images were kept.' }
+    else { Write-Note ("Could not remove: {0}. Remove them in Docker Desktop." -f ($left -join ', ')) }
+}
+else {
+    Write-Note 'Docker is not running, so the containers and the HAT network were NOT removed.'
+    Write-Line 'Start Docker Desktop and run this script again to remove them.'
+}
+
+# --- Host settings -----------------------------------------------------------------------------
+Invoke-Native 'netsh.exe' @('interface', 'portproxy', 'delete', 'v4tov4', 'listenport=8443', 'listenaddress=127.0.0.1') | Out-Null
+Write-Ok 'localhost:8443 mapping removed.'
+
+try {
+    Get-NetFirewallRule -DisplayName 'ACA HTTPS' -ErrorAction SilentlyContinue | Remove-NetFirewallRule -ErrorAction SilentlyContinue
+    Write-Ok 'Firewall rule "ACA HTTPS" removed.'
+}
+catch { Write-Note "Could not remove the firewall rule: $($_.Exception.Message)" }
+
+# Only entries carrying start_hat.ps1's label are removed; anything added by hand stays.
+try {
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($CertStoreName, $CertStoreLocation)
+    $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+    try {
+        $ours = @($store.Certificates | Where-Object { $_.FriendlyName -eq $CertLabel })
+        foreach ($cert in $ours) { $store.Remove($cert) }
+    }
+    finally { $store.Close() }
+    if ($ours.Count -gt 0) { Write-Ok 'Trusted portal certificate removed.' }
+}
+catch { Write-Note "Could not remove the trusted portal certificate: $($_.Exception.Message)" }
+
+$desktop = [Environment]::GetFolderPath('Desktop')
+foreach ($shortcut in 'Start HAT.lnk', 'start_hat.lnk') {
+    $path = Join-Path $desktop $shortcut
+    if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue }
+}
+Write-Ok 'Desktop shortcuts removed.'
+
+# --- Files -------------------------------------------------------------------------------------
+if ($deleteFolder -and $dockerOk) {
+    Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
+    Remove-Item -LiteralPath $PSScriptRoot -Recurse -Force -ErrorAction SilentlyContinue
+    if (Test-Path -LiteralPath $PSScriptRoot) { Write-Note "Some files in $PSScriptRoot are in use and were left behind. Delete the folder by hand." }
+    else { Write-Ok "Folder $PSScriptRoot deleted." }
+}
+elseif ($deleteFolder) {
+    Write-Note "The folder $PSScriptRoot was kept, because the containers could not be removed yet."
+}
+else {
+    Write-Note "The files in $PSScriptRoot were left in place."
+}
+
+Write-Host ''
+Write-Host 'The HAT has been removed from this PC.' -ForegroundColor Green
+Exit-Script 0
