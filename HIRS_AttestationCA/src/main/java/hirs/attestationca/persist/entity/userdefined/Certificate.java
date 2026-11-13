@@ -171,7 +171,8 @@ public abstract class Certificate extends ArchivableEntity {
     @Column
     private final String subjectSorted;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES)
+    @Lob
+    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, columnDefinition = "BLOB")
     private final byte[] encodedPublicKey;
 
     // We're currently seeing 2048-bit keys, which is 512 hex digits.
@@ -180,7 +181,8 @@ public abstract class Certificate extends ArchivableEntity {
     @Column(length = CertificateVariables.MAX_PUB_KEY_MODULUS_HEX_LENGTH)
     private final String publicKeyModulusHexValue;
 
-    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false)
+    @Lob
+    @Column(length = CertificateVariables.MAX_CERT_LENGTH_BYTES, nullable = false, columnDefinition = "BLOB")
     private final byte[] signature;
 
     @Column(nullable = false)
