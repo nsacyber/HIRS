@@ -11,9 +11,11 @@ LOG_FILE=$1
 DB_LOG_FILE="/var/log/mariadb/mariadb.log"
 PKI_PASS=$2
 DB_ALG=$3
-UNATTENDED=$4
+DB_MLDSA_SIZE=$4
+UNATTENDED=$5
 RSA_PATH=rsa_3k_sha384_certs
 ECC_PATH=ecc_512_sha384_certs
+MLDSA_PATH=mldsa_${DB_MLDSA_SIZE}_certs
 # Capture location of the script to allow from invocation from any location
 SCRIPT_DIR=$( dirname -- "$( readlink -f -- "$0"; )"; )
 SPRING_PROP_FILE="/etc/hirs/aca/application.properties"
@@ -41,6 +43,16 @@ elif [ "$DB_ALG" == "ecc" ]; then
   SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_ecc_512_sha384_Cert_Chain.pem";
   SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.pem";
   SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/ecc_512_sha384_certs/HIRS_db_client_ecc_512_sha384.key";
+elif [ "$DB_ALG" == "mldsa" ]; then
+  # Default Server Side Certificates
+  SSL_DB_SRV_CHAIN="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem";
+  SSL_DB_SRV_CERT="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_srv_mldsa_${DB_MLDSA_SIZE}.pem";
+  SSL_DB_SRV_KEY="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_srv_mldsa_${DB_MLDSA_SIZE}.key";
+
+  # Default Client Side Certificates
+  SSL_DB_CLIENT_CHAIN="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem";
+  SSL_DB_CLIENT_CERT="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.pem";
+  SSL_DB_CLIENT_KEY="/etc/hirs/certificates/HIRS/${MLDSA_PATH}/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.key";
 fi
 # Make sure required paths exist
 mkdir -p /etc/hirs/aca/
@@ -48,7 +60,7 @@ mkdir -p /var/log/hirs/
 
 source $ACA_PROP_FILE
 source "$SCRIPT_DIR"/mysql_util.sh
-source /etc/os-release 
+source /etc/os-release
 
 # Setup distro specifc paths and variables
 if [ "$ID" = "ubuntu" ]; then
@@ -67,7 +79,7 @@ touch $DB_SRV_CONF
 touch $DB_LOG_FILE
 
 check_mysql_root_pwd () {
- 
+
   # Check if DB root password needs to be obtained via env variable or existing property file
   if [ -z "$HIRS_MYSQL_ROOT_PWD" ]; then
      # Check if property file exists and look for properties
@@ -102,7 +114,7 @@ check_mysql_root_pwd () {
     DB_ADMIN_PWD=$HIRS_MYSQL_ROOT_PWD
     echo "Using system variable supplied password" | tee -a "$LOG_FILE"
   fi
-  
+
   # Make sure root password is correct
   $(mysql -u root -p$DB_ADMIN_PWD -e 'quit'  &> /dev/null);
   if [ $? -eq 0 ]; then
@@ -128,12 +140,12 @@ set_mysql_server_tls () {
     # The following arent available in Mariadb 10.3
     #echo "tls_version=TLSv1.2,TLSv1.3" >> "$DB_SRV_CONF"
     #echo "require_secure_transport=ON" >> "$DB_SRV_CONF"
-   
+
     # Make sure mysql can access them
     chown mysql:mysql "$SSL_DB_SRV_CHAIN" "$SSL_DB_SRV_CERT" "$SSL_DB_SRV_KEY"
     chmod 644 $DB_SRV_CONF $DB_CLIENT_CONF
     # Make selinux contexts for config files, if selinux is enabled
-    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
+    if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then
       command -v selinuxenabled  > /dev/null
         if [ $? -eq 0 ]; then
         selinuxenabled
@@ -159,7 +171,7 @@ if [[ "$(grep -c "HIRS" "$DB_CLIENT_CONF")" -lt 1 ]]; then
   } >> $DB_CLIENT_CONF
   chown mysql:mysql "$SSL_DB_CLIENT_CHAIN" "$SSL_DB_CLIENT_CERT" "$SSL_DB_CLIENT_KEY"
   # Make selinux contexts for config files, if selinux is enabled
-   if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then 
+   if [[ $ID = "rhel" ]] || [[ $ID = "rocky" ]] ||[[ $ID = "fedora" ]]; then
       command -v selinuxenabled  > /dev/null
       if [ $? -eq 0 ]; then
       selinuxenabled
@@ -168,20 +180,20 @@ if [[ "$(grep -c "HIRS" "$DB_CLIENT_CONF")" -lt 1 ]]; then
          restorecon -F $DB_CLIENT_CONF                         > /dev/null #changes the file's context type
         fi
       fi
-  fi 
+  fi
 fi
 }
 
 # Process HIRS DB USER
 set_hirs_db_pwd () {
 check_hirs_db
- if [[ $HIRS_DB_USER_EXISTS != "1" ]]; then 
+ if [[ $HIRS_DB_USER_EXISTS != "1" ]]; then
    # Check if Mysql HIRS DB  password set by system variable or set to random number
      if [ -z "$HIRS_DB_PWD" ]; then
        HIRS_DB_PWD=$(head -c 64 /dev/urandom | md5sum | tr -dc 'a-zA-Z0-9')
      fi
      # Add key/values only if they dont exist
-     if [[ $(grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then  
+     if [[ $(grep -c "hirs_db_username" $ACA_PROP_FILE) -eq 0 ]]; then
          echo "hirs_db_username=hirs_db" >> $ACA_PROP_FILE
      fi
      if [[ $(grep -c "hirs_db_password" $ACA_PROP_FILE) -eq 0 ]]; then
@@ -193,7 +205,7 @@ check_hirs_db
      if [[ $(grep -c "hibernate.connection.password" $SPRING_PROP_FILE) -eq 0 ]]; then
          echo "hibernate.connection.password=$HIRS_DB_PWD" >> $SPRING_PROP_FILE
      fi
-   else 
+   else
     echo "hirs-db user already exists, skipping"
  fi
 }
@@ -228,6 +240,11 @@ create_hibernate_url () {
     CERT_CHAIN="$CERT_PATH/HIRS_rsa_3k_sha384_Cert_Chain.pem"
     CLIENT_DB_P12=$CERT_PATH/HIRS_db_client_rsa_3k_sha384.p12
     ALIAS="hirs_aca_tls_rsa_3k_sha384"
+  elif [ "$ALG" = "mldsa" ]; then
+      CERT_PATH="/etc/hirs/certificates/HIRS/$MLDSA_PATH"
+      CERT_CHAIN="$CERT_PATH/HIRS_mldsa_${DB_MLDSA_SIZE}_Cert_Chain.pem"
+      CLIENT_DB_P12="$CERT_PATH/HIRS_db_client_mldsa_${DB_MLDSA_SIZE}.p12"
+      ALIAS="hirs_aca_tls_mldsa_${DB_MLDSA_SIZE}"
   else
     CERT_PATH="/etc/hirs/certificates/HIRS/$ECC_PATH"
     CERT_CHAIN="$CERT_PATH/HIRS_ecc_512_sha384_Cert_Chain.pem"
