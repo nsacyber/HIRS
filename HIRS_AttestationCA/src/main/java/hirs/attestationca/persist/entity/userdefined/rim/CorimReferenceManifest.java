@@ -10,7 +10,7 @@ import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * A Concise Reference Integrity Manifest (CoRIM) as defined by the IETF RATS working group
@@ -23,10 +23,10 @@ import lombok.extern.log4j.Log4j2;
  * measurements, dependent RIMs) is a re-parsed lazily from {@code rimBytes} at display time via
  * {@link #parseCorim()}.
  */
-@Log4j2
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@Slf4j
 @Entity
 public class CorimReferenceManifest extends ReferenceManifest {
 
@@ -166,8 +166,7 @@ public class CorimReferenceManifest extends ReferenceManifest {
             if (ctp.isCose()) {
                 return cur;
             }
-            if (CoRim.isCoRimTag(ctp.getTagId()))
-            {
+            if (CoRim.isCoRimTag(ctp.getTagId())) {
                 cur = ctp.getContent();
                 continue;
             }
@@ -192,15 +191,20 @@ public class CorimReferenceManifest extends ReferenceManifest {
         }
     }
 
+    /**
+     * Returns null if string is blank
+     * @param s string to check
+     * @return null if string is blank, string otherwise
+     */
     private static String nullIfBlank(final String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
 
     /**
-     *
-     * @param preferred
-     * @param fallback
-     * @return
+     * Returns the first value if it is nonblank, or the fallback otherwise.
+     * @param preferred preferred value if nonblank
+     * @param fallback fallback value
+     * @return the preferred value when nonblank, or the fallback value
      */
     private static String firstNonBlank(final String preferred, final String fallback) {
         return (preferred != null && !preferred.isBlank()) ? preferred : fallback;

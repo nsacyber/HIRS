@@ -47,7 +47,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -139,7 +138,7 @@ public class ReferenceManifestDetailsPageService {
 
         CorimReferenceManifest coRim = this.referenceManifestRepository.getCorimRimEntityById(uuid);
 
-        if(coRim != null) {
+        if (coRim != null) {
             data.putAll(getCorimRimInfo(coRim));
         }
 
@@ -780,7 +779,7 @@ public class ReferenceManifestDetailsPageService {
      * For a signed CoRIM, verifies teh COSE_Sign1 signature via {@link #verifyCoseSign1};
      * for an unsigned CoRIM, {@code corimSigned} is {@code false} and no signature block is rendered.
      *
-     * @param coRIM the CoRIM reference manifest
+     * @param coRim the CoRIM reference manifest
      * @return map of display attributes for {@code rim-details.html}
      */
     private HashMap<String, Object> getCorimRimInfo(final CorimReferenceManifest coRim) {

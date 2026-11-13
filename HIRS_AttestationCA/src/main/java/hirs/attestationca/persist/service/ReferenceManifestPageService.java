@@ -495,6 +495,7 @@ public class ReferenceManifestPageService {
      * @param baseRims        list of base reference manifests
      * @param supportRims     list of support reference manifests
      * @param componentRims   list of component reference manifests
+     * @param corimRims   list of corim reference manifests
      */
     public void storeRIMS(final List<String> successMessages,
                           final List<String> errorMessages,
