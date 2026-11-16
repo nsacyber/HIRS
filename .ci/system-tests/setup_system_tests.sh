@@ -14,6 +14,9 @@ tpm2_container=hirs-provisioner1-tpm2
 echo "********  Setting up for HIRS System Tests for TPM 2.0 ******** "
 docker compose -f ./.ci/docker/docker-compose-system-test.yml up --pull "always" -d
 
+docker exec hirs-aca1 dnf update -y
+docker exec hirs-aca1 java -version
+
 # Setting up and Starting ACA + Switching to current/desired branch in ACA Container
 # Setting up and Starting ACA + Switching to current/desired branch in ACA Container
 docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
