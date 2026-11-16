@@ -12,7 +12,9 @@ param (
     [string]$LOG_FILE,
     [switch]$UNATTENDED = $false,
     [Parameter(Mandatory = $true)]
-    [string]$DB_ALG
+    [string]$DB_ALG,
+    [ValidateSet("44", "65", "87")]
+    [string]$DB_MLDSA_SIZE = "65"
 )
 
 $ACA_SCRIPTS_HOME = (Split-Path -parent $PSCommandPath)
@@ -51,6 +53,20 @@ if (-not (Test-Path -Path $global:DB_CONF)) {
 # Make sure required paths exist
 New-Item -ItemType Directory -Path $global:HIRS_CONF_DIR -Force | Out-Null
 New-Item -ItemType Directory -Path $global:HIRS_DATA_LOG_DIR -Force | Out-Null
+
+# Resolve the ML-DSA certificate paths using the selected parameter set.
+# The same naming convention is used by pki_chain_gen.ps1.
+if ($DB_ALG -notin @('rsa', 'ecc', 'mldsa')) {
+    throw "Unsupported database algorithm: $DB_ALG"
+}
+
+$MLDSA_CERT_PREFIX = "mldsa_${DB_MLDSA_SIZE}"
+$MLDSA_CERT_DIR = Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_DIR "${MLDSA_CERT_PREFIX}_certs"
+$SSL_DB_MLDSA_CHAIN = Join-Path $MLDSA_CERT_DIR "HIRS_${MLDSA_CERT_PREFIX}_Cert_Chain.pem"
+$SSL_DB_MLDSA_SRV_CERT = Join-Path $MLDSA_CERT_DIR "HIRS_db_srv_${MLDSA_CERT_PREFIX}.pem"
+$SSL_DB_MLDSA_SRV_KEY = Join-Path $MLDSA_CERT_DIR "HIRS_db_srv_${MLDSA_CERT_PREFIX}.key"
+$SSL_DB_MLDSA_CLIENT_CERT = Join-Path $MLDSA_CERT_DIR "HIRS_db_client_${MLDSA_CERT_PREFIX}.pem"
+$SSL_DB_MLDSA_CLIENT_KEY = Join-Path $MLDSA_CERT_DIR "HIRS_db_client_${MLDSA_CERT_PREFIX}.key"
 
 # Check if MariaDB is installed
 check_mariadb_install -p
@@ -142,6 +158,16 @@ Function set_mysql_tls() {
             Write-Output "ssl_ca=$global:SSL_DB_ECC_SRV_CHAIN" >> $global:DB_CONF
             Write-Output "ssl_cert=$global:SSL_DB_ECC_SRV_CERT" >> $global:DB_CONF
             Write-Output "ssl_key=$global:SSL_DB_ECC_SRV_KEY" >> $global:DB_CONF
+        }
+
+        elseif ($ALG -eq "mldsa") {
+            Write-Output "ssl_ca=$SSL_DB_MLDSA_CHAIN" >> $global:DB_CONF
+            Write-Output "ssl_cert=$SSL_DB_MLDSA_CLIENT_CERT" >> $global:DB_CONF
+            Write-Output "ssl_key=$SSL_DB_MLDSA_CLIENT_KEY" >> $global:DB_CONF
+            Write-Output "[server]" >> $global:DB_CONF
+            Write-Output "ssl_ca=$SSL_DB_MLDSA_CHAIN" >> $global:DB_CONF
+            Write-Output "ssl_cert=$SSL_DB_MLDSA_SRV_CERT" >> $global:DB_CONF
+            Write-Output "ssl_key=$SSL_DB_MLDSA_SRV_KEY" >> $global:DB_CONF
         }
 
         ChangeFileBackslashToForwardSlash -file $global:DB_CONF
@@ -247,6 +273,10 @@ Function create_hibernate_url() {
     } elseif ($ALG -eq "ECC") {
         $CERT_CHAIN = (Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_ecc_512_sha384_Cert_Chain.pem')
         $CLIENT_DB_P12 = (Join-Path $global:HIRS_DATA_CERTIFICATES_HIRS_ECC_PATH 'HIRS_db_client_ecc_512_sha384.p12')
+    }
+    elseif ($ALG -eq "mldsa") {
+        $CERT_CHAIN = $SSL_DB_MLDSA_CHAIN
+        $CLIENT_DB_P12 = Join-Path $MLDSA_CERT_DIR "HIRS_db_client_${MLDSA_CERT_PREFIX}.p12"
     }
 
     $CONNECTOR_URL = "hibernate.connection.url=jdbc:mariadb://localhost:3306/hirs_db?autoReconnect=true&user=" + $global:ACA_PROPERTIES.'hirs_db_username' + "&password=" + $global:ACA_PROPERTIES.'hirs_db_password' + "&sslMode=VERIFY_CA&serverSslCert=$CERT_CHAIN&keyStoreType=PKCS12&keyStorePassword=" + $global:ACA_PROPERTIES.'hirs_pki_password' + "&keyStore=$CLIENT_DB_P12" | ChangeBackslashToForwardSlash
