@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
@@ -71,6 +72,18 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
      */
     static final String TEST_PLATFORM_CERT2_4 =
             "/validation/platform_credentials_2/large_plat_cert.pem";
+
+    /**
+     * PEM file containing a platform certificate followed by its issuing CA certificate.
+     */
+    static final String TEST_PLATFORM_CERT_WITH_CA_BUNDLE =
+            "/validation/platform_credentials_2/plat_cert_with_ca_cert_bundle.pem";
+
+    /**
+     * PEM file containing a CA certificate followed by a platform certificate.
+     */
+    static final String TEST_CA_WITH_PLATFORM_CERT_BUNDLE =
+            "/validation/platform_credentials_2/ca_cert_with_plat_cert_bundle.pem";
 
     private static final String EXPECTED_CERT_SIGNATURE_FOR_CERTS_1 =
             "425F6B2203EC6C651F3DA38416A39DB9B4D954A45FB1D1396D079ABE7"
@@ -818,5 +831,62 @@ public class PlatformCredentialTest extends AbstractUserdefinedEntityTest {
                 "/validation/platform_credentials_2/flawed_attribute_cert_2187.pem").toURI());
         PlatformCredential credential = new PlatformCredential(path);
         Assertions.assertNotNull(credential);
+    }
+
+    /**
+     * Tests that a platform certificate can be parsed from a PEM file in which an
+     * attribute certificate is followed by its issuing CA certificate.
+     *
+     * @throws IOException        if there is a problem reading the cert file
+     * @throws URISyntaxException if there is a problem constructing the cert's URI
+     */
+    @Test
+    public final void testPlatformCredentialBundledBeforeCaCert() throws IOException, URISyntaxException {
+        assertBundleParsesToStandalonePlatformCredential(TEST_PLATFORM_CERT_WITH_CA_BUNDLE);
+    }
+
+    /**
+     * Tests that a platform certificate can be parsed from a PEM file in which a CA
+     * certificate is placed before an attribute certificate.
+     *
+     * @throws IOException        if there is a problem reading the cert file
+     * @throws URISyntaxException if there is a problem constructing the cert's URI
+     */
+    @Test
+    public final void testPlatformCredentialBundledAfterCaCert() throws IOException, URISyntaxException {
+        assertBundleParsesToStandalonePlatformCredential(TEST_CA_WITH_PLATFORM_CERT_BUNDLE);
+    }
+
+    /**
+     * Tests that the identity claim path (parseWithPossibleHeader) can extract the platform
+     * certificate from a PEM bundle that also contains a CA certificate.
+     *
+     * @throws IOException        if there is a problem reading the cert file
+     * @throws URISyntaxException if there is a problem constructing the cert's URI
+     */
+    @Test
+    public final void testParseWithPossibleHeaderBundledWithCaCert() throws IOException, URISyntaxException {
+        Path standalonePath = Paths.get(this.getClass().getResource(TEST_PLATFORM_CERT2_1).toURI());
+        Path bundlePath = Paths.get(this.getClass().getResource(TEST_PLATFORM_CERT_WITH_CA_BUNDLE).toURI());
+
+        PlatformCredential credential = PlatformCredential.parseWithPossibleHeader(
+                Files.readAllBytes(bundlePath));
+
+        Assertions.assertNotNull(credential);
+        Assertions.assertEquals(new PlatformCredential(standalonePath).getCertificateHash(),
+                credential.getCertificateHash());
+    }
+
+    private void assertBundleParsesToStandalonePlatformCredential(final String bundleResource)
+            throws IOException, URISyntaxException {
+        Path standalonePath = Paths.get(this.getClass().getResource(TEST_PLATFORM_CERT2_1).toURI());
+        Path bundlePath = Paths.get(this.getClass().getResource(bundleResource).toURI());
+
+        PlatformCredential expected = new PlatformCredential(standalonePath);
+        PlatformCredential actual = new PlatformCredential(bundlePath);
+
+        Assertions.assertEquals(expected.getSerialNumber(), actual.getSerialNumber());
+        Assertions.assertEquals(expected.getPlatformSerial(), actual.getPlatformSerial());
+        Assertions.assertEquals(expected.getCertificateHash(), actual.getCertificateHash());
     }
 }

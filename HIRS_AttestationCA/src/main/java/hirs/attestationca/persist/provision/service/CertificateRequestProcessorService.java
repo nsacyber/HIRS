@@ -102,7 +102,7 @@ public class CertificateRequestProcessorService {
         this.deviceRepository = deviceRepository;
         this.acaCertificate = acaCertificate;
         this.policyRepository = policyRepository;
-        this.privateKey = privateKey;
+        this.privateKey = normalizeSigningKey(privateKey);
     }
 
     /**
@@ -539,6 +539,29 @@ public class CertificateRequestProcessorService {
         } catch (IOException | IllegalArgumentException | OperatorCreationException | CertificateException exception) {
             throw new CertificateProcessingException("Encountered error while generating "
                     + "identity credential: " + exception.getMessage(), exception);
+        }
+    }
+
+    /**
+     * Adapts native ML-DSA keys for BC signing, preserving already-compatible keys.
+     * Native JKS loading is retained; BC provides the X.509 construction API absent from the public JDK APIs.
+     *
+     * @param key configured ACA signing key
+     * @return key compatible with the existing signing path
+     */
+    private static PrivateKey normalizeSigningKey(final PrivateKey key) {
+        if (key instanceof MLDSAPrivateKey
+                || !("ML-DSA".equalsIgnoreCase(key.getAlgorithm())
+                || key.getAlgorithm().startsWith("ML-DSA-"))) {
+            return key;
+        }
+
+        // JKS may reconstruct a JDK-native key that BC's signer cannot use directly.
+        try {
+            return KeyFactory.getInstance("ML-DSA", "BC")
+                    .generatePrivate(new PKCS8EncodedKeySpec(key.getEncoded()));
+        } catch (GeneralSecurityException | IllegalArgumentException exception) {
+            throw new CertificateProcessingException("Could not normalize the ML-DSA ACA private key", exception);
         }
     }
 
