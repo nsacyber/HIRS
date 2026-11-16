@@ -1,17 +1,30 @@
-version: "3.9"
+# HAT on Windows.
+#
+# The ACA database lives inside the aca container. Re-creating that container (for example
+# "docker compose up" after editing this file, or "docker compose down") erases the trust
+# certificates, the policy and all reports.
+
 services:
-  aca:  # policy settings not saved, will have a clean database/default policy on each boot for now
+  aca:
     image: ghcr.io/nsacyber/hirs/aca
     container_name: aca
+    restart: unless-stopped
     ports:
       - "8443:8443"
     networks:
       hat_network:
         ipv4_address: 172.16.1.75
       nat:
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
   hat:
     image: ghcr.io/nsacyber/hirs/hat
     container_name: hat
+    restart: unless-stopped
     ports:
        - 53:53/tcp
        - 53:53/udp
@@ -22,10 +35,29 @@ services:
     networks:
       hat_network:
         ipv4_address: 172.16.1.3
+    # "healthy" means the PXE file server is really answering, not just that the process exists.
+    # Docker only reports this status; it does not restart an unhealthy container.
+    healthcheck:
+      test: ["CMD", "py", "-c", "import urllib.request; urllib.request.urlopen('http://172.16.1.3/grub.cfg', timeout=5)"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "3"
+
 networks:
   hat_network:
     driver: transparent
     name: hat_network
+    driver_opts:
+      # The wired adapter that goes to the devices under test (a name from Get-NetAdapter).
+      # start_hat.ps1 sets HAT_ADAPTER; for a manual "docker compose up" set it yourself
+      # if the adapter is not called "Ethernet".
+      com.docker.network.windowsshim.interface: "${HAT_ADAPTER:-Ethernet}"
     ipam:
       config:
         - subnet: 172.16.1.0/24

@@ -7,6 +7,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.TBBS
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.URIReference;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
+import hirs.attestationca.persist.util.CredentialHelper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -193,7 +194,7 @@ public class PlatformCredential extends DeviceAssociatedCertificate {
      */
     public PlatformCredential(final byte[] certificateBytes,
                               final boolean parseFields) throws IOException {
-        super(certificateBytes);
+        super(CredentialHelper.isolateAttributeCertificatePem(certificateBytes));
         if (parseFields) {
             parseFields();
         }
