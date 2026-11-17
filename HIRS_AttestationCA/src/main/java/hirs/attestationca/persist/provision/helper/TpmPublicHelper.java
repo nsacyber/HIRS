@@ -5,7 +5,7 @@ import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.enums.TpmMlDsaParameterSet;
 import hirs.attestationca.persist.enums.TpmMlKemParameterSet;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jcajce.interfaces.MLDSAPublicKey;
 import org.bouncycastle.jcajce.interfaces.MLKEMPublicKey;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
@@ -38,7 +38,7 @@ import java.util.Optional;
  *  @see <a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">
  *  Trusted Platform Module Library Part 2: Structures (TPM 2.0)</a>
  */
-@Log4j2
+@Slf4j
 public final class TpmPublicHelper {
     /** Hexadecimal radix used for parsing the RSA public exponent. */
     public static final int RADIX = 16;
@@ -79,13 +79,17 @@ public final class TpmPublicHelper {
 
         skipAuthPolicy(in); // Skip authPolicy
 
-        return switch (alg) {
+        ParsedTpmPublic parsed = switch (alg) {
             case RSA -> parsePublicAreaRsa(publicArea, nameAlg, in);
             case ECC -> parsePublicAreaEcc(publicArea, nameAlg, in);
             case MLDSA -> parsePublicAreaMlDsa(publicArea, nameAlg, in);
             case MLKEM -> parsePublicAreaMlKem(publicArea, nameAlg, in);
             default -> throw new UnsupportedOperationException("Unsupported or invalid public key algorithm");
         };
+        if (in.read() != -1) {
+            throw new IOException("Unexpected data after TPMT_PUBLIC");
+        }
+        return parsed;
     }
 
     /**
@@ -347,14 +351,14 @@ public final class TpmPublicHelper {
     }
 
     private static void skipAuthPolicy(final DataInputStream in) throws IOException {
-        int size = in.readShort();
+        int size = in.readUnsignedShort();
         if (size != 0) { // Empty auth policy if zero
             in.skipNBytes(size);
         }
     }
 
     private static byte[] readTpm2b(final DataInputStream in) throws IOException {
-        int size = in.readShort();
+        int size = in.readUnsignedShort();
         byte[] result = new byte[size];
         in.readFully(result);
         return result;

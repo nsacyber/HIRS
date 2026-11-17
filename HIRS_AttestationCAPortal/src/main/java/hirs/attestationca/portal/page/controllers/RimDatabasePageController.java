@@ -13,7 +13,7 @@ import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.NoPageParams;
 import hirs.attestationca.portal.page.utils.ControllerPagesUtils;
 import jakarta.validation.Valid;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +32,7 @@ import java.util.Set;
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/rim-database")
-@Log4j2
+@Slf4j
 public class RimDatabasePageController extends PageController<NoPageParams> {
     private final ReferenceDigestValuePageService referenceDigestValuePageService;
 

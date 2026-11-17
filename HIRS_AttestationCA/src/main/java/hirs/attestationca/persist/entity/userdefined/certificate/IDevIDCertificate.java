@@ -9,7 +9,7 @@ import jakarta.persistence.Transient;
 import jakarta.persistence.PostLoad;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -42,7 +42,7 @@ import java.util.Map;
 @Entity
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@Log4j2
+@Slf4j
 public class IDevIDCertificate extends Certificate {
 
     // Undefined expiry date, as specified in 802.1AR
@@ -69,6 +69,10 @@ public class IDevIDCertificate extends Certificate {
     /** Parsed DICE attributes from the certificate, if present. */
     @Transient
     private transient DiceCertificateInfo diceCertificateInfo;
+
+    /** A decoding error retained for inspection. */
+    @Transient
+    private transient String diceParsingError;
 
     /**
      * Corresponds to the hwType field found in a Hardware Module Name (if present).
@@ -177,7 +181,14 @@ public class IDevIDCertificate extends Certificate {
      */
     @PostLoad
     private void parseTransientFields() throws IOException {
-        this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
+        this.diceCertificateInfo = null;
+        this.diceParsingError = null;
+        try {
+            this.diceCertificateInfo = DiceCertificateParser.parse(this.getX509Certificate());
+        } catch (IOException e) {
+            this.diceParsingError = e.getMessage();
+            log.warn("Cannot decode IDevID DICE information", e);
+        }
         this.subjectAltName = getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
     }
 
@@ -187,9 +198,7 @@ public class IDevIDCertificate extends Certificate {
      * @throws IOException if a problem is encountered during parsing
      */
     private void parseIDevIDCertificate() throws IOException {
-
-        this.subjectAltName =
-                getX509Certificate().getExtensionValue(SUBJECT_ALTERNATIVE_NAME_EXTENSION);
+        parseTransientFields();
 
         if (this.subjectAltName != null) {
 

@@ -13,23 +13,24 @@ dependencies {
 
     implementation libs.bouncycastle
     implementation libs.commons.codec
-    implementation libs.commons.io
     implementation libs.commons.lang3
-    implementation libs.gson
     implementation libs.guava
+    implementation libs.hibernate.core
     implementation libs.jackson.core
     implementation libs.jackson.databind
     implementation libs.jakarta.persistence.api
     implementation libs.jakarta.xml
-    implementation libs.spring.boot.starter.log4j2
+    implementation libs.slf4j.api
     implementation libs.minimal.json
     implementation libs.pci
     implementation libs.protobuf.java
     implementation libs.protobuf.java.util
-    implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.data.jpa
-    implementation libs.spring.retry
-    implementation libs.spring.boot.starter.web
+    // This module uses Spring APIs, but the portal owns application runtime wiring.
+    implementation platform(libs.spring.boot.dependencies)
+    implementation libs.spring.boot.actuator
+    implementation libs.spring.context
+    implementation libs.spring.data.jpa
+    implementation libs.spring.web
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -38,7 +39,8 @@ dependencies {
     annotationProcessor libs.spotbugs.annotations
 
     testImplementation libs.commons.io
-    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.mockito.core
+    testRuntimeOnly libs.slf4j.simple
     testImplementation libs.junit.jupiter.api
     testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher

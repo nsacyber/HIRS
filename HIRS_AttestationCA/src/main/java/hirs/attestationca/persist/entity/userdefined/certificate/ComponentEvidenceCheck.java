@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * One check performed on component evidence, such as "the evidence contains the ACA's nonce".
  */
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ComponentEvidenceCheck {
+public class ComponentEvidenceCheck implements Serializable {
     private static final int MAX_DETAIL_LENGTH = 2048;
 
     private String name;

@@ -1,6 +1,6 @@
 package hirs.utils;
 
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -33,7 +33,7 @@ public class BouncyCastleUtilsTest {
                 VALID_RDN_STRING, VALID_RDN_STRING_UPPERCASE));
         assertTrue(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING_ESCAPED_COMMA, VALID_RDN_STRING_ESCAPED_COMMA_SWITCHED));
-        assertTrue(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, Strings.EMPTY));
+        assertTrue(BouncyCastleUtils.x500NameCompare(StringUtils.EMPTY, StringUtils.EMPTY));
     }
 
     /**
@@ -44,8 +44,8 @@ public class BouncyCastleUtilsTest {
         assertFalse(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING, UNEQUAL_RDN_STRING));
         // Error that aren't thrown but logged
-        assertFalse(BouncyCastleUtils.x500NameCompare(VALID_RDN_STRING, Strings.EMPTY));
-        assertFalse(BouncyCastleUtils.x500NameCompare(Strings.EMPTY, VALID_RDN_STRING));
+        assertFalse(BouncyCastleUtils.x500NameCompare(VALID_RDN_STRING, StringUtils.EMPTY));
+        assertFalse(BouncyCastleUtils.x500NameCompare(StringUtils.EMPTY, VALID_RDN_STRING));
         assertFalse(BouncyCastleUtils.x500NameCompare(
                 VALID_RDN_STRING, MALFORMED_RDN_STRING));
         assertFalse(BouncyCastleUtils.x500NameCompare(

@@ -1,0 +1,3 @@
+[submodule "HIRS_Provisioner.NET/TSS.MSR"]
+	path = HIRS_Provisioner.NET/TSS.MSR
+	url = https://github.com/microsoft/TSS.MSR

@@ -46,7 +46,7 @@ public sealed interface ParsedTpmPublic {
     Optional<SymmetricDefinition> symmetricDefinition();
 
     /**
-     * The TPMA_OBJECT attributes, read from the public area
+     * The TPMA_OBJECT attributes, read from the public area.
      * @return object attribute selections
      */
     default int objectAttributes() {

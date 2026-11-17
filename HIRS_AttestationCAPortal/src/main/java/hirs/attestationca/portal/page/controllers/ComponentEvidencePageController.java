@@ -7,7 +7,7 @@ import hirs.attestationca.persist.service.ComponentEvidencePageService;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.ComponentEvidencePageParams;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,7 +28,7 @@ import java.util.Optional;
  */
 @Controller
 @RequestMapping("/HIRS_AttestationCAPortal/portal/component-evidence")
-@Log4j2
+@Slf4j
 public class ComponentEvidencePageController extends PageController<ComponentEvidencePageParams> {
     private final ComponentEvidencePageService componentEvidencePageService;
 

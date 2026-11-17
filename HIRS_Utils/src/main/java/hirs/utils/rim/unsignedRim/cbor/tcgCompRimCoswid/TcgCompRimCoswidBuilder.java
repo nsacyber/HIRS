@@ -57,6 +57,13 @@ public class TcgCompRimCoswidBuilder extends CoswidBuilder {
         }
     }
 
+    /**
+     * Writes the TCG Component RIM software-meta extension attributes.
+     * Subclasses overriding this hook should call {@code super} before writing additional
+     * extension attributes so the standard TCG attributes are retained.
+     *
+     * @param out stream receiving the encoded extension attributes
+     */
     @Override
     protected void writeSoftwareMetaExtensions(final ByteArrayOutputStream out) {
 

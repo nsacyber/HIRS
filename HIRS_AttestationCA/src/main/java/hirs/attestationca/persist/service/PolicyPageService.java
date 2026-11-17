@@ -2,14 +2,14 @@ package hirs.attestationca.persist.service;
 
 import hirs.attestationca.persist.entity.manager.PolicyRepository;
 import hirs.attestationca.persist.entity.userdefined.PolicySettings;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * A service layer class responsible for encapsulating all business logic related to the ACA Policy Page.
  */
-@Log4j2
+@Slf4j
 @Service
 public class PolicyPageService {
     private final PolicyRepository policyRepository;
@@ -194,6 +194,7 @@ public class PolicyPageService {
             policySettings.setIgnoreImaEnabled(false);
             policySettings.setIgnoretBootEnabled(false);
             policySettings.setIgnoreOsEvtEnabled(false);
+            policySettings.setIgnoreOsEvtPxeBootEnabled(false);
         }
 
         policyRepository.saveAndFlush(policySettings);
@@ -305,6 +306,33 @@ public class PolicyPageService {
         policyRepository.saveAndFlush(policySettings);
 
         log.debug("Current ACA Policy after updating the Ignore OS events policy:"
+                + " {}", policySettings);
+
+        return true;
+    }
+
+    /**
+     * Updates the Ignore OS Events for PXE Boot policy under the Firmware Validation policy setting
+     * according to user input.
+     *
+     * @param isIgnoreOSEvtPxeBootOptionEnabled boolean value representation of the current policy option's state
+     * @return true if the policy was updated successfully; otherwise, false.
+     */
+    public boolean updateIgnoreOSEventsPxeBootPolicy(final boolean isIgnoreOSEvtPxeBootOptionEnabled) {
+        PolicySettings policySettings = getDefaultPolicy();
+
+        //If Ignore OS PXE boot is enabled and Firmware Validation is not enabled, disallow change
+        if (isIgnoreOSEvtPxeBootOptionEnabled && !policySettings.isFirmwareValidationEnabled()) {
+            log.error("Ignore OS Events for PXE Boot cannot be enabled without Firmware Validation "
+                    + "policy enabled.");
+            return false;
+        }
+
+        policySettings.setIgnoreOsEvtPxeBootEnabled(isIgnoreOSEvtPxeBootOptionEnabled);
+
+        policyRepository.saveAndFlush(policySettings);
+
+        log.debug("Current ACA Policy after updating the Ignore OS Events for PXE Boot policy:"
                 + " {}", policySettings);
 
         return true;

@@ -2,7 +2,7 @@ package hirs.attestationca.portal.page.controllers;
 
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.NoPageParams;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 @RequestMapping(value = {"/", "/HIRS_AttestationCAPortal", "/HIRS_AttestationCAPortal/",
         "/HIRS_AttestationCAPortal/portal/index"})
-@Log4j2
+@Slf4j
 public class IndexPageController extends PageController<NoPageParams> {
 
     /**

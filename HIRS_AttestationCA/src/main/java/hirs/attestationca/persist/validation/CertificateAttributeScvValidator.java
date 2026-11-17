@@ -15,7 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.info.HardwareInfo;
 import hirs.attestationca.persist.entity.userdefined.report.DeviceInfoReport;
 import hirs.attestationca.persist.enums.AppraisalStatus;
 import hirs.utils.enums.DeviceInfoEnums;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1UTF8String;
@@ -38,7 +38,7 @@ import static hirs.attestationca.persist.enums.AppraisalStatus.Status.PASS;
 /**
  * Validator class responsible for validating certificate attributes.
  */
-@Log4j2
+@Slf4j
 public class CertificateAttributeScvValidator extends SupplyChainCredentialValidator {
 
     private static final String LC_UNKNOWN = "unknown";

@@ -32,7 +32,7 @@ import hirs.utils.tpm.eventlog.TpmPcrEvent;
 import hirs.utils.tpm.eventlog.events.EvConstants;
 import hirs.utils.tpm.eventlog.uefi.UefiConstants;
 import jakarta.xml.bind.UnmarshalException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,8 +61,8 @@ import java.util.regex.Pattern;
  * A service layer class responsible for encapsulating all business logic related to the Reference Manifest Details
  * Page.
  */
-@Log4j2
 @Service
+@Slf4j
 public class ReferenceManifestDetailsPageService {
 
     private static final int SKID_LENGTH = 20;
@@ -80,6 +80,7 @@ public class ReferenceManifestDetailsPageService {
      * @param referenceDigestValueRepository reference digest value repository
      * @param certificateRepository          certificate repository
      * @param caCertificateRepository        certificate authority credential repository
+     * @param policyRepository               policy settings repository
      */
     @Autowired
     public ReferenceManifestDetailsPageService(final ReferenceManifestRepository referenceManifestRepository,
@@ -645,7 +646,7 @@ public class ReferenceManifestDetailsPageService {
      * @param cRim the component reference manifest
      * @return map of display attributes for {@code rim-details.html}
      */
-    private HashMap<String, Object> getComponentRimInfo (final ComponentReferenceManifest cRim) {
+    private HashMap<String, Object> getComponentRimInfo(final ComponentReferenceManifest cRim) {
         final HashMap<String, Object> data = new HashMap<>();
 
         final CoseParser cose = cRim.parseCose();
@@ -720,7 +721,7 @@ public class ReferenceManifestDetailsPageService {
                 data.put("authKeyId", Hex.encodeHexString(skid));
                 caCred = this.caCertificateRepository
                         .findBySubjectKeyIdStringAndArchiveFlag(Hex.encodeHexString(skid), false);
-                if(caCred != null) {
+                if (caCred != null) {
                     signer = caCred.getX509Certificate();
                 }
             } else {

@@ -3,8 +3,7 @@ package hirs.attestationca.portal.page.controllers;
 import hirs.attestationca.portal.page.Page;
 import hirs.attestationca.portal.page.params.PageParams;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.apache.http.client.utils.URIBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -13,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Map;
  *
  * @param <P> PageParams class used by the subclass.
  */
-@Log4j2
+@Slf4j
 @AllArgsConstructor
 public abstract class PageController<P extends PageParams> {
 
@@ -127,18 +128,22 @@ public abstract class PageController<P extends PageParams> {
         final String defaultUri = "../" + newPage.getViewName();
 
         // create uri with default uri
-        URIBuilder uri = new URIBuilder(defaultUri);
-        log.debug("Redirection URI = {}", uri.toString());
+        UriComponentsBuilder uri = UriComponentsBuilder.fromPath(defaultUri);
+        Map<String, Object> parameterValues = new LinkedHashMap<>();
 
         if (params != null) {
             for (Map.Entry<String, ?> e : params.asMap().entrySet()) {
-                Object v = e.getValue();
-                uri.addParameter(e.getKey(), v.toString());
+                String variable = "param" + parameterValues.size();
+                uri.queryParam(e.getKey(), "{" + variable + "}");
+                parameterValues.put(variable, e.getValue().toString());
             }
         }
 
+        String redirectUri = uri.encode().buildAndExpand(parameterValues).toUriString();
+        log.debug("Redirection URI = {}", redirectUri);
+
         // create redirect view
-        RedirectView redirectView = new RedirectView(uri.toString());
+        RedirectView redirectView = new RedirectView(redirectUri);
 
         // do not put model attributes in the url
         redirectView.setExposeModelAttributes(false);

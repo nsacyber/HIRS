@@ -1,0 +1,15 @@
+.md-typeset img.portal-wide {
+  display: block;
+  width: 38rem;
+  max-width: 95vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.md-typeset img.native {
+  display: block;
+  width: auto;
+  max-width: 95vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}

@@ -15,7 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.P
 import hirs.attestationca.persist.provision.helper.EpscBootlogEvidence;
 import hirs.attestationca.persist.validation.ComponentEvidenceValidator;
 import hirs.attestationca.persist.validation.ValidationService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  * how the component's certificate links to the platform certificate and its issuer, and the files behind each step.
  */
 @Service
-@Log4j2
+@Slf4j
 public class ComponentEvidencePageService {
     private static final String CERTIFICATE_DETAILS = "/HIRS_AttestationCAPortal/portal/certificate-details";
     private static final String PEM_HEADER = "-----BEGIN CERTIFICATE-----\n";

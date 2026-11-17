@@ -1,6 +1,6 @@
 package hirs.attestationca.persist.provision.service;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
  * Service class responsible for handling both certificate and identity claim requests made by the provisioner.
  */
 @Service
-@Log4j2
+@Slf4j
 public class AttestationCertificateAuthorityServiceImpl implements AttestationCertificateAuthorityService {
     private final CertificateRequestProcessorService certificateRequestProcessorService;
     private final IdentityClaimProcessorService identityClaimProcessorService;

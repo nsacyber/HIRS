@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.hibernate.annotations.JdbcTypeCode;
 
@@ -33,7 +33,7 @@ import java.util.UUID;
 @Setter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-@Log4j2
+@Slf4j
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Table(name = "ReferenceManifest")
@@ -173,7 +173,7 @@ public class ReferenceManifest extends ArchivableEntity {
             this.hexDecHash = Hex.encodeHexString(
                     digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
+            log.error("Unable to calculate reference manifest hash", noSaEx);
         }
         this.base64Hash = "";
         try {
@@ -181,7 +181,7 @@ public class ReferenceManifest extends ArchivableEntity {
             this.base64Hash = Base64.getEncoder().encodeToString(
                     digest.digest(rimBytes));
         } catch (NoSuchAlgorithmException noSaEx) {
-            log.error(noSaEx);
+            log.error("Unable to calculate reference manifest hash", noSaEx);
         }
     }
 

@@ -15,7 +15,7 @@ import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.P
 import hirs.attestationca.persist.provision.helper.EpscBootlogEvidence;
 import hirs.attestationca.persist.provision.helper.ProvisionUtils;
 import hirs.attestationca.persist.validation.ComponentEvidenceValidator;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  * certificate request.
  */
 @Service
-@Log4j2
+@Slf4j
 public class ComponentEvidenceService {
     private static final ProvisionerTpm2.EvidenceFormat SUPPORTED_FORMAT =
             ProvisionerTpm2.EvidenceFormat.HP_EPSC_BOOTLOG;

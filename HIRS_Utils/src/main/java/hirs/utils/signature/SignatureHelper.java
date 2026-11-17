@@ -1,7 +1,7 @@
 package hirs.utils.signature;
 
-import hirs.utils.crypto.AlgorithmsIds;
 import hirs.utils.signature.cose.CoseAlgorithm;
+import hirs.utils.specLookups.SpecTranslations;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
@@ -39,8 +39,11 @@ public final class SignatureHelper {
      */
     public static int getCoseAlgFromCert(final X509Certificate signCert)
             throws NoSuchAlgorithmException {
-        String alg = AlgorithmsIds.translateAlgId(AlgorithmsIds.ALG_TYPE_SIG, AlgorithmsIds.SPEC_X509_ALG,
-                signCert.getSigAlgName(), AlgorithmsIds.SPEC_COSE_ALG);
+        String alg = SpecTranslations.translate(
+                SpecTranslations.SigAlg.class,
+                SpecTranslations.SigAlg.Format.X509,
+                signCert.getSigAlgName(),
+                SpecTranslations.SigAlg.Format.COSE);
         int algId = CoseAlgorithm.getAlgId(alg);
         if (algId == 0) {
             throw new RuntimeException(

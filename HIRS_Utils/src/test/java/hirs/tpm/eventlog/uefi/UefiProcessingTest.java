@@ -9,9 +9,8 @@ import hirs.utils.tpm.eventlog.uefi.UefiFirmware;
 import hirs.utils.tpm.eventlog.uefi.UefiGuid;
 import hirs.utils.tpm.eventlog.uefi.UefiPartition;
 import hirs.utils.tpm.eventlog.uefi.UefiVariable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,6 +27,7 @@ import java.security.cert.CertificateException;
 /**
  * Class for testing TCG Event Log processing of UEFI defined Data.
  */
+@Slf4j
 public class UefiProcessingTest {
     // Variable files collected using an Event Parsing tool
     private static final String JSON_FILE = "/tcgeventlog/uefi/vendor-table.json";
@@ -40,16 +40,13 @@ public class UefiProcessingTest {
     private static final String UEFI_FW_BLOB = "/tcgeventlog/uefi/EFI_PLATFORM_FIRMWARE_BLOB.txt";
     private static final String UEFI_DEVICE_PATH = "/tcgeventlog/uefi/EFI_DEVICE_PATH.txt";
 
-    private static final Logger LOGGER
-            = LogManager.getLogger(UefiProcessingTest.class);
-
     /**
      * Initializes a <code>SessionFactory</code>.
      * The factory is used for an in-memory database that is used for testing.
      */
     @BeforeAll
     public static final void setup() {
-        LOGGER.debug("retrieving session factory");
+        log.debug("retrieving session factory");
     }
 
     /**
@@ -57,7 +54,7 @@ public class UefiProcessingTest {
      */
     @AfterAll
     public static final void tearDown() {
-        LOGGER.debug("closing session factory");
+        log.debug("closing session factory");
     }
 
     /**
@@ -71,7 +68,7 @@ public class UefiProcessingTest {
     @Test
     public final void testUefiVariables() throws IOException,
             CertificateException, NoSuchAlgorithmException, URISyntaxException {
-        LOGGER.debug("Testing the parsing of UEFI Variables");
+        log.debug("Testing the parsing of UEFI Variables");
         Path jsonPath = Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI());
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_VARIABLE_BOOT),
@@ -89,6 +86,7 @@ public class UefiProcessingTest {
         uefiTxt = IOUtils.toString(this.getClass()
                         .getResourceAsStream(UEFI_VARIABLE_BOOT_SECURE_BOOT),
                 StandardCharsets.UTF_8);
+        uefiTxt = uefiTxt.replaceAll("\\s+", "");
         uefiVariableBytes = HexUtils.hexStringToByteArray(uefiTxt);
         uefiVariable = new UefiVariable(EvConstants.EV_EFI_VARIABLE_DRIVER_CONFIG, uefiVariableBytes);
         guid = uefiVariable.getVariableNameGuid();
@@ -117,7 +115,7 @@ public class UefiProcessingTest {
     @Test
     public final void testUefiPartiton() throws IOException,
             CertificateException, NoSuchAlgorithmException, URISyntaxException {
-        LOGGER.debug("Testing the parsing of GPT Data");
+        log.debug("Testing the parsing of GPT Data");
         Path jsonPath = Paths.get(this.getClass()
                 .getResource(JSON_FILE).toURI());
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_GPT_EVENT),
@@ -146,7 +144,7 @@ public class UefiProcessingTest {
     @Test
     public final void testUefiFirmwareBlob() throws IOException,
             CertificateException, NoSuchAlgorithmException {
-        LOGGER.debug("Testing the parsing of Uefi Firmware Blob");
+        log.debug("Testing the parsing of Uefi Firmware Blob");
         String uefiTxt = IOUtils.toString(this.getClass()
                 .getResourceAsStream(UEFI_FW_BLOB), StandardCharsets.UTF_8);
         byte[] uefiFwBlobBytes = HexUtils.hexStringToByteArray(uefiTxt);
@@ -169,7 +167,7 @@ public class UefiProcessingTest {
      */
     @Test
     public final void testUefiDevicePath() throws IOException, URISyntaxException {
-        LOGGER.debug("Testing the parsing of Uefi Device Path");
+        log.debug("Testing the parsing of Uefi Device Path");
         String uefiTxt = IOUtils.toString(this.getClass().getResourceAsStream(UEFI_DEVICE_PATH),
                 StandardCharsets.UTF_8);
         byte[] uefiFwBlobBytes = HexUtils.hexStringToByteArray(uefiTxt);

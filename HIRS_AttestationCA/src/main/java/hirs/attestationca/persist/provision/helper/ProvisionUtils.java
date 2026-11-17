@@ -7,7 +7,7 @@ import hirs.attestationca.persist.enums.TcgAlgorithm;
 import hirs.attestationca.persist.exceptions.IdentityProcessingException;
 import hirs.attestationca.persist.exceptions.UnexpectedServerException;
 import hirs.utils.HexUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import javax.crypto.BadPaddingException;
@@ -47,7 +47,7 @@ import java.util.Date;
 /**
  * Utility class that provides utility methods to assist with the device provisioning process.
  */
-@Log4j2
+@Slf4j
 public final class ProvisionUtils {
 
     /**

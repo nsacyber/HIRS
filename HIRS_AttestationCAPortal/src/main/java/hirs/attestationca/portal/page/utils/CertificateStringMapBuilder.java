@@ -16,6 +16,8 @@ import hirs.attestationca.persist.entity.userdefined.certificate.IssuedAttestati
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.ComponentIdentifier;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceKeyPurpose;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateInfo;
+import hirs.attestationca.persist.entity.userdefined.certificate.attributes.DiceCertificateParser;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.PlatformConfigurationV1;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.ComponentIdentifierV2;
 import hirs.attestationca.persist.entity.userdefined.certificate.attributes.V2.PlatformConfigurationV2;
@@ -23,9 +25,9 @@ import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.exceptions.NonUniqueSKIException;
 import hirs.attestationca.persist.util.AcaPciIds;
 import hirs.utils.BouncyCastleUtils;
-import hirs.utils.PciIds;
+import hirs.utils.specLookups.PciIds;
 import jakarta.persistence.NonUniqueResultException;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -48,13 +50,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static hirs.utils.specificationLookups.PlatformClass.getPlatClassFromId;
+import static hirs.utils.specLookups.TcgPlatClassLookups.getPlatClassFromId;
 
 /**
  * Utility class for mapping certificate information in to string maps. These are used to display
  * information on a web page, as X509 cert classes do not serialize to JSON
  */
-@Log4j2
+@Slf4j
 public final class CertificateStringMapBuilder {
 
     // Extended Key Usage (TCG KP) OIDs
@@ -118,6 +120,7 @@ public final class CertificateStringMapBuilder {
         Map<String, String> ekuMap = getExtendedKeyUsageMap();
 
         if (certificate != null) {
+            addDiceInformation(certificate, data);
             data.put("issuer", certificate.getIssuer());
             //Serial number in hex value
             data.put("serialNumber", Hex.toHexString(certificate.getSerialNumber().toByteArray()));
@@ -249,7 +252,7 @@ public final class CertificateStringMapBuilder {
                             break;
                         }
                     } catch (IOException e) {
-                        log.error(e);
+                        log.error("Unable to read certificate information", e);
                     }
                 }
             }
@@ -336,7 +339,7 @@ public final class CertificateStringMapBuilder {
                     return containsAllChain(issuerCert, caCredentialRepository, embeddedCertificates);
                 }
             } catch (IOException ioEx) {
-                log.error(ioEx);
+                log.error("Unable to read certificate information", ioEx);
                 return certificate;
             }
         }
@@ -532,12 +535,13 @@ public final class CertificateStringMapBuilder {
      * @return certificate information
      * @throws IOException when parsing the certificate
      */
-    public static HashMap<String, Object> getPlatformInformation(final UUID uuid,
-                                                                 final CertificateRepository certificateRepository,
-                                                                 final ComponentResultRepository componentResultRepository,
-                                                                 final ComponentAttributeRepository componentAttributeRepository,
-                                                                 final CACredentialRepository caCertificateRepository,
-                                                                 final String provisionSessionId)
+    public static HashMap<String, Object> getPlatformInformation(
+                                                final UUID uuid,
+                                                final CertificateRepository certificateRepository,
+                                                final ComponentResultRepository componentResultRepository,
+                                                final ComponentAttributeRepository componentAttributeRepository,
+                                                final CACredentialRepository caCertificateRepository,
+                                                final String provisionSessionId)
             throws IllegalArgumentException, IOException {
         HashMap<String, Object> data = new HashMap<>();
         PlatformCredential certificate = (PlatformCredential) certificateRepository.getCertificate(uuid);
@@ -611,9 +615,17 @@ public final class CertificateStringMapBuilder {
                     .findByCertificateSerialNumberAndBoardSerialNumber(
                             certificate.getSerialNumber().toString(),
                             certificate.getPlatformSerial());
+            UUID sessionId = null;
             if (componentAttributeRepository != null && provisionSessionId != null
                     && !provisionSessionId.isBlank()) {
-                UUID sessionId = UUID.fromString(provisionSessionId);
+                try {
+                    sessionId = UUID.fromString(provisionSessionId);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Ignoring invalid provision session ID for {}: {}",
+                            uuid, provisionSessionId);
+                }
+            }
+            if (sessionId != null) {
                 List<ComponentAttributeResult> attributeResults = componentAttributeRepository
                         .findByProvisionSessionId(sessionId);
                 List<UUID> failedComponentIds = attributeResults.stream()
@@ -913,13 +925,6 @@ public final class CertificateStringMapBuilder {
                 }
             }
 
-            if (certificate.getDiceCertificateInfo() != null) {
-                data.put("diceProfileType", certificate.getDiceCertificateInfo().getProfileType().toString());
-                data.put("diceHasKeyCertSign", certificate.getDiceCertificateInfo().hasKeyCertSign() ? "Yes" : "No");
-                data.put("diceIsCa", certificate.getDiceCertificateInfo().isCa() ? "Yes" : "No");
-                data.put("diceHasCrlSign", certificate.getDiceCertificateInfo().hasCrlSign() ? "Yes" : "No");
-            }
-
             if (certificate.getTpmPolicies() != null) {
                 data.put("tpmPolicies", certificate.getTpmPolicies());
             }
@@ -931,5 +936,38 @@ public final class CertificateStringMapBuilder {
             log.error(notFoundMessage);
         }
         return data;
+    }
+
+    /**
+     * Adds DICE inspection fields for any X.509 certificate category.
+     * @param certificate the source certificate
+     * @param data the certificate display fields
+     */
+    private static void addDiceInformation(final Certificate certificate, final Map<String, String> data) {
+        if (certificate instanceof PlatformCredential) {
+            return; // Platform credentials are attribute certificates.
+        }
+        if (certificate instanceof IDevIDCertificate idevid && idevid.getDiceParsingError() != null) {
+            data.put("diceParsingError", idevid.getDiceParsingError());
+            return;
+        }
+        try {
+            DiceCertificateInfo info = certificate instanceof IDevIDCertificate idevid
+                    ? idevid.getDiceCertificateInfo() : DiceCertificateParser.parse(certificate.getX509Certificate());
+            if (info != null) {
+                data.put("diceProfileType", info.getProfileType().toString());
+                data.put("diceHasKeyCertSign", info.hasKeyCertSign() ? "Yes" : "No");
+                data.put("diceIsCa", info.isCa() ? "Yes" : "No");
+                data.put("diceHasCrlSign", info.hasCrlSign() ? "Yes" : "No");
+                if (!info.getTcbInfo().isEmpty()) {
+                    data.put("diceTcbInfo", info.getTcbInfo().stream().map(Object::toString)
+                            .collect(Collectors.joining("\n\n")));
+                    data.put("diceTcbInfoCount", Integer.toString(info.getTcbInfo().size()));
+                }
+            }
+        } catch (IOException e) {
+            log.warn("Cannot decode DICE certificate information", e);
+            data.put("diceParsingError", e.getMessage());
+        }
     }
 }

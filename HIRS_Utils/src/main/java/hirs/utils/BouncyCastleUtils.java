@@ -1,12 +1,12 @@
 package hirs.utils;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.X500Name;
 
 /**
  * Utilities class specific for additional Bouncy Castle functionality.
  */
-@Log4j2
+@Slf4j
 public final class BouncyCastleUtils {
 
     private static final String SEPARATOR_COMMA = ",";

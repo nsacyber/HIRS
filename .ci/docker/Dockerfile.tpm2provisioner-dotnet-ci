@@ -62,7 +62,7 @@ RUN echo "#!/bin/bash" > /tmp/tpm_config && \
     rm -rf /tmp/tpm_config
 
 # Checkout HIRS
-RUN git clone -b main https://github.com/nsacyber/HIRS.git /hirs
+RUN git clone --recurse-submodules -b main https://github.com/nsacyber/HIRS.git /hirs
 
 # Run bootwar to cache build artifacts
 WORKDIR /hirs
@@ -82,6 +82,7 @@ RUN echo "#!/bin/bash" > /tmp/auto_clone_branch && \
     echo "cd /hirs" >> /tmp/auto_clone_branch && \
     echo "git fetch origin && git pull origin main && git reset --hard" >> /tmp/auto_clone_branch && \
     echo 'git checkout $1 && git reset --hard' >> /tmp/auto_clone_branch && \
+    echo 'git submodule update --init' >> /tmp/auto_clone_branch && \
     echo 'if [ -n "${2}" ]; then ./gradlew bootWar; fi' >> /tmp/auto_clone_branch && \
     echo 'if [ -n "${2}" ]; then ./gradlew -p HIRS_Provisioner.NET release; fi' >> /tmp/auto_clone_branch && \
     chmod 755 /tmp/auto_clone_branch

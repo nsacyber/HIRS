@@ -12,7 +12,7 @@ import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
@@ -23,7 +23,7 @@ import java.security.cert.X509Certificate;
 @Getter
 @EqualsAndHashCode
 @ToString
-@Log4j2
+@Slf4j
 @Embeddable
 public class TPMInfo implements Serializable {
 

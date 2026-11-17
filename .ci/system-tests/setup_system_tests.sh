@@ -26,6 +26,7 @@ docker exec $aca_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
 docker exec $tpm2_container sh -c "/tmp/auto_clone_branch $1 > /dev/null 2>&1 \
                                    && echo 'Provisioner Container Current Branch: ' && git rev-parse --abbrev-ref HEAD \
                                    && echo 'Provisioner Container Current Commit: ' && git rev-parse --short HEAD \
+                                   && git submodule update --init \
                                    && ./gradlew -p HIRS_Provisioner.NET clean release"
 
 # Install HIRS Provisioner.Net and setup tpm2 simulator.

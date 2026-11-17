@@ -4,7 +4,7 @@ import hirs.attestationca.persist.entity.manager.EndorsementCertificateRepositor
 import hirs.attestationca.persist.entity.manager.PlatformCertificateRepository;
 import hirs.attestationca.persist.entity.userdefined.certificate.EndorsementCredential;
 import hirs.attestationca.persist.entity.userdefined.certificate.PlatformCredential;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,7 @@ import java.util.List;
  * Page.
  */
 @Service
-@Log4j2
+@Slf4j
 public class PlatformCertificatePageService {
     private final PlatformCertificateRepository platformCertificateRepository;
     private final EndorsementCertificateRepository endorsementCertificateRepository;

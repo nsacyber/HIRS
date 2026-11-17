@@ -3,10 +3,9 @@ package hirs.attestationca.persist.entity.userdefined.record;
 import hirs.attestationca.persist.entity.userdefined.ExaminableRecord;
 import hirs.utils.digest.Digest;
 import hirs.utils.digest.DigestAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,10 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * <code>PCRMeasurementRecordTest</code> represents a unit test class for
  * <code>PCRMeasurementRecord</code>.
  */
+@Slf4j
 public class TPMMeasurementRecordTest {
 
-    private static final Logger LOGGER
-            = LogManager.getLogger(TPMMeasurementRecordTest.class);
     private static final int DEFAULT_PCR_ID = 3;
     private static final String DEFAULT_HASH =
             "3d5f3c2f7f3003d2e4baddc46ed4763a4954f648";
@@ -277,7 +275,7 @@ public class TPMMeasurementRecordTest {
             final byte[] bytes = Hex.decodeHex(hash.toCharArray());
             return new Digest(DigestAlgorithm.SHA1, bytes);
         } catch (DecoderException e) {
-            LOGGER.error("unable to create digest", e);
+            log.error("unable to create digest", e);
             throw new RuntimeException("unable to create digest", e);
         }
     }

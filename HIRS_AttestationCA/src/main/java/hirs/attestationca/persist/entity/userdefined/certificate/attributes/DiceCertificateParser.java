@@ -1,6 +1,7 @@
 package hirs.attestationca.persist.entity.userdefined.certificate.attributes;
 
-import lombok.extern.log4j.Log4j2;
+import hirs.utils.dice.DiceTcbInfo;
+import hirs.utils.dice.DiceTcbInfoParser;
 
 import java.io.IOException;
 import java.security.cert.CertificateParsingException;
@@ -16,7 +17,6 @@ import java.util.Set;
  * @see <a href="https://trustedcomputinggroup.org/resource/dice-certificate-profiles/">TCG DICE Certificate
  *      Profiles specification</a>
  */
-@Log4j2
 public final class DiceCertificateParser {
     /** Private constructor to prevent instantiation of utility class. */
     private DiceCertificateParser() {
@@ -31,13 +31,14 @@ public final class DiceCertificateParser {
     /**
      * Parses a DICE certificate and extracts relevant attributes.
      * @param cert the X.509 certificate to parse
-     * @return a {@link DiceCertificateInfo} object containing the extracted attributes, or null if invalid
-     * @throws IOException if certificate parsing fails
+     * @return decoded information, or null if there are no recognized DICE purposes or TCB extensions
+     * @throws IOException if certificate attributes or supported TCB extensions are malformed
      */
     public static DiceCertificateInfo parse(final X509Certificate cert) throws IOException {
         if (cert == null) {
             throw new IOException("Certificate must be an X.509 certificate");
         }
+        List<DiceTcbInfo> tcbInfo = DiceTcbInfoParser.parse(cert);
 
         DiceProfileType profileType;
         Set<DiceKeyPurpose> diceKeyPurposes;
@@ -51,14 +52,12 @@ public final class DiceCertificateParser {
         try {
             ekuOids = cert.getExtendedKeyUsage();
         } catch (CertificateParsingException e) {
-            log.warn("DICE certificate contains invalid OIDs");
-            return null;
+            throw new IOException("Cannot parse DICE certificate key purposes", e);
         }
 
-        if (ekuOids != null) {
-            diceKeyPurposes = extractKeyPurposes(ekuOids);
-        } else {
-            return null; // Not a DICE certificate
+        diceKeyPurposes = extractKeyPurposes(ekuOids == null ? List.of() : ekuOids);
+        if (diceKeyPurposes.isEmpty() && tcbInfo.isEmpty()) {
+            return null;
         }
 
         // Basic constraints and key usage.
@@ -79,7 +78,7 @@ public final class DiceCertificateParser {
         // Rough classification based on key purposes (tables 1–4).
         profileType = classifyProfile(diceKeyPurposes, isCa, hasKeyCertSign);
 
-        return new DiceCertificateInfo(profileType, diceKeyPurposes, isCa, hasKeyCertSign, hasCrlSign);
+        return new DiceCertificateInfo(profileType, diceKeyPurposes, tcbInfo, isCa, hasKeyCertSign, hasCrlSign);
     }
 
     /**

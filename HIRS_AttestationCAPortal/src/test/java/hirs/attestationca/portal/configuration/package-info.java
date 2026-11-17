@@ -1,4 +1,4 @@
 /**
- * Tests for the HIRS Attestation CA Portal configuration, such as the database schema.
+ * Tests for portal application configuration.
  */
 package hirs.attestationca.portal.configuration;

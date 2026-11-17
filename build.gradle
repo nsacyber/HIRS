@@ -4,10 +4,10 @@ import java.util.concurrent.TimeUnit
 
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
-    id 'io.github.ben-manes.versions' version '0.61.0'
+    id 'io.github.ben-manes.versions' version '0.66.0'
     id 'application'
     id 'com.github.spotbugs' version '6.5.6' apply false
-    id 'org.owasp.dependencycheck' version '13.0.0'
+    id 'org.owasp.dependencycheck' version '12.2.2'
     id 'com.palantir.git-version' version '5.0.0'
 }
 
@@ -23,10 +23,6 @@ subprojects {
     apply plugin: "java"
     apply plugin: "jacoco"
     apply plugin: "org.owasp.dependencycheck"
-
-    repositories {
-        mavenCentral()
-    }
 
     java {
         toolchain {
@@ -62,7 +58,10 @@ subprojects {
 
     dependencyCheck {
         // Read API key from a system property 'nvd.apiKey'
-        nvd.apiKey = System.getProperty("nvd.apiKey")
+        nvd {
+            apiKey = System.getProperty("nvd.apiKey") ?: ""
+            delay = 16000
+        }
     }
 
 //    Uncomment the lines right after this comment, if you wish to see all the places
@@ -100,13 +99,11 @@ subprojects {
 
     // Global dependency resolution strategy for all subprojects
     configurations.configureEach {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        // Boot's logging starter includes a Log4j-to-SLF4J bridge. HIRS uses SLF4J
+        // directly, so neither the bridge nor any other Log4j artifact is needed.
+        exclude group: 'org.apache.logging.log4j'
 
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-            if (details.requested.group == 'org.apache.logging.log4j') {
-                details.useVersion '2.25.3' // Force patched Log4j version
-            }
-
             if (details.requested.group == 'org.apache.commons' &&
                     details.requested.name == 'commons-lang3') {
                 details.useVersion '3.20.0'  // Force patched Commons Lang version
@@ -123,6 +120,35 @@ subprojects {
             }
         }
     }
+
+    tasks.register('verifyLoggingDependencies') {
+        group = 'verification'
+        description = 'Verify Log4j is absent and library dependencies stay scoped to their modules.'
+        doLast {
+            ['compileClasspath', 'runtimeClasspath', 'testCompileClasspath', 'testRuntimeClasspath'].each { name ->
+                def dependencies = configurations.getByName(name).resolvedConfiguration.resolvedArtifacts
+                dependencies.each { artifact ->
+                    def id = artifact.moduleVersion.id
+                    if (id.group == 'org.apache.logging.log4j' || id.group == 'log4j') {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                    if (project.name == 'HIRS_Utils' &&
+                            (id.group.startsWith('org.springframework') || id.group.startsWith('org.apache.tomcat'))) {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                    if (name in ['compileClasspath', 'runtimeClasspath'] &&
+                            project.name in ['HIRS_Utils', 'HIRS_AttestationCA'] &&
+                            (id.group == 'ch.qos.logback' || id.name == 'slf4j-simple' ||
+                                    id.group.startsWith('org.apache.tomcat'))) {
+                        throw new GradleException("${project.path}:${name} must not contain ${id}")
+                    }
+                }
+            }
+        }
+    }
+    tasks.named('check') {
+        dependsOn tasks.named('verifyLoggingDependencies')
+    }
 }
 
 def projectVersion = rootProject.file('VERSION').text.trim()
@@ -137,8 +163,10 @@ project.ext["packageVersion"] = "${projectVersion}.${buildTimeInSecs}.${gitHash}
 
 tasks.register('release') {
     group = 'distribution'
-    description = 'Build ACA and Provisioner RPM/DEB packages and the Provisioner MSI on Windows.'
+    description = 'Build ACA, Provisioner, and tcg_eventLog_tool RPM/DEB packages and the Provisioner MSI on Windows.'
     dependsOn ':HIRS_AttestationCAPortal:buildRpm',
             ':HIRS_AttestationCAPortal:buildDeb',
+            ':tools:tcg_eventlog_tool:buildRpm',
+            ':tools:tcg_eventlog_tool:buildDeb',
             ':HIRS_Provisioner.NET:release'
 }

@@ -1,8 +1,6 @@
 package hirs.attestationca.persist.entity.userdefined.rim;
 
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
-import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.Coswid;
-import hirs.utils.rim.unsignedRim.cbor.ietfCoswid.CoswidParser;
 import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswid;
 import hirs.utils.rim.unsignedRim.cbor.tcgCompRimCoswid.TcgCompRimCoswidParser;
 import hirs.utils.signature.cose.CoseParser;
@@ -10,9 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Subclass that will just focus on Component RIMs.
@@ -20,11 +17,11 @@ import lombok.extern.log4j.Log4j2;
  * TCG-defined extension keys for component manufacturer, binding spec, payload type, and SPDM
  * measurements) wrapped in a COSE_Sign1 envelope (RFC 9052)
  */
-@Log4j2
+@Entity
+@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@EqualsAndHashCode(callSuper = true)
-@Entity
+@Slf4j
 public class ComponentReferenceManifest extends ReferenceManifest {
 
     @Column
@@ -123,10 +120,11 @@ public class ComponentReferenceManifest extends ReferenceManifest {
     }
 
     /**
+     * Returns the first value if it is nonblank, or the fallback otherwise.
      *
-     * @param preferred
-     * @param fallback
-     * @return
+     * @param preferred preferred value if nonblank
+     * @param fallback fallback value
+     * @return the preferred value when nonblank, or the fallback value
      */
     private static String firstNonBlank(final String preferred, final String fallback) {
         return (preferred != null && !preferred.isBlank()) ? preferred : fallback;

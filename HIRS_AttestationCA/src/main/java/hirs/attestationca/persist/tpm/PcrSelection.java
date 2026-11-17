@@ -6,7 +6,7 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
@@ -18,7 +18,7 @@ import java.util.Arrays;
  * matches what is specified for the PcrSelectonType ComplexType in the
  * IntegrityReportManifest_v1_0_1 schema file.
  */
-@Log4j2
+@Slf4j
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PcrSelection",
         namespace = "http://www.trustedcomputinggroup.org/XML/SCHEMA/"
