@@ -86,6 +86,8 @@ jobs:
           build-args: REF=${{ github.ref_name }}
           tags: ${{env.TAG}}
           push: true
+          sbom: false
+          provenance: false
 
   windows-image:
     needs: setup

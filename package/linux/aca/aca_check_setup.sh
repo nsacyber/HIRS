@@ -136,9 +136,15 @@ echo "Checking HIRS ACA pki configuration:"
       "hirs_aca_tls_ecc_512_sha384")
       echo "    ACA Portal is configured for TLS using ecc 512 key with SHA 384"
       ;;
-      "hirs_aca_tls_mlsa_77_sha384")
-      echo "    ACA Portal is configured for TLS using ml-dsa 77 key with SHA 384"
-      ;;
+      "hirs_aca_tls_mldsa_44")
+          echo "    ACA Portal is configured for TLS using ML-DSA-44"
+          ;;
+      "hirs_aca_tls_mldsa_65")
+          echo "    ACA Portal is configured for TLS using ML-DSA-65"
+          ;;
+      "hirs_aca_tls_mldsa_87")
+          echo "    ACA Portal is configured for TLS using ML-DSA-87"
+          ;;
       *)
       echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
       ALL_CHECKS_PASSED=false
@@ -152,9 +158,15 @@ echo "Checking HIRS ACA pki configuration:"
         "HIRS_root_ca_ecc_512_sha384_key")
         echo "    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384"
         ;;
-        "HIRS_root_ca_mldsa_77_sha384_key")
-        echo "    ACA is configured  to sign Attestation or LDevID certificates using ml-dsa 77 key with SHA 384"
-        ;;
+        "HIRS_root_ca_mldsa_44_key")
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-44"
+            ;;
+        "HIRS_root_ca_mldsa_65_key")
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-65"
+            ;;
+        "HIRS_root_ca_mldsa_87_key")
+            echo "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-87"
+            ;;
         *)
         echo "Error determining ACA TLS configuration, please check $SPRING_PROP_FILE"
         ALL_CHECKS_PASSED=false
@@ -168,16 +180,16 @@ check_pwds () {
 PRESENT=true
 echo "Checking if ACA passwords are present..."
  if [ -z "$hirs_pki_password" ]; then
-   echo "ACA pki password not set" 
-   PRESENT=false 
+   echo "ACA pki password not set"
+   PRESENT=false
  fi
  if [ -z "$hirs_db_username" ]; then
    echo "hirs db username not set"
-   PRESENT=false 
+   PRESENT=false
  fi
  if [ -z "$hirs_db_password" ]; then
    echo "hirs db user password not set"
-   PRESENT=false  
+   PRESENT=false
  fi
  if [ $PRESENT = true ]; then
    echo "   ACA passwords were found"
@@ -203,12 +215,12 @@ check_mysql_setup () {
     else
        echo "   Mysql client ($DB_CLIENT_CONF) is configured for command line use of TLS"
   fi
-  
+
   if [ -n "$mysql_admin_password" ]; then
     mysql -u root --password="$mysql_admin_password" -e "STATUS;"  &> /dev/null
     if [ $? -eq 0 ]; then
         echo "Mysql Root password verified"
-       else 
+       else
         echo "Mysql Root password verification failed!"
     fi
     if [ -n "${ARG_VERBOSE}" ]; then
@@ -239,7 +251,7 @@ check_pki () {
  echo "Checking ACA PKI certificates..."
   if [ ! -d "/etc/hirs/certificates" ]; then
      echo "/etc/hirs/certificates doesn't exists, was aca_setup.sh run ? /
-           Skipping PKI Checks." 
+           Skipping PKI Checks."
   fi
 
   pushd $CERT_PATH$RSA_PATH > /dev/null || echo "Unable to push the directory to the stack"
@@ -266,9 +278,34 @@ check_pki () {
    check_cert $ECC_TRUST_STORE $ECC_WEB_TLS_CERT
   popd  > /dev/null || echo "Unable to pop the directory from the stack"
 
+  check_mldsa_pki () {
+      MLDSA_SIZE=$1
+      MLDSA_PATH="mldsa_${MLDSA_SIZE}_certs"
+      MLDSA_PREFIX="mldsa_${MLDSA_SIZE}"
+      pushd "$CERT_PATH$MLDSA_PATH" > /dev/null || {
+          echo "Unable to access $CERT_PATH$MLDSA_PATH"
+          ALL_CHECKS_PASSED=false
+          ALL_CERTS_PASSED=false
+          return
+      }
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_root_ca_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_intermediate_ca_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca1_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca2_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_leaf_ca3_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_rim_signer_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_db_srv_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_db_client_${MLDSA_PREFIX}.pem"
+      check_cert "HIRS_${MLDSA_PREFIX}_Cert_Chain.pem" "HIRS_aca_tls_${MLDSA_PREFIX}.pem"
+      popd > /dev/null || echo "Unable to pop the directory from the stack"
+  }
+  check_mldsa_pki 44
+  check_mldsa_pki 65
+  check_mldsa_pki 87
+
   if [ -z "${ARG_VERBOSE}" ]; then
     if [ $ALL_CERTS_PASSED == true ]; then
-         echo "   All RSA and ECC certificates under $CERT_PATH are valid"
+         echo "   All RSA, ECC, and ML-DSA certificates under $CERT_PATH are valid"
       else
          echo "   Error: There were error in the certificates under $CERT_PATH"
     fi
@@ -282,7 +319,7 @@ check_pki () {
        echo "   Keystore alias list:"
        keytool -list -keystore  /etc/hirs/certificates/HIRS/KeyStore.jks  -storepass "$hirs_pki_password"   | sed -e 's/^/     /'  2>/dev/null
   fi
- 
+
   if [ $? -eq 0 ]; then
       echo "   JKS Trust Store File (/etc/hirs/certificates/HIRS/TrustStore.jks) is correct: HIRS pki password is correct"
     else
@@ -300,8 +337,8 @@ check_db () {
       echo "   Error: Mysql Server side TLS is NOT enabled:"
       ALL_CHECKS_PASSED=false
   fi
-  
-  
+
+
   RESULT=$(mysqlshow --user=hirs_db --password="$hirs_db_password" hirs_db|  grep -o hirs_db)
   if [ "$RESULT" == "hirs_db" ]; then
       echo "   The hirs_db database is visible by the hirs_db user"
@@ -311,10 +348,13 @@ check_db () {
   fi
    if [ -n "${ARG_VERBOSE}" ]; then
    echo "   Show hirs_db user config using hirs_db password"
+   DB_SSL_CA=$(awk -F'=' '/^ssl_ca=/ {print $2}' "$DB_CLIENT_CONF")
+   DB_SSL_CERT=$(awk -F'=' '/^ssl_cert=/ {print $2}' "$DB_CLIENT_CONF")
+   DB_SSL_KEY=$(awk -F'=' '/^ssl_key=/ {print $2}' "$DB_CLIENT_CONF")
    mysql -u hirs_db --password="$hirs_db_password" -e "SHOW CREATE USER 'hirs_db'@'localhost';" \
-    --ssl-ca=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_rsa_3k_sha384_Cert_Chain.pem \
-    --ssl-cert=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.pem \
-    --ssl-key=/etc/hirs/certificates/HIRS/rsa_3k_sha384_certs/HIRS_db_client_rsa_3k_sha384.key
+     --ssl-ca="$DB_SSL_CA" \
+     --ssl-cert="$DB_SSL_CERT" \
+     --ssl-key="$DB_SSL_KEY"
     echo "Mysql TLS configuration"
     mysql -u root --password="$mysql_admin_password" -e "SHOW VARIABLES LIKE '%ssl%'"
     echo "TLS versions allowed on mariadb:"

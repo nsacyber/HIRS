@@ -70,9 +70,11 @@ RUN ls 'C:\Program Files\openssl'
 EXPOSE 8443
 
 # Set Environment Variables
-RUN setx JAVA_HOME 'C:\Java\jdk25'
-RUN setx GIT_HOME 'C:\Program Files\Git'
-RUN setx PATH '%JAVA_HOME%\bin;C:\Program Files\MariaDB 11.1\bin;%GIT_HOME%\bin;%PATH%'
+RUN [Environment]::SetEnvironmentVariable('JAVA_HOME', 'C:\Java\jdk25', 'Machine')
+RUN [Environment]::SetEnvironmentVariable('GIT_HOME', 'C:\Program Files\Git', 'Machine')
+RUN [Environment]::SetEnvironmentVariable('PATH', ('C:\Program Files\openssl\bin;' + [Environment]::GetEnvironmentVariable('JAVA_HOME', 'Machine') + '\bin;C:\Program Files\MariaDB 11.1\bin;' + [Environment]::GetEnvironmentVariable('GIT_HOME', 'Machine') + '\bin;' + [Environment]::GetEnvironmentVariable('PATH', 'Machine')), 'Machine')
+RUN (Get-Command openssl).Source
+RUN openssl version
 
 # Echo System Variables
 RUN echo $Env:PATH
@@ -95,7 +97,7 @@ RUN pwsh -Command pwsh -ExecutionPolicy Bypass ./package/win/aca/aca_win_config.
 
 # Run bootWar to cache build objects and dependencies
 WORKDIR C:/hirs
-RUN setx GRADLE_OPTS '-Dorg.gradle.daemon=false'
+RUN [Environment]::SetEnvironmentVariable('GRADLE_OPTS', '-Dorg.gradle.daemon=false', 'Machine')
 RUN ./gradlew.bat clean bootWar
 RUN cp ./HIRS_AttestationCAPortal/src/main/resources/application.win.properties C:/ProgramData/hirs/aca/
 

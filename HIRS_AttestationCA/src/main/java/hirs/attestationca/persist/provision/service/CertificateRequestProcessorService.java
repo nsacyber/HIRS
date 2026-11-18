@@ -531,7 +531,7 @@ public class CertificateRequestProcessorService {
             x509v3CertificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
             ContentSigner signer =
-                    new JcaContentSignerBuilder(getSignatureAlgorithm()).setProvider("BC").build(privateKey);
+                    new JcaContentSignerBuilder(getSignatureAlgorithm()).setProvider("BC").build(getSigningKey());
 
             X509CertificateHolder holder = x509v3CertificateBuilder.build(signer);
 
@@ -575,9 +575,28 @@ public class CertificateRequestProcessorService {
             return "SHA256WithRSA";
         } else if (privateKey instanceof ECPrivateKey) {
             return "SHA256withECDSA";
-        } else if (privateKey instanceof MLDSAPrivateKey) {
+        } else if (privateKey instanceof MLDSAPrivateKey
+                || privateKey.getAlgorithm().startsWith("ML-DSA")) {
             return "ML-DSA";
         }
         throw new IllegalArgumentException("Unsupported private key type: " + privateKey.getClass().getName());
+    }
+
+    private PrivateKey getSigningKey() {
+        if (!privateKey.getAlgorithm().startsWith("ML-DSA")
+                || privateKey instanceof MLDSAPrivateKey) {
+            return privateKey;
+        }
+        try {
+            byte[] encoded = privateKey.getEncoded();
+            if (encoded == null) {
+                throw new IllegalArgumentException("ML-DSA private key is not exportable");
+            }
+            KeyFactory keyFactory = KeyFactory.getInstance("ML-DSA", "BC");
+            return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(encoded));
+        } catch (GeneralSecurityException exception) {
+            throw new IllegalArgumentException(
+                    "Unable to convert ML-DSA private key to Bouncy Castle format", exception);
+        }
     }
 }
