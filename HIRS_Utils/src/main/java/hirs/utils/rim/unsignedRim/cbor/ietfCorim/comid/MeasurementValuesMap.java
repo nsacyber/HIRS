@@ -123,7 +123,7 @@ public class MeasurementValuesMap {
                     }
                     case UEID -> {
                         ueid = (byte[]) currItem.getValue().parse();
-                    } // See draft-ietf-rats-eat, section 4.2.1.2
+                    } // See RFC 9711, section 4.2.1.2
                     case UUID -> {
                         uuid = UUID.fromString((String) currItem.getValue().parse());
                     }
