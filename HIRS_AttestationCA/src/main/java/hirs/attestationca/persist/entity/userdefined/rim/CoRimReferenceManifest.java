@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Entity
-public class CorimReferenceManifest extends ReferenceManifest {
+public class CoRimReferenceManifest extends ReferenceManifest {
 
     /** {@code corim-map / 0 (id)} - string or UUID identifying this CoRIM. */
     @Column
@@ -53,7 +53,7 @@ public class CorimReferenceManifest extends ReferenceManifest {
     /**
      * Default constructor necessary for Hibernate.
      */
-    protected CorimReferenceManifest() {
+    protected CoRimReferenceManifest() {
         super();
     }
 
@@ -66,8 +66,8 @@ public class CorimReferenceManifest extends ReferenceManifest {
      * @param fileName string representation of the uploaded file
      * @param rimBytes raw uploaded bytes (COSE_Sign1-wrapped or bare tag-501 CoRIM)
      */
-    public CorimReferenceManifest(final String fileName,
-                                      final byte[] rimBytes) {
+    public CoRimReferenceManifest(final String fileName,
+                                  final byte[] rimBytes) {
         super(rimBytes);
         this.setFileName(fileName);
         this.setRimType(CORIM_RIM);
@@ -111,8 +111,9 @@ public class CorimReferenceManifest extends ReferenceManifest {
     private byte[] unwrapToCorimMap(final byte[] raw) {
         this.corimSigned = false;
         byte[] cur = raw;
-        // Peel at most a handful of outer CoRIM-family / COSE tags. Anything deeper is malformed,.
-        for (int i = 0; i < 4; i++) {
+        // Peel at most a handful of outer CoRIM-family / COSE tags. Anything deeper is malformed.
+        int maxLayersToInspect = 4;
+        for (int i = 0; i < maxLayersToInspect; i++) {
             final CborTagProcessor ctp = new CborTagProcessor(cur);
             if (!ctp.isTagged()) {
                 // Bare corim-map (or the map body left after stripping 501). CoRimParser take it as-is.
@@ -161,7 +162,8 @@ public class CorimReferenceManifest extends ReferenceManifest {
             return null;
         }
         byte[] cur = getRimBytes();
-        for (int i = 0; i < 4; i++) {
+        int maxLayersToInspect = 4;
+        for (int i = 0; i < maxLayersToInspect; i++) {
             final CborTagProcessor ctp = new CborTagProcessor(cur);
             if (ctp.isCose()) {
                 return cur;
@@ -192,7 +194,7 @@ public class CorimReferenceManifest extends ReferenceManifest {
     }
 
     /**
-     * Returns null if string is blank
+     * Returns null if string is blank.
      * @param s string to check
      * @return null if string is blank, string otherwise
      */

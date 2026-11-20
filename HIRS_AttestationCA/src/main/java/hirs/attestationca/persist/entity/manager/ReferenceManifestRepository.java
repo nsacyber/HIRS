@@ -3,7 +3,7 @@ package hirs.attestationca.persist.entity.manager;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.CoRimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import org.springframework.data.domain.Page;
@@ -176,9 +176,9 @@ public interface ReferenceManifestRepository extends JpaRepository<ReferenceMani
      * @param uuid uuid
      * @return a CoRIM reference manifest
      */
-    @Query(value = "SELECT * FROM ReferenceManifest WHERE id = ?1 AND DTYPE = 'CorimReferenceManifest'",
+    @Query(value = "SELECT * FROM ReferenceManifest WHERE id = ?1 AND DTYPE = 'CoRimReferenceManifest'",
             nativeQuery = true)
-    CorimReferenceManifest getCorimRimEntityById(UUID uuid);
+    CoRimReferenceManifest getCorimRimEntityById(UUID uuid);
 
     /**
      * Query that retrieves a list of {@link SupportReferenceManifest} objects using the provided device name and where

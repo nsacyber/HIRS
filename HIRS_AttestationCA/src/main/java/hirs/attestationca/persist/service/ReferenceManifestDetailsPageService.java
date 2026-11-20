@@ -11,7 +11,7 @@ import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.certificate.CertificateAuthorityCredential;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.CoRimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.EventLogMeasurements;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
@@ -136,7 +136,7 @@ public class ReferenceManifestDetailsPageService {
             data.putAll(getComponentRimInfo(cRim));
         }
 
-        CorimReferenceManifest coRim = this.referenceManifestRepository.getCorimRimEntityById(uuid);
+        CoRimReferenceManifest coRim = this.referenceManifestRepository.getCorimRimEntityById(uuid);
 
         if (coRim != null) {
             data.putAll(getCorimRimInfo(coRim));
@@ -782,7 +782,7 @@ public class ReferenceManifestDetailsPageService {
      * @param coRim the CoRIM reference manifest
      * @return map of display attributes for {@code rim-details.html}
      */
-    private HashMap<String, Object> getCorimRimInfo(final CorimReferenceManifest coRim) {
+    private HashMap<String, Object> getCorimRimInfo(final CoRimReferenceManifest coRim) {
         final HashMap<String, Object> data = new HashMap<>();
 
         data.put("rimType", coRim.getRimType());

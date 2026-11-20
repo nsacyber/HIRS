@@ -7,8 +7,8 @@ import hirs.attestationca.persist.entity.userdefined.DataTablesColumn;
 import hirs.attestationca.persist.entity.userdefined.DownloadFile;
 import hirs.attestationca.persist.entity.userdefined.ReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.BaseReferenceManifest;
+import hirs.attestationca.persist.entity.userdefined.rim.CoRimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ComponentReferenceManifest;
-import hirs.attestationca.persist.entity.userdefined.rim.CorimReferenceManifest;
 import hirs.attestationca.persist.entity.userdefined.rim.ReferenceDigestValue;
 import hirs.attestationca.persist.entity.userdefined.rim.SupportReferenceManifest;
 import hirs.attestationca.persist.service.util.PredicateFactory;
@@ -254,7 +254,7 @@ public class ReferenceManifestPageService {
     public Page<ReferenceManifest> findAllBaseAndSupportRIMS(final Pageable pageable) {
         return referenceManifestRepository.findByClassIn(
                 List.of(BaseReferenceManifest.class, SupportReferenceManifest.class,
-                ComponentReferenceManifest.class, CorimReferenceManifest.class), pageable);
+                ComponentReferenceManifest.class, CoRimReferenceManifest.class), pageable);
     }
 
     /**
@@ -311,7 +311,7 @@ public class ReferenceManifestPageService {
                 allRIMs.stream().filter(rim ->
                                 rim instanceof BaseReferenceManifest || rim instanceof SupportReferenceManifest
                                         || rim instanceof ComponentReferenceManifest
-                                        || rim instanceof CorimReferenceManifest)
+                                        || rim instanceof CoRimReferenceManifest)
                         .toList();
 
         String zipFileName;
@@ -394,7 +394,7 @@ public class ReferenceManifestPageService {
         List<BaseReferenceManifest> baseRims = new ArrayList<>();
         List<SupportReferenceManifest> supportRims = new ArrayList<>();
         List<ComponentReferenceManifest> componentRims = new ArrayList<>();
-        List<CorimReferenceManifest> corimRims = new ArrayList<>();
+        List<CoRimReferenceManifest> corimRims = new ArrayList<>();
 
         log.info("Uploading {} RIM files", files.length);
 
@@ -453,7 +453,7 @@ public class ReferenceManifestPageService {
                     log.info("Failed to parse Component RIM file {}", fileName);
                 }
             } else if (isCorim) {
-                final CorimReferenceManifest corimReferenceManifest =
+                final CoRimReferenceManifest corimReferenceManifest =
                         parseCoRIM(errorMessagesParse, file);
                 messages.addErrorMessages(errorMessagesParse);
                 if (corimReferenceManifest != null) {
@@ -502,7 +502,7 @@ public class ReferenceManifestPageService {
                           final List<BaseReferenceManifest> baseRims,
                           final List<SupportReferenceManifest> supportRims,
                           final List<ComponentReferenceManifest> componentRims,
-                          final List<CorimReferenceManifest> corimRims) {
+                          final List<CoRimReferenceManifest> corimRims) {
 
         // save the base rims in the repo if they don't already exist in the repo
         baseRims.forEach((baseRIM) -> {
@@ -669,7 +669,7 @@ public class ReferenceManifestPageService {
      * @param file file
      * @return CoRIM reference manifest
      */
-    public CorimReferenceManifest parseCoRIM(final List<String> errorMessages,
+    public CoRimReferenceManifest parseCoRIM(final List<String> errorMessages,
                                              final MultipartFile file) {
         byte[] fileBytes;
         final String fileName = file.getOriginalFilename();
@@ -684,7 +684,7 @@ public class ReferenceManifestPageService {
         }
 
         try {
-            return new CorimReferenceManifest(fileName, fileBytes);
+            return new CoRimReferenceManifest(fileName, fileBytes);
         } catch (Exception exception) {
             final String failMessage = String.format("Failed to parse CoRIM file (%s): ", fileName);
             log.error(failMessage, exception);
@@ -859,13 +859,13 @@ public class ReferenceManifestPageService {
      *
      * @param uploadedCorims CoRIMs from this upload batch (already persisted, so ids are set)
      */
-    private void processCorimMeasurements(final List<CorimReferenceManifest> uploadedCorims) {
-        for (CorimReferenceManifest uploaded : uploadedCorims) {
+    private void processCorimMeasurements(final List<CoRimReferenceManifest> uploadedCorims) {
+        for (CoRimReferenceManifest uploaded : uploadedCorims) {
             // re-fetch by content hash so we have the persisted (id-bearing) entity even if this
             //upload was a duplicate that storeRIMS() skipped saving
             final ReferenceManifest stored = referenceManifestRepository
                     .findByHexDecHashAndRimType(uploaded.getHexDecHash(), ReferenceManifest.CORIM_RIM);
-            if (!(stored instanceof CorimReferenceManifest corim) || corim.getId() == null) {
+            if (!(stored instanceof CoRimReferenceManifest corim) || corim.getId() == null) {
                 continue;
             }
             if (!referenceDigestValueRepository.findBySupportRimId(corim.getId()).isEmpty()) {
