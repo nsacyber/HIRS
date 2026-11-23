@@ -223,9 +223,9 @@ Function check_pki_config() {
         default { Write-Host "Error determining ACA TLS configuration, please check $springFile"; $global:ALL_CHECKS_PASSED = $false }
     }
     switch -Regex ($rootAlias) {
-        '^HIRS_root_ca_rsa_3k_sha384_key$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using rsa 3072 key with SHA 384'; break }
-        '^HIRS_root_ca_ecc_512_sha384_key$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384'; break }
-        '^HIRS_root_ca_mldsa_(44|65|87)_key$' { Write-Host "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-$($matches[1])"; break }
+        '^HIRS_root_ca_rsa_3k_sha384$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using rsa 3072 key with SHA 384'; break }
+        '^HIRS_root_ca_ecc_512_sha384$' { Write-Host '    ACA is configured to sign Attestation or LDevID certificates using ecc 512 key with SHA 384'; break }
+        '^HIRS_root_ca_mldsa_(44|65|87)$' { Write-Host "    ACA is configured to sign Attestation or LDevID certificates using ML-DSA-$($matches[1])"; break }
         default { Write-Host "Error determining ACA signing configuration, please check $springFile"; $global:ALL_CHECKS_PASSED = $false }
     }
 }
