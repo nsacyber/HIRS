@@ -1,5 +1,6 @@
 package hirs.utils.rim;
 
+import hirs.utils.XmlUtils;
 import hirs.utils.swid.SwidTagConstants;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -12,7 +13,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -184,9 +184,7 @@ public final class SwidTagParser {
      */
     public static Document convertToDocument(final byte[] bytes)
             throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder builder = dbf.newDocumentBuilder();
+        DocumentBuilder builder = XmlUtils.newDocumentBuilderFactory().newDocumentBuilder();
         ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytes);
         return builder.parse(bytesIn);
     }
@@ -202,9 +200,7 @@ public final class SwidTagParser {
      */
     public static Document convertToDocument(final String filename)
             throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder builder = dbf.newDocumentBuilder();
+        DocumentBuilder builder = XmlUtils.newDocumentBuilderFactory().newDocumentBuilder();
         File fileIn = new File(filename);
         return builder.parse(fileIn);
     }

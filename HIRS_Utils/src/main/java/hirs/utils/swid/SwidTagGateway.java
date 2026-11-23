@@ -1,5 +1,6 @@
 package hirs.utils.swid;
 
+import hirs.utils.XmlUtils;
 import hirs.utils.xjc.Directory;
 import hirs.utils.xjc.Entity;
 import hirs.utils.xjc.File;
@@ -170,8 +171,7 @@ public class SwidTagGateway {
             timestampFormat = "";
             timestampArgument = "";
             errorRequiredFields = "";
-            dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
+            dbf = XmlUtils.newDocumentBuilderFactory();
             builder = dbf.newDocumentBuilder();
         } catch (JAXBException e) {
             System.out.println("Error initializing jaxbcontext: " + e.getMessage());
