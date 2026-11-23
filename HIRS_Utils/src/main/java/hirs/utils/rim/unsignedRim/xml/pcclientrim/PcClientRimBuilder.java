@@ -1,5 +1,6 @@
 package hirs.utils.rim.unsignedRim.xml.pcclientrim;
 
+import hirs.utils.XmlUtils;
 import hirs.utils.swid.CredentialParser;
 import hirs.utils.swid.HashSwid;
 import hirs.utils.swid.SwidTagConstants;
@@ -113,8 +114,7 @@ public class PcClientRimBuilder {
             this.timestampFormat = "";
             this.timestampArgument = "";
             this.errorRequiredFields = "";
-            this.dbf = DocumentBuilderFactory.newInstance();
-            this.dbf.setNamespaceAware(true);
+            this.dbf = XmlUtils.newDocumentBuilderFactory();
             this.builder = this.dbf.newDocumentBuilder();
         } catch (JAXBException e) {
             throw new RuntimeException("Error initializing jaxb context: " + e.getMessage());
